@@ -11,11 +11,11 @@ const competitors = [
 
 // 竞品动态时间线
 const competitorTimeline = [
-    { date: "今天", tag: "价格调整", content: "新东方前途出国下调英澳留学服务费用，最高优惠15%" },
-    { date: "昨天", tag: "新品发布", content: "启德教育推出「名校保录计划」，承诺申请失败全额退款" },
-    { date: "3天前", tag: "战略合作", content: "IDP诺思与剑桥大学建立官方招生合作通道" },
-    { date: "上周", tag: "营销活动", content: "澳际教育启动「暑期留学嘉年华」，签约即送iPad" },
-    { date: "上周", tag: "服务升级", content: "啄木鸟教育上线AI智能选校系统，提升选校精准度" }
+    { date: "今天", tag: "价格调整", content: "新东方前途出国下调英澳留学服务费用，最高优惠15%", source: "新东方前途出国官网", link: "https://liuxue.xdf.cn" },
+    { date: "昨天", tag: "新品发布", content: "启德教育推出「名校保录计划」，承诺申请失败全额退款", source: "启德教育官网", link: "https://www.eic.org.cn" },
+    { date: "3天前", tag: "战略合作", content: "IDP诺思与剑桥大学建立官方招生合作通道", source: "IDP教育集团官网", link: "https://www.idp.com" },
+    { date: "上周", tag: "营销活动", content: "澳际教育启动「暑期留学嘉年华」，签约即送iPad", source: "澳际教育公众号", link: "https://www.aoji.cn" },
+    { date: "上周", tag: "服务升级", content: "啄木鸟教育上线AI智能选校系统，提升选校精准度", source: "啄木鸟教育官网", link: "https://www.zhuomuniao.com" }
 ];
 
 // 话术库（17条）
@@ -482,11 +482,13 @@ function renderTimeline() {
     competitorTimeline.forEach(item => {
         const div = document.createElement('div');
         div.className = 'timeline-item';
+        const sourceHtml = item.source ? `<a class="timeline-source" href="${item.link}" target="_blank" rel="noopener noreferrer"><i class="fas fa-external-link-alt"></i> ${item.source}</a>` : '';
         div.innerHTML = `
             <div class="timeline-date">${item.date}</div>
             <div class="timeline-content">
                 <span class="timeline-tag">${item.tag}</span>
                 <p>${item.content}</p>
+                ${sourceHtml}
             </div>
         `;
         container.appendChild(div);

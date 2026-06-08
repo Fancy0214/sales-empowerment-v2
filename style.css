@@ -503,6 +503,27 @@ body {
     line-height: 1.6;
 }
 
+.timeline-source {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.78rem;
+    color: var(--accent);
+    text-decoration: none;
+    margin-top: 6px;
+    opacity: 0.85;
+    transition: opacity 0.2s;
+}
+
+.timeline-source:hover {
+    opacity: 1;
+    text-decoration: underline;
+}
+
+.timeline-source i {
+    font-size: 0.7rem;
+}
+
 /* ==================== 反馈表单 ==================== */
 .hint {
     color: var(--text-secondary);
