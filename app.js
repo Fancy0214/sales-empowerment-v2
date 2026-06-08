@@ -1,5 +1,44 @@
 // ==================== 全局数据 ====================
 
+// 竞品数据
+const competitors = [
+    { name: "新东方前途出国", country: "国内", product: "高端", advantage: "品牌知名度高、资源丰富、院校合作广泛", disadvantage: "价格较高、服务标准化程度高", score: 4.5 },
+    { name: "启德教育", country: "国内", product: "中端", advantage: "澳洲留学优势明显、服务态度好", disadvantage: "欧洲资源相对薄弱、顾问水平参差", score: 4.2 },
+    { name: "啄木鸟教育", country: "美国", product: "高端", advantage: "美国申请案例丰富、SAT/ACT培训强", disadvantage: "其他地区覆盖不足、价格偏高", score: 4.3 },
+    { name: "IDP诺思留学", country: "英国", product: "中端", advantage: "英国院校官方合作、雅思主办方背景", disadvantage: "个性化服务有待提升、部分顾问经验不足", score: 4.0 },
+    { name: "澳际教育", country: "澳洲", product: "基础", advantage: "澳洲资源深厚、价格实惠、签证通过率高", disadvantage: "高端申请能力有限、文书质量一般", score: 3.8 }
+];
+
+// 竞品动态时间线
+const competitorTimeline = [
+    { date: "今天", tag: "价格调整", content: "新东方前途出国下调英澳留学服务费用，最高优惠15%" },
+    { date: "昨天", tag: "新品发布", content: "启德教育推出"名校保录计划"，承诺申请失败全额退款" },
+    { date: "3天前", tag: "战略合作", content: "IDP诺思与剑桥大学建立官方招生合作通道" },
+    { date: "上周", tag: "营销活动", content: "澳际教育启动"暑期留学嘉年华"，签约即送iPad" },
+    { date: "上周", tag: "服务升级", content: "啄木鸟教育上线AI智能选校系统，提升选校精准度" }
+];
+
+// 话术库（17条）
+const scripts = [
+    { id: 1, category: "opening", title: "初次电话开场", scene: "首次接到客户来电", content: "您好，我是XX留学的张老师，请问您是想了解出国留学的哪个国家呢？我们这里有英国、美国、澳洲等主流留学目的地的专业申请服务。", rating: 5, type: "电话开发" },
+    { id: 2, category: "opening", title: "微信破冰话术", scene: "添加客户微信后", content: "您好呀！感谢您添加我的微信。我是专门负责XX国家留学申请规划的张老师，后期有任何留学相关的问题都可以随时问我，我会第一时间为您解答~", rating: 4, type: "微信沟通" },
+    { id: 3, category: "opening", title: "展会邀约", scene: "邀请参加留学展", content: "您好，我们这个周六会举办一场大型留学展会，汇集了英美澳等20多所海外院校的招生官现场咨询。我看您之前有了解过英国留学，这次有很多英国名校参与，想邀请您来看看~", rating: 5, type: "活动邀约" },
+    { id: 4, category: "discovery", title: "挖掘客户需求", scene: "了解客户基本情况", content: "想先了解一下，您目前是在读什么年级呢？有没有意向的国家和专业方向？这样我可以先给您匹配一些适合的院校方案参考。", rating: 5, type: "需求挖掘" },
+    { id: 5, category: "discovery", title: "探询预算范围", scene: "了解客户支付能力", content: "想问一下您对留学预算大概在什么范围呢？因为不同预算能选择的院校层次差异还是比较大的，这样可以帮您更精准地推荐。", rating: 4, type: "需求挖掘" },
+    { id: 6, category: "discovery", title: "了解家庭决策链", scene: "确认谁是决策人", content: "留学这个决定是您自己做主，还是会和家人一起商量呢？如果需要家长配合准备材料的话，我们可以把方案做得更完善一些。", rating: 4, type: "需求挖掘" },
+    { id: 7, category: "objection", title: "应对"我再考虑考虑"", scene: "客户犹豫不决", content: "完全理解您的顾虑，留学确实是一个重大的决定。不过我建议我们可以先做一个免费的留学评估，看看您目前的情况适合申请哪些学校，这样您在做决定时也会有更多依据。", rating: 5, type: "异议处理" },
+    { id: 8, category: "objection", title: "应对"价格太贵了"", scene: "客户嫌价格高", content: "您说得对，我们的价格确实不是市场上最低的。但正是因为我们的专业度和申请成功率，您能申请到的学校层次是完全不同的。比如去年我们XX同学，从XX排名100多名申请到了前30，这其中的差距您可以算算。", rating: 5, type: "异议处理" },
+    { id: 9, category: "objection", title: "应对"别家更便宜"", scene: "竞品比价", content: "市面上确实有价格更低的服务，但我建议您关注两点：一是申请成功率，二是服务过程中是否有足够的专业支持。毕竟留学申请只有一次机会，如果因为服务不到位导致申请失败，损失的不仅是金钱，更是时间和机会。", rating: 4, type: "异议处理" },
+    { id: 10, category: "objection", title: "应对"想自己申请"", scene: "客户想DIY", content: "自己申请当然是可以的，但如果您愿意了解的话，我可以给您一些专业的建议。DIY最大的风险是信息不对称导致选校失误，或者文书不够出色而被好学校拒绝。我们每年处理几百个案例，经验会帮您避很多坑。", rating: 4, type: "异议处理" },
+    { id: 11, category: "closing", title: "促单话术-限时优惠", scene: "利用时间紧迫感", content: "我们这个月有一个早鸟优惠活动，现在报名可以节省3000元，而且可以优先安排资深的申请老师。不过这个优惠明天就要截止了，不知道您今天方便把合同签了吗？", rating: 5, type: "促单" },
+    { id: 12, category: "closing", title: "促单话术-名额紧张", scene: "利用稀缺性", content: "您看中的这位王老师，他今年只剩下2个名额了，而且已经有多位家长在排队等他了。如果您确定要选择王老师的话，我建议今天就把名额定下来，否则可能会被其他家长抢先。", rating: 5, type: "促单" },
+    { id: 13, category: "closing", title: "处理最后犹豫", scene: "签约前最后一次犹豫", content: "我能感觉到您对孩子的教育是非常用心的，其实您现在的顾虑是什么？可以告诉我，我们一起看看能不能解决。我知道做决定需要谨慎，但我相信这个服务是值得您信任的。", rating: 4, type: "促单" },
+    { id: 14, category: "closing", title: "直接成交", scene: "客户意向明确", content: "好的，既然您对我们的服务比较认可，那我们现在就把合同签了吧？整个申请流程我们会给您拉一个专属服务群，每一步进展我都会及时同步给您。", rating: 5, type: "促单" },
+    { id: 15, category: "followup", title: "签约后维护", scene: "签单后第一天", content: "您好，合同已经收到了，我这边已经建好了您的专属服务群。接下来我们会开始帮您准备申请材料，您先按我们发的清单准备就行，有任何问题随时联系我。", rating: 4, type: "售后维护" },
+    { id: 16, category: "followup", title: "节假日祝福", scene: "节日群发", content: "中秋节快到了，祝您和家人节日快乐！感谢您一直以来的信任和支持，我们会继续努力为孩子的留学申请保驾护航~", rating: 3, type: "售后维护" },
+    { id: 17, category: "followup", title: "申请成功跟进", scene: "拿到offer后", content: "恭喜您！孩子收到了XX大学的offer！这是孩子努力的成果，也是我们共同努力的回报。接下来我帮您处理offer确认和后续的签证申请事宜。", rating: 5, type: "售后维护" }
+];
+
 // 九型人格完整数据
 const enneagramTypes = {
     1: {
@@ -10,7 +49,7 @@ const enneagramTypes = {
         joy: "按正确方式做事",
         manage: "规范化、流程化、风险控制",
         motivation: "正确做事、追求卓越",
-        color: "#4F46E5",
+        color: "#3b5998",
         description: "追求完美，对自己和他人都有高标准。注重细节，喜欢按计划行事。适合需要严谨把关的留学申请环节。",
         strengths: "细致认真、质量把控、原则性强",
         weakness: "过于挑剔、难以授权、易焦虑",
@@ -130,610 +169,55 @@ const enneagramTypes = {
     }
 };
 
-// 院校数据
-const universities = [
-    { id: 1, name: "哈佛大学", country: "美国", rank: 1, major: "商科", acceptance: "3.2%", fee: 75000, logo: "H", color: "#A50034", programs: ["MBA", "法学博士", "医学博士"], requirements: "GPA 3.8+, TOEFL 110+, GMAT 730+, 需要2年以上工作经验" },
-    { id: 2, name: "斯坦福大学", country: "美国", rank: 3, major: "理工", acceptance: "4%", fee: 74000, logo: "S", color: "#8C1515", programs: ["计算机科学", "电子工程", "MBA"], requirements: "GPA 3.7+, TOEFL 110+, GRE 325+, 强烈建议有研究经历" },
-    { id: 3, name: "牛津大学", country: "英国", rank: 4, major: "文科", acceptance: "17%", fee: 45000, logo: "O", color: "#002147", programs: ["PPE", "法学", "医学", "人文学科"], requirements: "985/211均分85+, 双非均分90+, IELTS 7.5+" },
-    { id: 4, name: "剑桥大学", country: "英国", rank: 5, major: "理工", acceptance: "21%", fee: 48000, logo: "C", color: "#A3C1AD", programs: ["自然科学", "工程", "数学", "MBA"], requirements: "985/211均分85+, IELTS 7.0+, 部分专业需STEP成绩" },
-    { id: 5, name: "墨尔本大学", country: "澳洲", rank: 33, major: "商科", acceptance: "70%", fee: 45000, logo: "M", color: "#00A651", programs: ["商科", "工程", "医学", "法学"], requirements: "985/211均分75+, 双非均分80+, IELTS 6.5+" },
-    { id: 6, name: "悉尼大学", country: "澳洲", rank: 41, major: "商科", acceptance: "60%", fee: 48000, logo: "US", color: "#003DA5", programs: ["商科", "建筑", "医学", "艺术"], requirements: "均分75+, IELTS 6.5+, 会计硕士需要相关背景" },
-    { id: 7, name: "多伦多大学", country: "加拿大", rank: 21, major: "理工", acceptance: "43%", fee: 58000, logo: "UT", color: "#002A5C", programs: ["工程", "计算机", "商科", "生命科学"], requirements: "GPA 3.5+, IELTS 7.0+, 部分专业需要GRE/GMAT" },
-    { id: 8, name: "新加坡国立大学", country: "新加坡", rank: 11, major: "理工", acceptance: "25%", fee: 42000, logo: "NUS", color: "#003D7C", programs: ["计算机", "工程", "商科", "公共政策"], requirements: "985/211均分80+, IELTS 6.5+, 商科需要GMAT" },
-    { id: 9, name: "香港大学", country: "香港", rank: 22, major: "商科", acceptance: "20%", fee: 35000, logo: "HKU", color: "#1D4E89", programs: ["商科", "法学", "医学", "建筑"], requirements: "985/211均分82+, IELTS 6.5+, 商科需要GMAT" },
-    { id: 10, name: "帝国理工学院", country: "英国", rank: 6, major: "理工", acceptance: "14%", fee: 50000, logo: "IC", color: "#003C71", programs: ["计算机", "电子工程", "机械工程", "医学"], requirements: "985/211均分85+, IELTS 7.0+, 需要Strong学术背景" },
-    { id: 11, name: "耶鲁大学", country: "美国", rank: 16, major: "文科", acceptance: "4.5%", fee: 72000, logo: "Y", color: "#00356B", programs: ["法学博士", "MBA", "艺术", "人文学科"], requirements: "GPA 3.8+, TOEFL 110+, 需要LSAT/GRE" },
-    { id: 12, name: "MIT", country: "美国", rank: 2, major: "理工", acceptance: "3%", fee: 73000, logo: "MIT", color: "#A31F34", programs: ["计算机科学", "电子工程", "机械工程", "MBA"], requirements: "GPA 3.9+, TOEFL 110+, GRE 330+, 科研经历必备" }
+// 九型测试题目
+const testQuestions = [
+    { q: "你在工作中的典型状态是？", options: ["积极主动，追求成果", "乐于助人，关注他人"], scores: [3, 2] },
+    { q: "面对压力时，你通常会？", options: ["制定计划，按步执行", "寻求他人支持和建议"], scores: [1, 2] },
+    { q: "你最看重他人的什么特质？", options: ["能力和成就", "真诚和善意"], scores: [3, 4] },
+    { q: "做决定时，你更依赖？", options: ["逻辑分析", "直觉感受"], scores: [5, 4] },
+    { q: "你对未来的态度是？", options: ["规划周全，风险可控", "充满期待，拥抱变化"], scores: [6, 7] },
+    { q: "团队合作中，你扮演的角色是？", options: ["领导者，掌控全局", "协调者，促进和谐"], scores: [8, 9] },
+    { q: "面对批评时，你会？", options: ["理性分析，有则改之", "情感受伤，需要安慰"], scores: [1, 4] },
+    { q: "你的生活方式更接近？", options: ["规律有序，高效执行", "灵活自由，随性而为"], scores: [1, 7] },
+    { q: "最终你在乎的是？", options: ["正确的事和成功", "关系的和谐与被爱"], scores: [1, 2] }
 ];
 
-// 话术数据
-const scripts = [
-    { id: 1, category: "opening", title: "初次电话开场", scene: "首次接到客户来电", content: "您好，我是XX留学的张老师，请问您是想了解出国留学的哪个国家呢？我们这里有英国、美国、澳洲等主流留学目的地的专业申请服务。", rating: 5, type: "电话开发" },
-    { id: 2, category: "opening", title: "微信破冰话术", scene: "添加客户微信后", content: "您好呀！感谢您添加我的微信。我是专门负责XX国家留学申请规划的张老师，后期有任何留学相关的问题都可以随时问我，我会第一时间为您解答~", rating: 4, type: "微信沟通" },
-    { id: 3, category: "discovery", title: "挖掘客户需求", scene: "了解客户基本情况", content: "想先了解一下，您目前是在读什么年级呢？有没有意向的国家和专业方向？这样我可以先给您匹配一些适合的院校方案参考。", rating: 5, type: "需求挖掘" },
-    { id: 4, category: "discovery", title: "探询预算范围", scene: "了解客户支付能力", content: "想问一下您对留学预算大概在什么范围呢？因为不同预算能选择的院校层次差异还是比较大的，这样可以帮您更精准地推荐。", rating: 4, type: "需求挖掘" },
-    { id: 5, category: "discovery", title: "了解家庭决策链", scene: "确认谁是决策人", content: "留学这个决定是您自己做主，还是会和家人一起商量呢？如果需要家长配合准备材料的话，我们可以把方案做得更完善一些。", rating: 3, type: "需求挖掘" },
-    { id: 6, category: "objection", title: "应对"我再考虑考虑"", scene: "客户犹豫不决", content: "完全理解您的顾虑，留学确实是一个重大的决定。不过我建议我们可以先做一个免费的留学评估，看看您目前的情况适合申请哪些学校，这样您在做决定时也会有更多依据。", rating: 5, type: "异议处理" },
-    { id: 7, category: "objection", title: "应对"价格太贵了"", scene: "客户嫌价格高", content: "您说得对，我们的价格确实不是市场上最低的。但正是因为我们的专业度和申请成功率，您能申请到的学校层次是完全不同的。比如去年我们XX同学，从XX排名100多名申请到了前30，这其中的差距您可以算算。", rating: 5, type: "异议处理" },
-    { id: 8, category: "objection", title: "应对"别家更便宜"", scene: "竞品比价", content: "市面上确实有价格更低的服务，但我建议您关注两点：一是申请成功率，二是服务过程中是否有足够的专业支持。毕竟留学申请只有一次机会，如果因为服务不到位导致申请失败，损失的不仅是金钱，更是时间和机会。", rating: 4, type: "异议处理" },
-    { id: 9, category: "objection", title: "应对"想自己申请"", scene: "客户想DIY", content: "自己申请当然是可以的，但如果您愿意了解的话，我可以给您一些专业的建议。DIY最大的风险是信息不对称导致选校失误，或者文书不够出色而被好学校拒绝。我们每年处理几百个案例，经验会帮您避很多坑。", rating: 4, type: "异议处理" },
-    { id: 10, category: "closing", title: "促单话术-限时优惠", scene: "利用时间紧迫感", content: "我们这个月有一个早鸟优惠活动，现在报名可以节省3000元，而且可以优先安排资深的申请老师。不过这个优惠明天就要截止了，不知道您今天方便把合同签了吗？", rating: 5, type: "促单" },
-    { id: 11, category: "closing", title: "促单话术-名额紧张", scene: "利用稀缺性", content: "您看中的这位王老师，他今年只剩下2个名额了，而且已经有多位家长在排队等他了。如果您确定要选择王老师的话，我建议今天就把名额定下来，否则可能会被其他家长抢先。", rating: 5, type: "促单" },
-    { id: 12, category: "closing", title: "处理最后犹豫", scene: "签约前最后一次犹豫", content: "我能感觉到您对孩子的教育是非常用心的，其实您现在的顾虑是什么？可以告诉我，我们一起看看能不能解决。我知道做决定需要谨慎，但我相信这个服务是值得您信任的。", rating: 4, type: "促单" },
-    { id: 13, category: "closing", title: "直接成交", scene: "客户意向明确", content: "好的，既然您对我们的服务比较认可，那我们现在就把合同签了吧？整个申请流程我们会给您拉一个专属服务群，每一步进展我都会及时同步给您。", rating: 5, type: "促单" },
-    { id: 14, category: "followup", title: "签约后维护", scene: "签单后第一天", content: "您好，合同已经收到了，我这边已经建好了您的专属服务群。接下来我们会开始帮您准备申请材料，您先按我们发的清单准备就行，有任何问题随时联系我。", rating: 4, type: "售后维护" },
-    { id: 15, category: "followup", title: "节假日祝福", scene: "节日群发", content: "中秋节快到了，祝您和家人节日快乐！感谢您一直以来的信任和支持，我们会继续努力为孩子的留学申请保驾护航~", rating: 3, type: "售后维护" },
-    { id: 16, category: "followup", title: "申请成功跟进", scene: "拿到offer后", content: "恭喜您！孩子收到了XX大学的offer！这是孩子努力的成果，也是我们共同努力的回报。接下来我帮您处理offer确认和后续的签证申请事宜。", rating: 5, type: "售后维护" },
-    { id: 17, category: "opening", title: "展会邀约", scene: "邀请参加留学展", content: "您好，我们这个周六会举办一场大型留学展会，汇集了英美澳等20多所海外院校的招生官现场咨询。我看您之前有了解过英国留学，这次有很多英国名校参与，想邀请您来看看~", rating: 5, type: "活动邀约" }
-];
+// 工具模板内容
+const toolContents = {
+    '5a': {
+        title: '5A模型工具包',
+        icon: 'fa-stream',
+        content: `【5A客户行为模型详解】
 
-// 实战案例
-const cases = [
-    { 
-        id: 1, 
-        type: "success", 
-        level: "hard",
-        levelText: "困难",
-        title: "三本学生逆袭G5名校", 
-        amount: 88000,
-        tags: ["低GPA", "逆袭", "英国G5"],
-        background: "张同学，三本院校计算机专业，GPA2.8，无雅思成绩，家长预算有限但期望值很高。",
-        challenge: "学生GPA严重不足，没有任何有竞争力的标化成绩，而且家长一开始对三本申请G5完全没有信心。",
-        strategy: "1. 扬长避短：突出学生在2个省级编程比赛中的获奖经历；2. 文书包装：弱化GPA问题，强调实践能力和学习潜力；3. 精准选校：避开热门CS，选择对GPA要求相对宽松的交叉学科项目；4. 套磁策略：针对目标导师进行定向套磁。",
-        result: "成功获得UCL和Edinburgh的offer，最终选择UCL。",
-        keyScript: "在文书中我们写道：'虽然我的GPA不具优势，但我在实际项目中投入了500+小时的编程时间...'这种坦诚且有数据支撑的表达方式打动了招生官。"
+一、Assess 评估
+• 目的：全面了解客户现状和需求
+• 操作：收集客户背景信息、留学意向、预算等
+• 话术："您能先跟我聊聊孩子目前的学习情况吗？"
+
+二、Advise 建议
+• 目的：提供专业的留学方案建议
+• 操作：根据评估结果，推荐合适的院校和专业
+• 话术："根据您孩子的情况，我建议考虑以下几所院校..."
+
+三、Anchor 锚定
+• 目的：建立信任感和专业形象
+• 操作：展示成功案例、数据支撑
+• 话术："去年我们帮助一位情况类似的学生申请到了XX大学..."
+
+四、Act 行动
+• 目的：推动客户采取下一步行动
+• 操作：明确下一步行动计划，设置时间节点
+• 话术："那我们今天先把选校方案确定，您这边这两天确认下？"
+
+五、Affirm 确认
+• 目的：确认客户满意度和后续安排
+• 操作：总结达成的共识，安排后续跟进
+• 话术："好的，那我们今天的收获是...后续我会在...联系您"`
     },
-    { 
-        id: 2, 
-        type: "success", 
-        level: "medium",
-        levelText: "中等",
-        title: "艺术生跨专业申请商科", 
-        amount: 65000,
-        tags: ["艺术转商", "跨专业", "美国Top30"],
-        background: "李同学，211艺术设计专业，想转商科但无任何商科背景，家长希望申请排名靠前的学校。",
-        challenge: "学生缺乏商科基础课程，且对商科方向定位模糊，需要在短时间内补足背景。",
-        strategy: "1. 背景提升：安排学生参加2个商赛并获得奖项；2. 实习安排：帮助联系四大会计师事务所寒假实习；3. 精准定位：选择接受跨专业申请的商科项目；4. 文书策略：巧妙地将艺术设计思维与商业创新结合。",
-        result: "获得JHU、Northeastern等4所学校的offer，其中JHU是美国Top20名校。",
-        keyScript: "我们的PS开头写道：'作为一个设计师，我学会用美学视角理解消费者需求，这正是现代商业世界稀缺的跨界思维...'成功吸引了招生官的注意。"
-    },
-    { 
-        id: 3, 
-        type: "fail", 
-        level: "hard",
-        levelText: "困难",
-        title: "高期望值客户流失复盘", 
-        amount: 0,
-        tags: ["客户流失", "期望值管理", "复盘"],
-        background: "王总，企业家，想让孩子读哈佛，明确表示愿意花100万，只要能进去。",
-        challenge: "客户期望值极高，孩子成绩中等，但家长坚信钱能解决一切问题，对专业建议听不进去。",
-        strategy: "我们尝试了：1. 用历年数据说明录取难度；2. 提出先做背景提升再申请的方案；3. 邀请哈佛校友做分享。但客户最终选择了另一家承诺'保录'的机构。",
-        result: "客户流失，签约金额0。最终客户花了60万但只拿到了排名100+学校的offer。",
-        keyScript: "复盘总结：在面对极端高期望值客户时，我们应该在第一次沟通时就做好期望值管理，不能为了签单而过度承诺。同时要学会筛选客户。"
-    },
-    { 
-        id: 4, 
-        type: "success", 
-        level: "medium",
-        levelText: "中等",
-        title: "大龄学生MBA申请", 
-        amount: 72000,
-        tags: ["大龄MBA", "美国名校", "职业转型"],
-        background: "张先生，32岁，8年工作经验，私企高管，想通过MBA实现职业转型。",
-        challenge: "年龄偏大，离开学术环境已久，GMAT备考时间有限。",
-        strategy: "1. 精准定位：选择偏好有工作经验的Executive MBA项目；2. 扬长避短：强调8年管理经验和对行业的深刻理解；3. 面试辅导：进行多轮模拟面试，针对职业转型故事线反复打磨。",
-        result: "获得Emory和UCLA的offer，最终选择Emory，全奖覆盖60%学费。",
-        keyScript: "在面试中我们教他这样说：'我的年龄不是劣势，而是我能为课堂带来真实商业经验的优势...'这种逆向思维获得了招生委员会的认可。"
-    },
-    { 
-        id: 5, 
-        type: "success", 
-        level: "hard",
-        levelText: "困难",
-        title: "DIY失败后紧急补救", 
-        amount: 48000,
-        tags: ["DIY失败", "紧急申请", "澳洲八大"],
-        background: "陈同学，自己DIY申请英国和澳洲，4月份了还没拿到任何offer，家长非常着急。",
-        challenge: "申请季末期才来找我们，文书质量差，选校定位失误，没有面试准备。",
-        strategy: "1. 紧急评估：2天内完成所有材料的紧急润色；2. 加申策略：增加澳洲八大保底项目；3. 面试提速：集中3天高强度面试培训；4. argue信：针对被拒项目发送argue信。",
-        result: "两周内收到悉尼大学、墨尔本大学等3所学校的offer。",
-        keyScript: "我们发送的argue信写道：'我们相信之前的信息不足以展示学生的全部潜力，以下是补充的材料...'最终说服学校重新考虑。"
-    }
-];
-
-// 5A模型工具
-const tools5A = {
-    name: "5A销售模型",
-    content: `
-【5A客户行为模型详解】
-
-一、Awareness - 认知阶段
-• 客户行为：通过广告、朋友推荐、搜索等方式初次接触留学信息
-• 销售任务：建立品牌认知，提供有价值的内容
-• 关键指标：曝光量、点击率
-
-二、Appeal - 吸引阶段  
-• 客户行为：对留学产生兴趣，开始搜集信息
-• 销售任务：提供专业的留学资讯，建立专业形象
-• 关键指标：内容参与度、留资率
-
-三/Ask - 询问阶段
-• 客户行为：主动咨询，表达初步需求
-• 销售任务：深入了解需求，建立信任关系
-• 关键指标：咨询转化率、首次响应时间
-
-四、Act - 行动阶段
-• 客户行为：参与活动、签约、付款
-• 销售任务：促成交易，提供超预期服务
-• 关键指标：签约率、客单价
-
-五、Advocate - 推荐阶段
-• 客户行为：满意后主动推荐给他人
-• 销售任务：创造惊喜，培养忠实客户
-• 关键指标：转介绍率、NPS评分
-
-【各阶段话术示例】
-
-Awareness阶段：
-"您好，我是XX留学的顾问，看到您最近浏览了我们网站关于英国留学的文章..."
-
-Appeal阶段：
-"根据您的情况，我为您整理了一份个性化的留学方案，包含3所冲刺、2所适中和1所保底院校..."
-
-Ask阶段：
-"想更详细了解一下，您目前是本科在读还是已经毕业？语言成绩准备到哪个阶段了？"
-
-Act阶段：
-"这个优惠名额我们本周只有5个，现在签约可以享受早鸟价格..."
-
-Advocate阶段：
-"感谢您的信任！如果身边有朋友也在考虑留学，可以推荐他们找我，会有专属优惠~"
-    `
-};
-
-// ==================== 工具函数 ====================
-
-// 更新时间
-function updateDateTime() {
-    const now = new Date();
-    const options = { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    };
-    document.getElementById('dateTime').textContent = now.toLocaleDateString('zh-CN', options);
-}
-
-// 导航切换
-function switchPage(pageName) {
-    // 移除所有active
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    document.querySelectorAll('.page').forEach(page => {
-        page.classList.remove('active');
-    });
-    
-    // 添加active
-    document.querySelector(`[data-page="${pageName}"]`).classList.add('active');
-    document.getElementById(`page-${pageName}`).classList.add('active');
-    
-    // 移动端收起侧边栏
-    if (window.innerWidth <= 768) {
-        document.querySelector('.sidebar').style.display = 'none';
-    }
-}
-
-// ==================== AI话术工坊功能 ====================
-
-document.getElementById('generateScript').addEventListener('click', function() {
-    const industry = document.getElementById('clientIndustry').value;
-    const stage = document.getElementById('clientStage').value;
-    const painPoint = document.getElementById('painPoint').value;
-    
-    // 模拟AI生成
-    const resultDiv = document.querySelector('#scriptResult');
-    const sections = resultDiv.querySelectorAll('.script-content');
-    
-    const scripts = {
-        opening: `您好，我是XX留学的${industry}行业专属顾问。我们专门为${industry}从业者的子女提供留学规划服务。我注意到您提到${painPoint}，这个情况我们有很多成功案例可以分享。`,
-        discovery: `我想先了解一下几个关键信息：
-1. 孩子目前是在哪个阶段？（初中/高中/本科）
-2. 之前有没有参加过什么竞赛或项目活动？
-3. 您对留学国家有没有初步的想法？
-4. 预算范围大概是多少？
-
-这些信息能帮助我更精准地为您匹配适合的院校方案。`,
-        objection: `我能理解您的顾虑。${painPoint}确实是很多家长都会担心的问题。我们做过很多类似情况的案例，比如张先生的孩子也是${industry}背景，最后成功申请到了${stage === '意向' ? '伦敦大学学院' : stage === '选校' ? '爱丁堡大学' : '曼彻斯特大学'}。
-
-关键是要找准定位+扬长避短，我们可以先做一个免费的留学评估，看看具体的情况。`,
-        closing: `好的，我觉得我们的方案非常适合您。根据您提供的情况，我建议选择"名校冲刺计划"，包含：
-• 3所冲刺院校（世界Top50）
-• 2所适中院校（Top100）
-• 1所保底院校
-
-这个月报名可以享受早鸟优惠，还能优先安排资深顾问服务。如果您确定的话，我们可以先把合同签了，启动申请流程。`
-    };
-    
-    sections[0].textContent = scripts.opening;
-    sections[1].textContent = scripts.discovery;
-    sections[2].textContent = scripts.objection;
-    sections[3].textContent = scripts.closing;
-    
-    // 添加动画效果
-    resultDiv.style.animation = 'none';
-    resultDiv.offsetHeight;
-    resultDiv.style.animation = 'fadeIn 0.5s ease';
-});
-
-function copyScript() {
-    const sections = document.querySelectorAll('.script-content');
-    let text = '';
-    const titles = ['开场白', '需求挖掘', '痛点回应', '促单话术'];
-    
-    sections.forEach((section, index) => {
-        text += `${titles[index]}：\n${section.textContent}\n\n`;
-    });
-    
-    navigator.clipboard.writeText(text).then(() => {
-        alert('话术已复制到剪贴板！');
-    });
-}
-
-function favoriteScript() {
-    alert('已收藏到个人话术库！');
-}
-
-// ==================== 竞品情报站功能 ====================
-
-function filterCompetitors() {
-    const country = document.getElementById('filterCountry').value;
-    const product = document.getElementById('filterProduct').value;
-    const rows = document.querySelectorAll('#competitorTable tbody tr');
-    
-    rows.forEach(row => {
-        const rowCountry = row.dataset.country;
-        const rowProduct = row.dataset.product;
-        
-        const countryMatch = country === 'all' || rowCountry === country;
-        const productMatch = product === 'all' || rowProduct === product;
-        
-        if (countryMatch && productMatch) {
-            row.style.display = '';
-        } else {
-            row.style.display = 'none';
-        }
-    });
-}
-
-function exportData() {
-    alert('数据导出功能：正在生成Excel报告...\n\n包含：\n• 竞品列表\n• 评分对比\n• 优劣势分析\n\n文件将下载至您的设备。');
-}
-
-function viewDetail(id) {
-    const details = {
-        xdf: { name: '新东方前途出国', info: '新东方旗下留学品牌，国内规模最大、资源最丰富的留学服务机构之一。' },
-        qide: { name: '启德教育', info: '专注留学25年，澳洲留学领域领先优势明显。' },
-        zmn: { name: '啄木鸟教育', info: '专注美国留学申请，以高录取率著称。' },
-        idp: { name: 'IDP诺思留学', info: '英国院校官方合作机构，澳洲IDP旗下品牌。' },
-        aoji: { name: '澳际教育', info: '专注澳洲留学，性价比高，服务稳定。' }
-    };
-    
-    const detail = details[id];
-    if (detail) {
-        alert(`${detail.name}\n\n${detail.info}`);
-    }
-}
-
-// ==================== 院校数据库功能 ====================
-
-function renderUniversities() {
-    const grid = document.getElementById('universityGrid');
-    grid.innerHTML = '';
-    
-    universities.forEach(uni => {
-        const card = document.createElement('div');
-        card.className = 'uni-card';
-        card.onclick = () => showUniDetail(uni);
-        
-        card.innerHTML = `
-            <div class="uni-header" style="background: linear-gradient(135deg, ${uni.color} 0%, ${uni.color}88 100%);">
-                <div class="uni-logo" style="color: ${uni.color};">${uni.logo}</div>
-                <span class="uni-rank">QS #${uni.rank}</span>
-            </div>
-            <div class="uni-body">
-                <h4 class="uni-name">${uni.name}</h4>
-                <p class="uni-country"><i class="fas fa-globe"></i> ${uni.country}</p>
-                <div class="uni-stats">
-                    <div class="uni-stat">
-                        <div class="uni-stat-value">${uni.acceptance}</div>
-                        <div class="uni-stat-label">录取率</div>
-                    </div>
-                    <div class="uni-stat">
-                        <div class="uni-stat-value">$${uni.fee/1000}K</div>
-                        <div class="uni-stat-label">年费用</div>
-                    </div>
-                </div>
-                <div class="uni-tags">
-                    <span class="uni-tag">${uni.major}</span>
-                </div>
-            </div>
-        `;
-        
-        grid.appendChild(card);
-    });
-}
-
-function showUniDetail(uni) {
-    const modal = document.getElementById('uniModal');
-    const body = document.getElementById('uniModalBody');
-    
-    body.innerHTML = `
-        <div class="uni-header" style="background: linear-gradient(135deg, ${uni.color} 0%, ${uni.color}88 100%); padding: 40px; text-align: center;">
-            <div class="uni-logo" style="color: ${uni.color}; width: 80px; height: 80px; font-size: 2rem; margin: 0 auto;">${uni.logo}</div>
-            <h2 style="color: white; margin-top: 16px;">${uni.name}</h2>
-            <p style="color: rgba(255,255,255,0.9);">QS世界大学排名 #${uni.rank} · ${uni.country}</p>
-        </div>
-        <div style="padding: 24px;">
-            <div class="detail-section">
-                <h4><i class="fas fa-graduation-cap"></i> 热门专业</h4>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
-                    ${uni.programs.map(p => `<span class="tag tag-primary">${p}</span>`).join('')}
-                </div>
-            </div>
-            <div class="detail-section">
-                <h4><i class="fas fa-file-alt"></i> 录取要求</h4>
-                <p>${uni.requirements}</p>
-            </div>
-            <div class="detail-section">
-                <h4><i class="fas fa-chart-bar"></i> 申请数据</h4>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                    <div class="stat-card">
-                        <div class="stat-value">${uni.acceptance}</div>
-                        <div class="stat-label">录取率</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">$${(uni.fee/1000).toFixed(0)}K</div>
-                        <div class="stat-label">年费用(美元)</div>
-                    </div>
-                </div>
-            </div>
-            <div style="text-align: center; margin-top: 24px;">
-                <button class="btn btn-primary" onclick="alert('请添加顾问微信获取详细申请方案')">
-                    <i class="fas fa-star"></i> 获取专属申请方案
-                </button>
-            </div>
-        </div>
-    `;
-    
-    modal.classList.add('active');
-}
-
-function filterUniversities() {
-    const country = document.getElementById('filterUniCountry').value;
-    const rank = document.getElementById('filterRank').value;
-    const major = document.getElementById('filterMajor').value;
-    
-    let filtered = universities;
-    
-    if (country !== 'all') {
-        filtered = filtered.filter(u => u.country === country);
-    }
-    
-    if (rank !== 'all') {
-        if (rank === 'top10') filtered = filtered.filter(u => u.rank <= 10);
-        else if (rank === 'top50') filtered = filtered.filter(u => u.rank > 10 && u.rank <= 50);
-        else if (rank === 'top100') filtered = filtered.filter(u => u.rank > 50 && u.rank <= 100);
-        else filtered = filtered.filter(u => u.rank > 100);
-    }
-    
-    if (major !== 'all') {
-        filtered = filtered.filter(u => u.major === major);
-    }
-    
-    const grid = document.getElementById('universityGrid');
-    grid.innerHTML = '';
-    
-    if (filtered.length === 0) {
-        grid.innerHTML = '<p style="text-align: center; grid-column: 1/-1; color: var(--text-secondary);">暂无符合条件的院校</p>';
-        return;
-    }
-    
-    filtered.forEach(uni => {
-        const card = document.createElement('div');
-        card.className = 'uni-card';
-        card.onclick = () => showUniDetail(uni);
-        
-        card.innerHTML = `
-            <div class="uni-header" style="background: linear-gradient(135deg, ${uni.color} 0%, ${uni.color}88 100%);">
-                <div class="uni-logo" style="color: ${uni.color};">${uni.logo}</div>
-                <span class="uni-rank">QS #${uni.rank}</span>
-            </div>
-            <div class="uni-body">
-                <h4 class="uni-name">${uni.name}</h4>
-                <p class="uni-country"><i class="fas fa-globe"></i> ${uni.country}</p>
-                <div class="uni-stats">
-                    <div class="uni-stat">
-                        <div class="uni-stat-value">${uni.acceptance}</div>
-                        <div class="uni-stat-label">录取率</div>
-                    </div>
-                    <div class="uni-stat">
-                        <div class="uni-stat-value">$${uni.fee/1000}K</div>
-                        <div class="uni-stat-label">年费用</div>
-                    </div>
-                </div>
-                <div class="uni-tags">
-                    <span class="uni-tag">${uni.major}</span>
-                </div>
-            </div>
-        `;
-        
-        grid.appendChild(card);
-    });
-}
-
-// ==================== 客户漏斗功能 ====================
-
-const stageCustomers = {
-    1: [
-        { name: '陈小明', source: '官网表单', status: 'hot' },
-        { name: '王小红', source: '百度推广', status: 'warm' },
-        { name: '李伟', source: '朋友推荐', status: 'cold' }
-    ],
-    2: [
-        { name: '张华', source: '微信咨询', status: 'hot' },
-        { name: '刘芳', source: '电话咨询', status: 'warm' }
-    ],
-    3: [
-        { name: '赵磊', source: '老客户介绍', status: 'hot' },
-        { name: '周婷', source: '展会留资', status: 'warm' }
-    ],
-    4: [
-        { name: '孙强', source: '方案评估', status: 'hot' }
-    ],
-    5: [
-        { name: '吴静', source: '价格谈判', status: 'warm' }
-    ],
-    6: [
-        { name: '郑明', source: '已签约', status: 'hot' }
-    ]
-};
-
-function showStageDetail(stage) {
-    const detail = document.getElementById('stageDetail');
-    const list = document.getElementById('customerList');
-    const hint = detail.querySelector('.hint');
-    
-    if (hint) hint.style.display = 'none';
-    
-    const customers = stageCustomers[stage] || [];
-    const stageNames = ['', '线索获取', '初次沟通', '需求确认', '方案呈现', '谈判签约', '成交'];
-    
-    let html = `<p style="margin-bottom: 16px; color: var(--text-secondary);"><strong>${stageNames[stage]}</strong> 阶段客户列表：</p>`;
-    
-    customers.forEach(c => {
-        const statusClass = c.status === 'hot' ? 'status-hot' : c.status === 'warm' ? 'status-warm' : 'status-cold';
-        const statusText = c.status === 'hot' ? '高意向' : c.status === 'warm' ? '中意向' : '低意向';
-        const initial = c.name.charAt(0);
-        
-        html += `
-            <div class="customer-item">
-                <div class="customer-info">
-                    <div class="customer-avatar">${initial}</div>
-                    <div>
-                        <div class="customer-name">${c.name}</div>
-                        <div class="customer-source">来源：${c.source}</div>
-                    </div>
-                </div>
-                <span class="customer-status ${statusClass}">${statusText}</span>
-            </div>
-        `;
-    });
-    
-    list.innerHTML = html;
-    
-    // 高亮当前阶段
-    document.querySelectorAll('.funnel-stage').forEach(s => s.classList.remove('active'));
-    document.querySelector(`[data-stage="${stage}"]`).classList.add('active');
-}
-
-// ==================== 话术库功能 ====================
-
-function renderScripts(category = 'all') {
-    const container = document.getElementById('scriptCards');
-    container.innerHTML = '';
-    
-    let filtered = scripts;
-    if (category !== 'all') {
-        filtered = scripts.filter(s => s.category === category);
-    }
-    
-    // 搜索过滤
-    const searchText = document.getElementById('scriptSearch')?.value.toLowerCase() || '';
-    if (searchText) {
-        filtered = filtered.filter(s => 
-            s.title.toLowerCase().includes(searchText) || 
-            s.content.toLowerCase().includes(searchText)
-        );
-    }
-    
-    const categoryNames = {
-        opening: '开场白',
-        discovery: '需求挖掘',
-        objection: '异议处理',
-        closing: '促单',
-        followup: '售后维护'
-    };
-    
-    filtered.forEach(script => {
-        const card = document.createElement('div');
-        card.className = 'script-card';
-        
-        let stars = '';
-        for (let i = 0; i < script.rating; i++) {
-            stars += '★';
-        }
-        
-        card.innerHTML = `
-            <div class="script-card-header">
-                <div>
-                    <div class="script-card-title">${script.title}</div>
-                    <div class="script-card-scene">${script.scene}</div>
-                </div>
-                <div class="script-rating">${stars}</div>
-            </div>
-            <div class="script-card-content">${script.content}</div>
-            <div class="script-card-footer">
-                <span class="script-type-tag">${categoryNames[script.category]}</span>
-                <button class="btn btn-outline" onclick="copyScriptContent(${script.id})" style="padding: 6px 12px; font-size: 0.8rem;">
-                    <i class="fas fa-copy"></i> 复制
-                </button>
-            </div>
-        `;
-        
-        container.appendChild(card);
-    });
-}
-
-function filterByTag(category) {
-    document.querySelectorAll('.script-tags .tag').forEach(t => t.classList.remove('active'));
-    document.querySelector(`[data-category="${category}"]`)?.classList.add('active');
-    renderScripts(category);
-}
-
-function filterScripts() {
-    const category = document.getElementById('scriptCategory').value;
-    renderScripts(category);
-}
-
-function copyScriptContent(id) {
-    const script = scripts.find(s => s.id === id);
-    if (script) {
-        navigator.clipboard.writeText(script.content).then(() => {
-            alert('话术已复制！');
-        });
-    }
-}
-
-// ==================== 销售工具箱功能 ====================
-
-function openTool(toolId) {
-    const modal = document.getElementById('toolModal');
-    const body = document.getElementById('toolModalBody');
-    
-    const toolContents = {
-        '5a': {
-            title: '5A模型工具包',
-            icon: 'fa-stream',
-            content: tools5A.content
-        },
-        'persona': {
-            title: '客户画像模板',
-            icon: 'fa-user',
-            content: `
-【客户画像采集表】
+    'persona': {
+        title: '客户画像模板',
+        icon: 'fa-user',
+        content: `【客户画像采集表】
 
 一、基本信息
 □ 姓名：___________
@@ -742,58 +226,54 @@ function openTool(toolId) {
 □ 学历背景：___________
 
 二、家庭情况
-□ 家庭年收入：□ 30万以下 □ 30-60万 □ 60-100万 □ 100万以上
+□ 家庭年收入：□30万以下 □30-60万 □60-100万 □100万以上
 □ 父母职业：___________  
-□ 家庭结构：□ 独生子女 □ 有兄弟姐妹
+□ 家庭结构：□独生子女 □有兄弟姐妹
 
 三、留学意向
-□ 目标国家：□ 美国 □ 英国 □ 澳洲 □ 加拿大 □ 其他
-□ 目标层次：□ 高中 □ 本科 □ 硕士 □ 博士
-□ 专业方向：□ 商科 □ 理工 □ 文科 □ 艺术 □ 未定
+□ 目标国家：□美国 □英国 □澳洲 □加拿大 □其他
+□ 目标层次：□高中 □本科 □硕士 □博士
+□ 专业方向：□商科 □理工 □文科 □艺术 □未定
 □ 预算范围：___________
 
 四、决策分析
-□ 主要决策人：□ 父亲 □ 母亲 □ 学生本人 □ 共同决策
-□ 决策周期：□ 1个月内 □ 3个月内 □ 半年内 □ 待定
-□ 关注重点：□ 排名 □ 专业 □ 费用 □ 安全 □ 就业
+□ 主要决策人：□父亲 □母亲 □学生本人 □共同决策
+□ 决策周期：□1个月内 □3个月内 □半年内 □待定
+□ 关注重点：□排名 □专业 □费用 □安全 □就业
 
 五、关键洞察
-□ 客户性格类型：□ 保守型 □ 进取型 □ 随性型
+□ 客户性格类型：□保守型 □进取型 □随性型
 □ 核心需求：___________
 □ 潜在顾虑：___________
-□ 最佳沟通时间：___________
-            `
-        },
-        'compare': {
-            title: '竞品对比分析表',
-            icon: 'fa-balance-scale',
-            content: `
-【竞品对比表模板】
+□ 最佳沟通时间：___________`
+    },
+    'compare': {
+        title: '竞品对比分析表',
+        icon: 'fa-balance-scale',
+        content: `【竞品对比表模板】
 
-| 对比维度 | 我们 | 竞品A | 竞品B |
-|---------|------|-------|-------|
-| 品牌知名度 | | | |
-| 价格 | | | |
-| 服务专业度 | | | |
-| 申请成功率 | | | |
-| 顾问经验 | | | |
-| 院校资源 | | | |
-| 文书质量 | | | |
-| 后续服务 | | | |
-| 退款政策 | | | |
-| 用户口碑 | | | |
+| 对比维度   | 我们   | 竞品A  | 竞品B  |
+|-----------|-------|-------|-------|
+| 品牌知名度 |       |       |       |
+| 价格       |       |       |       |
+| 服务专业度 |       |       |       |
+| 申请成功率 |       |       |       |
+| 顾问经验   |       |       |       |
+| 院校资源   |       |       |       |
+| 文书质量   |       |       |       |
+| 后续服务   |       |       |       |
+| 退款政策   |       |       |       |
+| 用户口碑   |       |       |       |
 
 【使用说明】
 1. 定期更新竞品信息
 2. 重点突出我们的差异化优势
-3. 针对竞品的弱点准备应对话术
-            `
-        },
-        'quote': {
-            title: '方案报价模板',
-            icon: 'fa-file-invoice-dollar',
-            content: `
-【留学服务方案报价单】
+3. 针对竞品的弱点准备应对话术`
+    },
+    'quote': {
+        title: '方案报价模板',
+        icon: 'fa-file-invoice-dollar',
+        content: `【留学服务方案报价单】
 
 尊敬的[客户姓名]：
 
@@ -838,49 +318,47 @@ function openTool(toolId) {
 • 若申请失败，全额退款
 • 包含无限次文书修改
 
-有效期至：___________
-            `
-        },
-        'followup': {
-            title: '客户跟进计划表',
-            icon: 'fa-calendar-check',
-            content: `
-【客户跟进计划表】
+有效期至：___________`
+    },
+    'followup': {
+        title: '跟进计划表',
+        icon: 'fa-calendar-check',
+        content: `【客户跟进计划表】
 
-客户姓名：___________
-签约日期：___________
+客户姓名：___________  签约日期：___________
 目标院校：___________
 
-| 日期 | 跟进内容 | 状态 | 下一步行动 |
-|------|---------|------|----------|
-| | | | |
-| | | | |
-| | | | |
-| | | | |
+跟进节奏：
 
-【跟进频次建议】
-• 签约后第1周：建立信任，了解客户详细背景
-• 申请准备期：每周跟进1-2次材料准备进度
-• 提交申请后：每2周跟进申请状态
-• 等待Offer期：每月跟进1次，保持联系
-• Offer收到后：及时跟进确认和后续安排
-• 签证完成后：转入售后维护阶段
+【7天跟进计划】
+□ Day 1: 发送服务协议，确认签约
+□ Day 2-3: 收集客户基础材料清单
+□ Day 4-5: 完成客户背景评估
+□ Day 6-7: 初步选校方案讨论
+
+【14天跟进计划】
+□ Day 8-10: 确定选校方案
+□ Day 11-12: 文书素材收集
+□ Day 13-14: 开始撰写PS初稿
+
+【30天跟进计划】
+□ Week 3: 文书完成并修改
+□ Week 4: 提交申请，等待结果
 
 【关键节点提醒】
 □ 雅思/托福考试日期
 □ 材料提交截止日
 □ Offer回复截止日
 □ 押金缴纳截止日
-□ 签证申请截止日
-            `
-        },
-        'report': {
-            title: '周报模板',
-            icon: 'fa-chart-pie',
-            content: `
-【销售周报】
+□ 签证申请截止日`
+    },
+    'report': {
+        title: '周报模板',
+        icon: 'fa-chart-pie',
+        content: `【销售周报】
 
-姓名：___________    部门：___________    周期：____年__月__日-__日
+姓名：___________    部门：___________    
+周期：____年__月__日-__日
 
 一、本周数据
 • 新增线索：__个
@@ -908,16 +386,371 @@ function openTool(toolId) {
 • 目标签约：__个
 • 重点学习：___________
 
-签字：___________  主管签字：___________
-            `
-        }
+签字：___________  主管签字：___________`
+    }
+};
+
+// 话术分类映射
+const categoryNames = {
+    opening: "开场白",
+    discovery: "需求挖掘",
+    objection: "异议处理",
+    closing: "促单",
+    followup: "售后维护"
+};
+
+// ==================== 工具函数 ====================
+
+// 更新时间
+function updateDateTime() {
+    const now = new Date();
+    const options = { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
     };
+    const el = document.getElementById('dateTime');
+    if (el) el.textContent = now.toLocaleDateString('zh-CN', options);
+}
+
+// 导航切换
+function switchPage(pageName) {
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+    });
+    
+    document.querySelector(`[data-page="${pageName}"]`).classList.add('active');
+    document.getElementById(`page-${pageName}`).classList.add('active');
+    
+    // 移动端收起侧边栏
+    if (window.innerWidth <= 768) {
+        document.querySelector('.sidebar').style.display = 'none';
+    }
+}
+
+// ==================== 竞品情报站功能 ====================
+
+function renderCompetitors(filtered = null) {
+    const data = filtered || competitors;
+    const tbody = document.getElementById('competitorBody');
+    tbody.innerHTML = '';
+    
+    data.forEach(comp => {
+        const tr = document.createElement('tr');
+        let productTag = '';
+        if (comp.product === '高端') productTag = '<span class="tag tag-primary">高端</span>';
+        else if (comp.product === '中端') productTag = '<span class="tag tag-info">中端</span>';
+        else productTag = '<span class="tag tag-secondary">基础</span>';
+        
+        tr.innerHTML = `
+            <td><strong>${comp.name}</strong></td>
+            <td>${comp.country}</td>
+            <td>${productTag}</td>
+            <td>${comp.advantage}</td>
+            <td>${comp.disadvantage}</td>
+            <td><span class="score">${comp.score}</span></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function filterCompetitors() {
+    const country = document.getElementById('filterCountry').value;
+    const product = document.getElementById('filterProduct').value;
+    
+    let filtered = competitors;
+    
+    if (country !== 'all') {
+        filtered = filtered.filter(c => c.country === country);
+    }
+    if (product !== 'all') {
+        filtered = filtered.filter(c => c.product === product);
+    }
+    
+    renderCompetitors(filtered);
+}
+
+function renderTimeline() {
+    const container = document.getElementById('competitorTimeline');
+    container.innerHTML = '';
+    
+    competitorTimeline.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'timeline-item';
+        div.innerHTML = `
+            <div class="timeline-date">${item.date}</div>
+            <div class="timeline-content">
+                <span class="timeline-tag">${item.tag}</span>
+                <p>${item.content}</p>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+// 分享链接生成
+function generateShareLink(type) {
+    const shareUrl = window.location.href.split('#')[0] + '#share-' + type;
+    
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            alert('分享链接已复制到剪贴板！\n\n链接：' + shareUrl);
+        });
+    } else {
+        prompt('请复制以下分享链接：', shareUrl);
+    }
+}
+
+// 提交反馈
+function submitFeedback(e) {
+    e.preventDefault();
+    
+    const name = document.getElementById('fbName').value;
+    const country = document.getElementById('fbCountry').value;
+    const product = document.getElementById('fbProduct').value;
+    const advantage = document.getElementById('fbAdvantage').value;
+    const disadvantage = document.getElementById('fbDisadvantage').value;
+    const source = document.getElementById('fbSource').value;
+    const submitter = document.getElementById('fbSubmitter').value;
+    
+    // 显示处理动画
+    document.getElementById('competitorFeedbackForm').style.display = 'none';
+    document.getElementById('feedbackResult').style.display = 'block';
+    document.getElementById('processingAnimation').style.display = 'block';
+    document.getElementById('resultContent').style.display = 'none';
+    
+    // 模拟AI整理
+    setTimeout(() => {
+        document.getElementById('processingAnimation').style.display = 'none';
+        document.getElementById('resultContent').style.display = 'block';
+        
+        const 整理结果 = `【竞品信息整理结果】
+
+📋 基本信息
+• 竞品名称：${name}
+• 国家/地区：${country}
+• 核心产品：${product}
+
+✅ 优势分析
+${advantage}
+
+⚠️ 劣势/机会点
+${disadvantage}
+
+📝 信息来源：${source || '未填写'}
+👤 提交人：${submitter}
+
+---
+系统已将此信息标记为"待审核"状态，管理员审核通过后将更新至竞品数据库。`;
+        
+        document.getElementById('整理结果Box').textContent = 整理结果;
+    }, 2000);
+}
+
+// ==================== AI话术工坊功能 ====================
+
+let currentFramework = 'RTF';
+
+function showStudioTab(tab) {
+    document.querySelectorAll('.studio-content').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('#page-ai-studio .tab-btn').forEach(b => b.classList.remove('active'));
+    
+    document.getElementById(`${tab}-tab`).classList.add('active');
+    document.querySelector(`#page-ai-studio [onclick="showStudioTab('${tab}')"]`).classList.add('active');
+}
+
+function selectFramework(framework) {
+    currentFramework = framework;
+    
+    document.querySelectorAll('.framework-option').forEach(opt => {
+        opt.classList.remove('active');
+    });
+    document.querySelector(`[data-framework="${framework}"]`).classList.add('active');
+    
+    // 显示/隐藏对应字段
+    document.querySelectorAll('.rtf-field, .race-field, .rise-field').forEach(el => {
+        el.style.display = 'none';
+    });
+    
+    if (framework === 'RTF') {
+        document.querySelector('.rtf-field').style.display = 'block';
+    } else if (framework === 'RACE') {
+        document.querySelector('.race-field').style.display = 'block';
+    } else if (framework === 'RISE') {
+        document.querySelectorAll('.rise-field').forEach(el => el.style.display = 'block');
+    }
+}
+
+function generateScript() {
+    const industry = document.getElementById('clientIndustry').value;
+    const stage = document.getElementById('clientStage').value;
+    const painPoint = document.getElementById('painPoint').value;
+    
+    let framework = '';
+    if (currentFramework === 'RTF') {
+        const format = document.getElementById('outputFormat').value;
+        framework = `【使用RTF框架生成】
+
+【角色】留学销售顾问，专为${industry}行业客户提供专业留学规划
+【任务】为${stage}阶段客户定制留学话术，解决其痛点：${painPoint || '无'}
+【格式】结构化输出，包含开场白、需求挖掘、痛点回应、促单话术`;
+    } else if (currentFramework === 'RACE') {
+        const context = document.getElementById('contextInfo').value;
+        framework = `【使用RACE框架生成】
+
+【角色】资深留学规划顾问
+【行动】提供个性化留学方案，解决客户需求
+【背景】客户来自${industry}行业，处于${stage}阶段，${context || '需要全面的留学规划'}
+【期望】帮助客户明确目标，建立信任，推动决策`;
+    } else if (currentFramework === 'RISE') {
+        const steps = document.getElementById('stepsReq').value;
+        const goal = document.getElementById('endGoal').value;
+        framework = `【使用RISE框架生成】
+
+【角色】专业留学销售顾问
+【指令】为${industry}行业${stage}客户定制话术
+【步骤】${steps || '开场建立信任→需求深度挖掘→方案呈现→异议处理→促成签约'}
+【最终目标】${goal || '帮助客户做出留学决策并签约'}`;
+    }
+    
+    const scriptContent = `
+【开场白】
+"您好，我是XX留学的顾问老师。看到您想了解${stage}阶段的留学规划，很高兴能帮到您。我们团队专门服务${industry}行业的客户，对这类背景的申请有很多成功经验。"
+
+【需求挖掘】
+"想先了解一下，您目前是为自己还是为孩子咨询呢？目标国家大概在什么范围？对于专业方向有没有初步的想法？"
+
+【痛点回应】
+"您提到${painPoint || '对留学申请流程不太了解'`，这也是很多家长都会遇到的顾虑。我们会用专业的经验帮您把这些不确定性降到最低，确保每一步都有清晰的规划。"
+
+【促单话术】
+"我们今天先把您的基本情况做一个免费评估，我会给您一份个性化的方案建议。这个优惠名额本周只剩2个了，您看方便现在确认下吗？"
+`;
+    
+    document.getElementById('generatedContent').innerHTML = `
+        <div class="framework-used">
+            <span class="framework-label">已使用框架：<strong>${currentFramework}</strong></span>
+        </div>
+        <div class="script-block">
+            <div class="script-block-title"><i class="fas fa-bullhorn"></i> 开场白</div>
+            <div class="script-block-content">您好，我是XX留学的顾问老师。看到您想了解${stage}阶段的留学规划，很高兴能帮到您。我们团队专门服务${industry}行业的客户，对这类背景的申请有很多成功经验。</div>
+        </div>
+        <div class="script-block">
+            <div class="script-block-title"><i class="fas fa-search"></i> 需求挖掘</div>
+            <div class="script-block-content">想先了解一下，您目前是为自己还是为孩子咨询呢？目标国家大概在什么范围？对于专业方向有没有初步的想法？</div>
+        </div>
+        <div class="script-block">
+            <div class="script-block-title"><i class="fas fa-hand-holding-medical"></i> 痛点回应</div>
+            <div class="script-block-content">您提到${painPoint || '对留学申请流程不太了解'}，这也是很多家长都会遇到的顾虑。我们会用专业的经验帮您把这些不确定性降到最低，确保每一步都有清晰的规划。</div>
+        </div>
+        <div class="script-block">
+            <div class="script-block-title"><i class="fas fa-money-bill-wave"></i> 促单话术</div>
+            <div class="script-block-content">我们今天先把您的基本情况做一个免费评估，我会给您一份个性化的方案建议。这个优惠名额本周只剩2个了，您看方便现在确认下吗？</div>
+        </div>
+    `;
+    
+    document.getElementById('scriptActions').style.display = 'flex';
+}
+
+function copyGeneratedScript() {
+    const content = document.getElementById('generatedContent').textContent;
+    navigator.clipboard.writeText(content).then(() => {
+        alert('话术已复制！');
+    });
+}
+
+function favoriteScript() {
+    alert('已收藏到个人话术库！');
+}
+
+// ==================== 话术库功能 ====================
+
+function renderScripts(category = 'all') {
+    const container = document.getElementById('scriptCards');
+    container.innerHTML = '';
+    
+    let filtered = scripts;
+    if (category !== 'all') {
+        filtered = scripts.filter(s => s.category === category);
+    }
+    
+    const searchTerm = document.getElementById('scriptSearch')?.value.toLowerCase() || '';
+    if (searchTerm) {
+        filtered = filtered.filter(s => 
+            s.title.toLowerCase().includes(searchTerm) ||
+            s.content.toLowerCase().includes(searchTerm) ||
+            s.scene.toLowerCase().includes(searchTerm)
+        );
+    }
+    
+    filtered.forEach(script => {
+        const card = document.createElement('div');
+        card.className = 'script-card';
+        card.id = `script-${script.id}`;
+        
+        let stars = '';
+        for (let i = 0; i < script.rating; i++) stars += '★';
+        
+        card.innerHTML = `
+            <div class="script-card-header">
+                <div>
+                    <div class="script-card-title">${script.title}</div>
+                    <div class="script-card-scene">${script.scene}</div>
+                </div>
+                <div class="script-rating">${stars}</div>
+            </div>
+            <div class="script-card-content">${script.content}</div>
+            <div class="script-card-footer">
+                <span class="script-type-tag">${categoryNames[script.category]}</span>
+                <button class="expand-btn" onclick="toggleScript(${script.id})">
+                    <span class="expand-text">展开</span> <i class="fas fa-chevron-down"></i>
+                </button>
+            </div>
+        `;
+        
+        container.appendChild(card);
+    });
+}
+
+function toggleScript(id) {
+    const card = document.getElementById(`script-${id}`);
+    const btn = card.querySelector('.expand-btn');
+    const text = btn.querySelector('.expand-text');
+    const icon = btn.querySelector('i');
+    
+    if (card.classList.contains('expanded')) {
+        card.classList.remove('expanded');
+        text.textContent = '展开';
+        icon.className = 'fas fa-chevron-down';
+    } else {
+        card.classList.add('expanded');
+        text.textContent = '收起';
+        icon.className = 'fas fa-chevron-up';
+    }
+}
+
+function filterScripts() {
+    const activeTag = document.querySelector('.script-tags .tag.active');
+    const category = activeTag ? activeTag.dataset.category : 'all';
+    renderScripts(category);
+}
+
+// ==================== 销售工具箱功能 ====================
+
+function openTool(toolId) {
+    const modal = document.getElementById('toolModal');
+    const body = document.getElementById('toolModalBody');
     
     const tool = toolContents[toolId];
     
     body.innerHTML = `
         <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
-            <div style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+            <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #3b5998, #4a90d9); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
                 <i class="fas ${tool.icon}" style="font-size: 1.5rem; color: white;"></i>
             </div>
             <h2>${tool.title}</h2>
@@ -1018,57 +851,51 @@ function showEnneagramDetail(typeNum) {
 
 function showEnneaTab(tab) {
     document.querySelectorAll('.enneagram-content').forEach(c => c.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#page-enneagram .tab-btn').forEach(b => b.classList.remove('active'));
     
     document.getElementById(`ennea-${tab}`).classList.add('active');
-    document.querySelector(`[onclick="showEnneaTab('${tab}')"]`).classList.add('active');
+    document.querySelector(`#page-enneagram [onclick="showEnneaTab('${tab}')"]`).classList.add('active');
+    
+    if (tab === 'test') {
+        initTest();
+    } else if (tab === 'team') {
+        renderTeamButtons();
+    }
 }
 
-// 九型测试
-const testQuestions = [
-    { q: "你在工作中的典型状态是？", a: ["积极主动，追求成果", "乐于助人，关注他人"], b: [3, 2] },
-    { q: "面对压力时，你通常会？", a: ["制定计划，按步执行", "寻求他人支持和建议"], b: [1, 2] },
-    { q: "你最看重他人的什么特质？", a: ["能力和成就", "真诚和善意"], b: [3, 4] },
-    { q: "做决定时，你更依赖？", a: ["逻辑分析", "直觉感受"], b: [5, 4] },
-    { q: "你对未来的态度是？", a: ["规划周全，风险可控", "充满期待，拥抱变化"], b: [6, 7] },
-    { q: "团队合作中，你扮演的角色是？", a: ["领导者，掌控全局", "协调者，促进和谐"], b: [8, 9] },
-    { q: "面对批评时，你会？", a: ["理性分析，有则改之", "情感受伤，需要安慰"], b: [1, 4] },
-    { q: "你的生活方式更接近？", a: ["规律有序，高效执行", "灵活自由，随性而为"], b: [1, 7] },
-    { q: "最终你在乎的是？", a: ["正确的事和成功", "关系的和谐与被爱"], b: [1, 2] }
-];
+// ==================== 九型测试功能 ====================
 
-let currentQuestion = 0;
-let scores = {};
+let testCurrentQuestion = 0;
+let testScores = {};
 
 function initTest() {
-    currentQuestion = 0;
-    scores = {};
+    testCurrentQuestion = 0;
+    testScores = {};
     document.getElementById('testResult').style.display = 'none';
     document.getElementById('testContainer').style.display = 'block';
-    renderQuestion();
+    renderTestQuestion();
 }
 
-function renderQuestion() {
-    const q = testQuestions[currentQuestion];
-    document.getElementById('currentQ').textContent = currentQuestion + 1;
-    document.getElementById('testProgress').style.width = ((currentQuestion + 1) / testQuestions.length * 100) + '%';
+function renderTestQuestion() {
+    const q = testQuestions[testCurrentQuestion];
+    document.getElementById('currentQ').textContent = testCurrentQuestion + 1;
+    document.getElementById('testProgress').style.width = ((testCurrentQuestion + 1) / testQuestions.length * 100) + '%';
     document.getElementById('testQuestion').textContent = q.q;
     
-    document.getElementById('testOptions').innerHTML = `
-        <button class="option-btn" onclick="answerQuestion(0)">${q.a}</button>
-        <button class="option-btn" onclick="answerQuestion(1)">${q.b[0] === q.b[1] ? q.a.split('，')[1] : '更倾向于后者'}</button>
-    `;
+    document.getElementById('testOptions').innerHTML = q.options.map((opt, idx) => `
+        <button class="option-btn" onclick="answerTest(${idx})">${opt}</button>
+    `).join('');
 }
 
-function answerQuestion(option) {
-    const q = testQuestions[currentQuestion];
-    const type = q.b[option];
-    scores[type] = (scores[type] || 0) + 1;
+function answerTest(option) {
+    const q = testQuestions[testCurrentQuestion];
+    const type = q.scores[option];
+    testScores[type] = (testScores[type] || 0) + 1;
     
-    currentQuestion++;
+    testCurrentQuestion++;
     
-    if (currentQuestion < testQuestions.length) {
-        renderQuestion();
+    if (testCurrentQuestion < testQuestions.length) {
+        renderTestQuestion();
     } else {
         showTestResult();
     }
@@ -1082,32 +909,105 @@ function showTestResult() {
     // 找出最高分类型
     let maxScore = 0;
     let resultType = 1;
-    for (let type in scores) {
-        if (scores[type] > maxScore) {
-            maxScore = scores[type];
+    for (let type in testScores) {
+        if (testScores[type] > maxScore) {
+            maxScore = testScores[type];
             resultType = parseInt(type);
         }
+    }
+    
+    // 确定翼型（相邻类型中得分较高的）
+    const wings = [resultType - 1 || 9, resultType + 1 > 9 ? 1 : resultType + 1];
+    let wingType = wings[0];
+    if (testScores[wings[1]] > (testScores[wingType] || 0)) {
+        wingType = wings[1];
     }
     
     const type = enneagramTypes[resultType];
     
     resultDiv.innerHTML = `
         <div class="result-type">${resultType}号 - ${type.name}</div>
-        <p style="font-size: 1.2rem; margin-bottom: 16px;">${type.subtitle}</p>
-        <div style="text-align: left; max-width: 500px; margin: 0 auto; background: var(--bg-primary); padding: 24px; border-radius: 12px;">
-            <p style="margin-bottom: 12px;"><strong>🎯 核心特征：</strong>${type.focus}</p>
-            <p style="margin-bottom: 12px;"><strong>⚡ 动力来源：</strong>${type.motivation}</p>
-            <p style="margin-bottom: 12px;"><strong>💪 销售优势：</strong>${type.strengths}</p>
+        <p style="font-size: 1.2rem; margin-bottom: 16px; color: var(--text-secondary);">${type.subtitle}</p>
+        ${wingType !== resultType ? `<p style="margin-bottom: 20px;"><span class="tag tag-info">翼型：${wingType}号</span></p>` : ''}
+        
+        <div class="result-detail">
+            <p><strong>🎯 核心特征：</strong>${type.focus}</p>
+            <p><strong>⚡ 动力来源：</strong>${type.motivation}</p>
+            <p><strong>💪 销售优势：</strong>${type.strengths}</p>
             <p><strong>⚠️ 注意事项：</strong>${type.weakness}</p>
         </div>
-        <button class="btn btn-primary" style="margin-top: 24px;" onclick="initTest()">
-            <i class="fas fa-redo"></i> 重新测试
-        </button>
+        
+        <div style="margin-top: 24px;">
+            <button class="btn btn-secondary" onclick="generateTestShareLink(${resultType}, ${wingType})" style="margin-right: 12px;">
+                <i class="fas fa-share-alt"></i> 生成测试分享链接
+            </button>
+            <button class="btn btn-outline" onclick="initTest()">
+                <i class="fas fa-redo"></i> 重新测试
+            </button>
+        </div>
+        
+        <p style="margin-top: 20px; font-size: 0.85rem; color: var(--text-secondary);">
+            <i class="fas fa-info-circle"></i> 提示：测试结果仅供性格参考，实际销售中需灵活运用
+        </p>
     `;
 }
 
-// 团队搭配
+function generateTestShareLink(mainType, wingType) {
+    const shareUrl = window.location.href.split('#')[0] + '#share-enneagram-test';
+    
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            alert(`测试分享链接已复制！\n\n链接：${shareUrl}\n\n他人打开此链接可直接进入九型测试页面。`);
+        });
+    } else {
+        prompt('请复制以下分享链接：', shareUrl);
+    }
+}
+
+// ==================== 团队搭配功能 ====================
+
 let selectedTeam = [];
+
+function renderTeamButtons() {
+    const container = document.getElementById('teamSelectGrid');
+    container.innerHTML = '';
+    
+    for (let i = 1; i <= 9; i++) {
+        const btn = document.createElement('button');
+        btn.className = 'team-btn';
+        btn.dataset.type = i;
+        btn.textContent = i + '号';
+        btn.onclick = () => toggleTeamMember(i);
+        container.appendChild(btn);
+    }
+}
+
+function toggleTeamMember(type) {
+    const btn = document.querySelector(`[data-type="${type}"]`);
+    btn.classList.toggle('selected');
+    
+    if (btn.classList.contains('selected')) {
+        if (!selectedTeam.includes(type)) {
+            selectedTeam.push(type);
+        }
+    } else {
+        selectedTeam = selectedTeam.filter(t => t !== type);
+    }
+    
+    updateSelectedMembers();
+}
+
+function updateSelectedMembers() {
+    const container = document.getElementById('selectedMembers');
+    
+    if (selectedTeam.length === 0) {
+        container.innerHTML = '<span class="empty-tip">请在下方选择成员</span>';
+    } else {
+        container.innerHTML = selectedTeam.map(t => 
+            `<span class="member-chip">${t}号 - ${enneagramTypes[t].name}</span>`
+        ).join('');
+    }
+}
 
 function generateTeamAdvice() {
     if (selectedTeam.length < 2) {
@@ -1133,152 +1033,18 @@ function generateTeamAdvice() {
     let adviceText = combinations[key] || '这个组合能够互补互助：' + names + '的组合可以在销售过程中发挥各自优势，形成完整的销售闭环。';
     
     advice.innerHTML = `
-        <h4 style="margin-bottom: 12px;"><i class="fas fa-lightbulb"></i> 搭配建议</h4>
+        <h4><i class="fas fa-lightbulb"></i> 搭配建议</h4>
         <p><strong>组合成员：</strong>${names}</p>
         <p style="margin-top: 12px;"><strong>分析：</strong>${adviceText}</p>
-        <div style="margin-top: 16px; padding: 16px; background: var(--bg-primary); border-radius: 8px;">
+        <div style="margin-top: 16px; padding: 16px; background: var(--bg-white); border-radius: 8px;">
             <strong>团队分工建议：</strong>
             <ul style="margin-top: 8px; padding-left: 20px;">
                 <li>由${enneagramTypes[selectedTeam[0]].name}负责客户开发和初步跟进</li>
                 <li>由${enneagramTypes[selectedTeam[1]].name}负责方案呈现和促成签约</li>
-                <li>如有需要，可邀请${Object.keys(scores)[0]}型顾问提供专业支持</li>
+                ${selectedTeam.length > 2 ? `<li>由${enneagramTypes[selectedTeam[2]].name}负责售后维护和客户关系</li>` : ''}
             </ul>
         </div>
     `;
-}
-
-// ==================== 实战案例功能 ====================
-
-function renderCases() {
-    const grid = document.getElementById('caseGrid');
-    grid.innerHTML = '';
-    
-    cases.forEach(c => {
-        const card = document.createElement('div');
-        card.className = 'case-card';
-        card.onclick = () => showCaseDetail(c);
-        
-        let stars = '';
-        for (let i = 0; i < c.level; i++) {
-            stars += '★';
-        }
-        
-        card.innerHTML = `
-            <div class="case-header">
-                <div class="case-type">${c.type === 'success' ? '✓ 成功案例' : '✗ 失败复盘'}</div>
-                <div class="case-title">${c.title}</div>
-            </div>
-            <div class="case-body">
-                <div class="case-tags">
-                    ${c.tags.map(t => `<span class="case-tag">${t}</span>`).join('')}
-                </div>
-                <div class="case-meta">
-                    <span class="case-amount">${c.amount > 0 ? '¥' + c.amount.toLocaleString() : '未签约'}</span>
-                    <span class="case-stars">${stars}</span>
-                </div>
-            </div>
-        `;
-        
-        grid.appendChild(card);
-    });
-}
-
-function showCaseDetail(c) {
-    const modal = document.getElementById('caseModal');
-    const body = document.getElementById('caseModalBody');
-    
-    body.innerHTML = `
-        <div class="case-header" style="padding: 24px;">
-            <div class="case-type">${c.type === 'success' ? '✓ 成功案例' : '✗ 失败复盘'} · 难度${c.levelText}</div>
-            <div class="case-title" style="font-size: 1.3rem;">${c.title}</div>
-        </div>
-        <div style="padding: 24px;">
-            <div class="detail-section">
-                <h4><i class="fas fa-user"></i> 客户背景</h4>
-                <p>${c.background}</p>
-            </div>
-            <div class="detail-section">
-                <h4><i class="fas fa-exclamation-circle"></i> 核心挑战</h4>
-                <p>${c.challenge}</p>
-            </div>
-            <div class="detail-section">
-                <h4><i class="fas fa-chess"></i> 应对策略</h4>
-                <p>${c.strategy}</p>
-            </div>
-            <div class="detail-section">
-                <h4><i class="fas fa-trophy"></i> 最终结果</h4>
-                <p>${c.result}</p>
-            </div>
-            <div class="quote-block">
-                <strong>💡 关键话术：</strong><br>
-                ${c.keyScript}
-            </div>
-            ${c.amount > 0 ? `<div style="text-align: center; margin-top: 24px;"><span style="font-size: 1.5rem; font-weight: 700; color: var(--success);">¥${c.amount.toLocaleString()}</span><br><small>签约金额</small></div>` : ''}
-        </div>
-    `;
-    
-    modal.classList.add('active');
-}
-
-function filterCases() {
-    const type = document.getElementById('caseType').value;
-    const level = document.getElementById('caseLevel').value;
-    const search = document.getElementById('caseSearch').value.toLowerCase();
-    
-    let filtered = cases;
-    
-    if (type !== 'all') {
-        filtered = filtered.filter(c => c.type === type);
-    }
-    
-    if (level !== 'all') {
-        const levelMap = { easy: 1, medium: 2, hard: 3 };
-        filtered = filtered.filter(c => c.level === levelMap[level]);
-    }
-    
-    if (search) {
-        filtered = filtered.filter(c => 
-            c.title.toLowerCase().includes(search) || 
-            c.tags.some(t => t.toLowerCase().includes(search))
-        );
-    }
-    
-    const grid = document.getElementById('caseGrid');
-    grid.innerHTML = '';
-    
-    if (filtered.length === 0) {
-        grid.innerHTML = '<p style="text-align: center; grid-column: 1/-1; color: var(--text-secondary);">暂无符合条件的案例</p>';
-        return;
-    }
-    
-    filtered.forEach(c => {
-        const card = document.createElement('div');
-        card.className = 'case-card';
-        card.onclick = () => showCaseDetail(c);
-        
-        let stars = '';
-        for (let i = 0; i < c.level; i++) {
-            stars += '★';
-        }
-        
-        card.innerHTML = `
-            <div class="case-header">
-                <div class="case-type">${c.type === 'success' ? '✓ 成功案例' : '✗ 失败复盘'}</div>
-                <div class="case-title">${c.title}</div>
-            </div>
-            <div class="case-body">
-                <div class="case-tags">
-                    ${c.tags.map(t => `<span class="case-tag">${t}</span>`).join('')}
-                </div>
-                <div class="case-meta">
-                    <span class="case-amount">${c.amount > 0 ? '¥' + c.amount.toLocaleString() : '未签约'}</span>
-                    <span class="case-stars">${stars}</span>
-                </div>
-            </div>
-        `;
-        
-        grid.appendChild(card);
-    });
 }
 
 // ==================== 弹窗功能 ====================
@@ -1287,7 +1053,6 @@ function closeModal(modalId) {
     document.getElementById(modalId).classList.remove('active');
 }
 
-// 点击弹窗外部关闭
 document.querySelectorAll('.modal').forEach(modal => {
     modal.addEventListener('click', function(e) {
         if (e.target === this) {
@@ -1295,6 +1060,33 @@ document.querySelectorAll('.modal').forEach(modal => {
         }
     });
 });
+
+// ==================== 分享模式 ====================
+
+function checkShareMode() {
+    const hash = window.location.hash;
+    
+    if (hash === '#share-competitors') {
+        // 竞品分享模式
+        document.getElementById('shareHeader').style.display = 'flex';
+        document.getElementById('sidebar').style.display = 'none';
+        document.getElementById('mainContent').classList.add('share-mode');
+        document.getElementById('competitorFilters').style.display = 'none';
+        document.getElementById('competitorFeedbackForm').style.display = 'block';
+        switchPage('competitors');
+    } else if (hash === '#share-enneagram-test') {
+        // 九型测试分享模式
+        document.getElementById('shareHeader').style.display = 'flex';
+        document.getElementById('sidebar').style.display = 'none';
+        document.getElementById('mainContent').classList.add('share-mode');
+        switchPage('enneagram');
+        showEnneaTab('test');
+    }
+}
+
+function exitShareMode() {
+    window.location.href = window.location.href.split('#')[0];
+}
 
 // ==================== 初始化 ====================
 
@@ -1311,75 +1103,39 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // 快速入口点击
-    document.querySelectorAll('.quick-card').forEach(card => {
-        card.addEventListener('click', function() {
-            const page = this.dataset.page;
-            switchPage(page);
+    // 话术标签点击
+    document.querySelectorAll('.script-tags .tag').forEach(tag => {
+        tag.addEventListener('click', function() {
+            document.querySelectorAll('.script-tags .tag').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            filterScripts();
         });
     });
     
-    // 初始化各模块
-    renderUniversities();
+    // 初始化数据
+    renderCompetitors();
+    renderTimeline();
     renderScripts();
     renderEnneagramCards();
-    renderCases();
     
-    // 九型测试初始化
-    initTest();
+    // 检查分享模式
+    checkShareMode();
     
-    // 团队按钮点击
-    document.querySelectorAll('.team-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const type = this.dataset.type;
-            this.classList.toggle('selected');
-            
-            if (this.classList.contains('selected')) {
-                if (!selectedTeam.includes(type)) {
-                    selectedTeam.push(type);
-                }
-            } else {
-                selectedTeam = selectedTeam.filter(t => t !== type);
-            }
-            
-            // 更新已选显示
-            const container = document.getElementById('selectedMembers');
-            container.innerHTML = selectedTeam.map(t => 
-                `<span class="member-chip">${t}号 - ${enneagramTypes[t].name}</span>`
-            ).join('');
-        });
-    });
+    // 监听hash变化
+    window.addEventListener('hashchange', checkShareMode);
     
-    // 移动端菜单按钮
-    const menuToggle = document.createElement('button');
-    menuToggle.className = 'menu-toggle';
-    menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
-    menuToggle.style.cssText = 'position: fixed; top: 70px; left: 10px; z-index: 1001; background: white; border: none; padding: 10px; border-radius: 8px; display: none; cursor: pointer;';
-    
+    // 移动端菜单
     if (window.innerWidth <= 768) {
-        menuToggle.style.display = 'block';
-        document.querySelector('.sidebar').style.display = 'none';
+        const menuToggle = document.createElement('button');
+        menuToggle.className = 'menu-toggle';
+        menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+        menuToggle.style.cssText = 'position: fixed; top: 70px; left: 10px; z-index: 1001; background: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; box-shadow: var(--shadow);';
+        menuToggle.addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.style.display = sidebar.style.display === 'none' ? 'block' : 'none';
+        });
+        document.body.appendChild(menuToggle);
     }
-    
-    menuToggle.addEventListener('click', function() {
-        const sidebar = document.querySelector('.sidebar');
-        if (sidebar.style.display === 'none') {
-            sidebar.style.display = 'block';
-        } else {
-            sidebar.style.display = 'none';
-        }
-    });
-    
-    document.body.appendChild(menuToggle);
-    
-    window.addEventListener('resize', function() {
-        if (window.innerWidth <= 768) {
-            menuToggle.style.display = 'block';
-        } else {
-            menuToggle.style.display = 'none';
-            document.querySelector('.sidebar').style.display = 'block';
-        }
-    });
 });
 
 // 页面可见性变化时刷新时间
