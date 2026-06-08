@@ -524,6 +524,72 @@ body {
     font-size: 0.7rem;
 }
 
+/* Score bar */
+.score-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.score-bar .score-fill {
+    height: 6px;
+    background: linear-gradient(90deg, var(--accent), var(--success));
+    border-radius: 3px;
+    min-width: 30px;
+}
+.score-bar .score-num {
+    font-weight: 700;
+    color: var(--primary);
+    font-size: 0.9rem;
+}
+
+/* Competitor detail modal */
+.comp-detail-header h2 {
+    font-size: 1.5rem;
+    color: var(--primary);
+    margin-bottom: 12px;
+}
+.comp-detail-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+.comp-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+.comp-detail-section {
+    background: var(--bg-primary);
+    padding: 16px;
+    border-radius: var(--radius-sm);
+}
+.comp-detail-section h4 {
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+    color: var(--primary);
+}
+.comp-detail-section h4 i {
+    margin-right: 6px;
+}
+.comp-detail-section p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+.comp-detail-radar {
+    text-align: center;
+}
+.comp-detail-radar h4 {
+    font-size: 1rem;
+    margin-bottom: 12px;
+    color: var(--primary);
+}
+#detailRadar svg {
+    max-width: 300px;
+}
+
 /* ==================== 反馈表单 ==================== */
 .hint {
     color: var(--text-secondary);

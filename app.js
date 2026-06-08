@@ -2,11 +2,66 @@
 
 // 竞品数据
 const competitors = [
-    { name: "新东方前途出国", country: "国内", product: "高端", advantage: "品牌知名度高、资源丰富、院校合作广泛", disadvantage: "价格较高、服务标准化程度高", score: 4.5 },
-    { name: "启德教育", country: "国内", product: "中端", advantage: "澳洲留学优势明显、服务态度好", disadvantage: "欧洲资源相对薄弱、顾问水平参差", score: 4.2 },
-    { name: "啄木鸟教育", country: "美国", product: "高端", advantage: "美国申请案例丰富、SAT/ACT培训强", disadvantage: "其他地区覆盖不足、价格偏高", score: 4.3 },
-    { name: "IDP诺思留学", country: "英国", product: "中端", advantage: "英国院校官方合作、雅思主办方背景", disadvantage: "个性化服务有待提升、部分顾问经验不足", score: 4.0 },
-    { name: "澳际教育", country: "澳洲", product: "基础", advantage: "澳洲资源深厚、价格实惠、签证通过率高", disadvantage: "高端申请能力有限、文书质量一般", score: 3.8 }
+    {
+        name: "HTI",
+        fullName: "HTI 留学",
+        country: "多国",
+        coverage: "英国、美国、澳洲、加拿大、新西兰、欧洲、亚洲",
+        product: "多国",
+        isB2B: false,
+        strongRegion: "江浙沪",
+        advantage: "前端BD满意度高，强建联型（每周/月当面拜访）；系统强大，offer接受、押金支付DDL有系统提醒可推送邮件至客户；市场活动7-8场/年，5-8个申请可换1个Trip名额",
+        disadvantage: "后期服务一般，放假期间找不到人；价格竞争力偏弱",
+        commission: "每2个月打款一次；有强大系统支持，佣金展示、结算均可通过系统操作",
+        service: "前端BD专业，日常维护到位；后期服务响应慢，假期无人值守",
+        score: 7.0,
+        radar: { brand: 7, price: 6, service: 8, channel: 7, product: 8, tech: 7 }
+    },
+    {
+        name: "加诚",
+        fullName: "加诚博教 CACH",
+        country: "北美",
+        coverage: "美国、加拿大",
+        product: "北美",
+        isB2B: false,
+        strongRegion: "北京及华北地区",
+        advantage: "实时返佣，有系统支持；客户反馈对接老师很负责、配合度好；Trip奖励丰富，15个申请兑1个Trip名额，学生付押金额外获200元出游基金，KPI院校押金500元/人",
+        disadvantage: "国别覆盖有限，仅北美方向；市场活动支持相对一般",
+        commission: "实时返佣，有系统支持",
+        service: "流程相对制式化，但配合度高、对接负责",
+        score: 7.3,
+        radar: { brand: 7, price: 8, service: 7, channel: 7, product: 7, tech: 7 }
+    },
+    {
+        name: "启德",
+        fullName: "启德教育 EIC",
+        country: "多国",
+        coverage: "英国、美国、加拿大等多国",
+        product: "多国",
+        isB2B: true,
+        strongRegion: "华南、华中、西南",
+        advantage: "英国院校代理资源全网最全，能代的都有代理；英国常申院校佣金按最高档90%起步；月度结算；除澳洲外其他国别服务都不错",
+        disadvantage: "澳洲方向服务口碑一般；B2B模式可能影响合作方利益分配",
+        commission: "佣金高，英国常申院校佣金按最高档90%起步；资源全，英国代理院校大陆市场最全；每月月度结算一次",
+        service: "除澳洲外其他国别服务口碑较好",
+        score: 8.3,
+        radar: { brand: 8, price: 8, service: 8, channel: 8, product: 9, tech: 8 }
+    },
+    {
+        name: "SIUK",
+        fullName: "SI-UK 留学",
+        country: "英国",
+        coverage: "英国、澳洲",
+        product: "英国",
+        isB2B: false,
+        strongRegion: "全国覆盖",
+        advantage: "英国重点院校佣金有竞争力（伯明翰11%起、格拉11.5%、QMUL 12%起）；整体服务与行业水平持平",
+        disadvantage: "华威、谢菲、GSA没有直代；国别覆盖有限，仅英澳方向",
+        commission: "英国重点院校：伯明翰11%起步，格拉11.5%，QMUL 12%起步；华威、谢菲、GSA没有直代",
+        service: "整体服务与行业平均水平差不多",
+        score: 7.5,
+        radar: { brand: 7, price: 8, service: 7, channel: 7, product: 8, tech: 7 }
+    }
 ];
 
 // 竞品动态时间线
@@ -442,21 +497,124 @@ function renderCompetitors(filtered = null) {
     
     data.forEach(comp => {
         const tr = document.createElement('tr');
-        let productTag = '';
-        if (comp.product === '高端') productTag = '<span class="tag tag-primary">高端</span>';
-        else if (comp.product === '中端') productTag = '<span class="tag tag-info">中端</span>';
-        else productTag = '<span class="tag tag-secondary">基础</span>';
+        tr.style.cursor = 'pointer';
+        tr.onclick = () => showCompetitorDetail(comp.name);
+        const b2bTag = comp.isB2B ? '<span class="tag tag-primary">是</span>' : '<span class="tag tag-secondary">否</span>';
+        const scoreBar = `<div class="score-bar"><div class="score-fill" style="width:${comp.score*10}%"></div><span class="score-num">${comp.score}</span></div>`;
         
         tr.innerHTML = `
-            <td><strong>${comp.name}</strong></td>
-            <td>${comp.country}</td>
-            <td>${productTag}</td>
-            <td>${comp.advantage}</td>
-            <td>${comp.disadvantage}</td>
-            <td><span class="score">${comp.score}</span></td>
+            <td><strong>${comp.name}</strong><br><span style="font-size:0.75rem;color:#6B7280">${comp.fullName}</span></td>
+            <td>${comp.coverage}</td>
+            <td>${b2bTag}</td>
+            <td>${comp.strongRegion}</td>
+            <td><span style="color:#10B981">✓</span> ${comp.advantage.substring(0, 50)}...</td>
+            <td><span style="color:#EF4444">✗</span> ${comp.disadvantage.substring(0, 40)}...</td>
+            <td>${scoreBar}</td>
         `;
         tbody.appendChild(tr);
     });
+}
+
+function showCompetitorDetail(name) {
+    const comp = competitors.find(c => c.name === name);
+    if (!comp) return;
+    
+    const modal = document.getElementById('competitorModal');
+    const body = document.getElementById('competitorModalBody');
+    
+    body.innerHTML = `
+        <div class="comp-detail-header">
+            <h2>${comp.fullName}</h2>
+            <div class="comp-detail-tags">
+                <span class="tag tag-info">${comp.coverage}</span>
+                ${comp.isB2B ? '<span class="tag tag-primary">B2B模式</span>' : '<span class="tag tag-secondary">纯B2C</span>'}
+                <span class="tag tag-secondary">优势区域：${comp.strongRegion}</span>
+            </div>
+        </div>
+        <div class="comp-detail-grid">
+            <div class="comp-detail-section">
+                <h4><i class="fas fa-trophy" style="color:#10B981"></i> 核心优势</h4>
+                <p>${comp.advantage}</p>
+            </div>
+            <div class="comp-detail-section">
+                <h4><i class="fas fa-exclamation-triangle" style="color:#EF4444"></i> 主要劣势</h4>
+                <p>${comp.disadvantage}</p>
+            </div>
+            <div class="comp-detail-section">
+                <h4><i class="fas fa-hand-holding-usd" style="color:#F59E0B"></i> 佣金政策</h4>
+                <p>${comp.commission}</p>
+            </div>
+            <div class="comp-detail-section">
+                <h4><i class="fas fa-headset" style="color:#4a90d9"></i> 服务评价</h4>
+                <p>${comp.service}</p>
+            </div>
+        </div>
+        <div class="comp-detail-radar">
+            <h4>能力雷达图</h4>
+            <div id="detailRadar"></div>
+        </div>
+    `;
+    
+    modal.classList.add('active');
+    
+    // Draw mini radar for this competitor
+    setTimeout(() => drawDetailRadar(comp), 100);
+}
+
+function drawDetailRadar(comp) {
+    const container = document.getElementById('detailRadar');
+    if (!container) return;
+    
+    const r = comp.radar;
+    const labels = ['品牌力', '价格竞争力', '服务能力', '渠道覆盖', '产品力', '技术实力'];
+    const values = [r.brand, r.price, r.service, r.channel, r.product, r.tech];
+    const max = 10;
+    
+    // Calculate SVG polygon points
+    const cx = 150, cy = 150, maxR = 120;
+    let points = '';
+    values.forEach((v, i) => {
+        const angle = (Math.PI * 2 * i / 6) - Math.PI / 2;
+        const dist = (v / max) * maxR;
+        const x = cx + dist * Math.cos(angle);
+        const y = cy + dist * Math.sin(angle);
+        points += `${x},${y} `;
+    });
+    
+    // Grid points
+    let gridHtml = '';
+    for (let level = 2; level <= 10; level += 2) {
+        let gridPts = '';
+        for (let i = 0; i < 6; i++) {
+            const angle = (Math.PI * 2 * i / 6) - Math.PI / 2;
+            const dist = (level / max) * maxR;
+            const x = cx + dist * Math.cos(angle);
+            const y = cy + dist * Math.sin(angle);
+            gridPts += `${x},${y} `;
+        }
+        gridHtml += `<polygon points="${gridPts}" fill="none" stroke="#e5e7eb" stroke-width="1"/>`;
+    }
+    
+    // Axis lines and labels
+    let axisHtml = '';
+    labels.forEach((label, i) => {
+        const angle = (Math.PI * 2 * i / 6) - Math.PI / 2;
+        const x1 = cx, y1 = cy;
+        const x2 = cx + maxR * Math.cos(angle);
+        const y2 = cy + maxR * Math.sin(angle);
+        const lx = cx + (maxR + 20) * Math.cos(angle);
+        const ly = cy + (maxR + 20) * Math.sin(angle);
+        axisHtml += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#d1d5db" stroke-width="1"/>`;
+        axisHtml += `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" fill="#374151" font-size="11" font-weight="500">${label} ${values[i]}</text>`;
+    });
+    
+    container.innerHTML = `
+        <svg viewBox="0 0 300 300" width="300" height="300">
+            ${gridHtml}
+            ${axisHtml}
+            <polygon points="${points}" fill="rgba(74,144,217,0.25)" stroke="#4a90d9" stroke-width="2"/>
+        </svg>
+    `;
 }
 
 function filterCompetitors() {
@@ -473,6 +631,80 @@ function filterCompetitors() {
     }
     
     renderCompetitors(filtered);
+}
+
+function renderRadarChart() {
+    const container = document.getElementById('radarContainer');
+    if (!container) return;
+    
+    const labels = ['品牌力', '价格竞争力', '服务能力', '渠道覆盖', '产品力', '技术实力'];
+    const sides = labels.length;
+    const colors = [
+        { fill: 'rgba(74, 144, 217, 0.25)', stroke: '#4a90d9' },
+        { fill: 'rgba(16, 185, 129, 0.15)', stroke: '#10B981' },
+        { fill: 'rgba(245, 158, 11, 0.15)', stroke: '#F59E0B' },
+        { fill: 'rgba(139, 92, 246, 0.15)', stroke: '#8B5CF6' }
+    ];
+    const cx = 250, cy = 220, maxR = 160, max = 10;
+    
+    // Grid
+    let gridHtml = '';
+    for (let level = 2; level <= 10; level += 2) {
+        let pts = '';
+        for (let i = 0; i < sides; i++) {
+            const angle = (Math.PI * 2 * i / sides) - Math.PI / 2;
+            const x = cx + (level / max) * maxR * Math.cos(angle);
+            const y = cy + (level / max) * maxR * Math.sin(angle);
+            pts += `${x},${y} `;
+        }
+        gridHtml += `<polygon points="${pts}" fill="none" stroke="#e5e7eb" stroke-width="1"/>`;
+    }
+    
+    // Axes and labels
+    let axisHtml = '';
+    labels.forEach((label, i) => {
+        const angle = (Math.PI * 2 * i / sides) - Math.PI / 2;
+        const x2 = cx + maxR * Math.cos(angle);
+        const y2 = cy + maxR * Math.sin(angle);
+        const lx = cx + (maxR + 25) * Math.cos(angle);
+        const ly = cy + (maxR + 25) * Math.sin(angle);
+        axisHtml += `<line x1="${cx}" y1="${cy}" x2="${x2}" y2="${y2}" stroke="#d1d5db" stroke-width="1"/>`;
+        axisHtml += `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" fill="#374151" font-size="13" font-weight="500">${label}</text>`;
+    });
+    
+    // Competitor polygons
+    let polyHtml = '';
+    competitors.forEach((comp, idx) => {
+        const r = comp.radar;
+        const values = [r.brand, r.price, r.service, r.channel, r.product, r.tech];
+        let pts = '';
+        values.forEach((v, i) => {
+            const angle = (Math.PI * 2 * i / sides) - Math.PI / 2;
+            const x = cx + (v / max) * maxR * Math.cos(angle);
+            const y = cy + (v / max) * maxR * Math.sin(angle);
+            pts += `${x},${y} `;
+        });
+        const c = colors[idx];
+        polyHtml += `<polygon points="${pts}" fill="${c.fill}" stroke="${c.stroke}" stroke-width="2"/>`;
+    });
+    
+    // Legend
+    let legendHtml = '<g transform="translate(100, 420)">';
+    competitors.forEach((comp, idx) => {
+        const xOff = idx * 90;
+        legendHtml += `<circle cx="${xOff}" cy="0" r="8" fill="${colors[idx].stroke}"/>`;
+        legendHtml += `<text x="${xOff + 15}" y="4" fill="#374151" font-size="12">${comp.name}</text>`;
+    });
+    legendHtml += '</g>';
+    
+    container.innerHTML = `
+        <svg viewBox="0 0 500 460" class="radar-svg">
+            ${gridHtml}
+            ${axisHtml}
+            ${polyHtml}
+            ${legendHtml}
+        </svg>
+    `;
 }
 
 function renderTimeline() {
@@ -1117,6 +1349,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 初始化数据
     renderCompetitors();
     renderTimeline();
+    renderRadarChart();
     renderScripts();
     renderEnneagramCards();
     
