@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>留学销售赋能平台 - 升级版</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- 顶部状态栏 -->
+    <header class="top-bar">
+        <div class="logo">
+            <i class="fas fa-graduation-cap"></i>
+            <span>留学销售赋能平台</span>
+        </div>
+        <div class="user-info">
+            <span class="date-time" id="dateTime"></span>
+            <div class="avatar">
+                <i class="fas fa-user"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- 左侧导航栏 -->
+    <nav class="sidebar">
+        <ul class="nav-menu">
+            <li class="nav-item active" data-page="dashboard">
+                <i class="fas fa-chart-line"></i>
+                <span>仪表盘</span>
+            </li>
+            <li class="nav-item" data-page="ai-studio">
+                <i class="fas fa-robot"></i>
+                <span>AI话术工坊</span>
+            </li>
+            <li class="nav-item" data-page="competitors">
+                <i class="fas fa-chart-bar"></i>
+                <span>竞品情报站</span>
+            </li>
+            <li class="nav-item" data-page="universities">
+                <i class="fas fa-university"></i>
+                <span>院校数据库</span>
+            </li>
+            <li class="nav-item" data-page="funnel">
+                <i class="fas fa-filter"></i>
+                <span>客户漏斗</span>
+            </li>
+            <li class="nav-item" data-page="scripts">
+                <i class="fas fa-comments"></i>
+                <span>话术库</span>
+            </li>
+            <li class="nav-item" data-page="tools">
+                <i class="fas fa-tools"></i>
+                <span>销售工具箱</span>
+            </li>
+            <li class="nav-item" data-page="enneagram">
+                <i class="fas fa-user-circle"></i>
+                <span>九型人格</span>
+            </li>
+            <li class="nav-item" data-page="cases">
+                <i class="fas fa-briefcase"></i>
+                <span>实战案例库</span>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+        <!-- ==================== 仪表盘 ==================== -->
+        <div class="page active" id="page-dashboard">
+            <h1 class="page-title">欢迎回来，销售精英！</h1>
+            
+            <!-- 今日待办 -->
+            <div class="todo-card">
+                <h3><i class="fas fa-tasks"></i> 今日待办</h3>
+                <ul class="todo-list">
+                    <li><input type="checkbox" checked> 回复3位意向客户咨询</li>
+                    <li><input type="checkbox" checked> 更新本周跟进记录</li>
+                    <li><input type="checkbox"> 准备明天下午的方案演示</li>
+                    <li><input type="checkbox"> 整理上周成单案例</li>
+                </ul>
+            </div>
+
+            <!-- 关键数据卡片 -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <i class="fas fa-users stat-icon blue"></i>
+                    <div class="stat-info">
+                        <span class="stat-value">156</span>
+                        <span class="stat-label">新增线索</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-phone-alt stat-icon orange"></i>
+                    <div class="stat-info">
+                        <span class="stat-value">42</span>
+                        <span class="stat-label">跟进中</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-trophy stat-icon green"></i>
+                    <div class="stat-info">
+                        <span class="stat-value">8</span>
+                        <span class="stat-label">本周成交</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-percentage stat-icon purple"></i>
+                    <div class="stat-info">
+                        <span class="stat-value">23.5%</span>
+                        <span class="stat-label">转化率</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 漏斗图 -->
+            <div class="dashboard-grid">
+                <div class="card funnel-card">
+                    <h3><i class="fas fa-filter"></i> 成交漏斗</h3>
+                    <div class="funnel-svg-container">
+                        <svg viewBox="0 0 400 300" class="funnel-svg">
+                            <defs>
+                                <linearGradient id="funnelGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" style="stop-color:#4F46E5"/>
+                                    <stop offset="100%" style="stop-color:#818CF8"/>
+                                </linearGradient>
+                                <linearGradient id="funnelGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" style="stop-color:#0EA5E9"/>
+                                    <stop offset="100%" style="stop-color:#38BDF8"/>
+                                </linearGradient>
+                                <linearGradient id="funnelGrad3" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" style="stop-color:#06B6D4"/>
+                                    <stop offset="100%" style="stop-color:#22D3EE"/>
+                                </linearGradient>
+                                <linearGradient id="funnelGrad4" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" style="stop-color:#10B981"/>
+                                    <stop offset="100%" style="stop-color:#34D399"/>
+                                </linearGradient>
+                                <linearGradient id="funnelGrad5" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" style="stop-color:#F59E0B"/>
+                                    <stop offset="100%" style="stop-color:#FBBF24"/>
+                                </linearGradient>
+                                <linearGradient id="funnelGrad6" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" style="stop-color:#EF4444"/>
+                                    <stop offset="100%" style="stop-color:#F87171"/>
+                                </linearGradient>
+                            </defs>
+                            <polygon points="30,30 370,30 340,75 60,75" fill="url(#funnelGrad1)"/>
+                            <text x="200" y="58" text-anchor="middle" fill="white" font-size="14" font-weight="bold">线索 156</text>
+                            <polygon points="60,80 340,80 310,125 90,125" fill="url(#funnelGrad2)"/>
+                            <text x="200" y="108" text-anchor="middle" fill="white" font-size="14" font-weight="bold">初次沟通 98</text>
+                            <polygon points="90,130 310,130 275,175 125,175" fill="url(#funnelGrad3)"/>
+                            <text x="200" y="158" text-anchor="middle" fill="white" font-size="14" font-weight="bold">需求确认 67</text>
+                            <polygon points="125,180 275,180 235,225 165,225" fill="url(#funnelGrad4)"/>
+                            <text x="200" y="208" text-anchor="middle" fill="white" font-size="14" font-weight="bold">方案呈现 45</text>
+                            <polygon points="165,230 235,230 205,275 195,275" fill="url(#funnelGrad5)"/>
+                            <text x="200" y="258" text-anchor="middle" fill="white" font-size="14" font-weight="bold">谈判 18</text>
+                            <polygon points="185,280 215,280 215,295 185,295" fill="url(#funnelGrad6)"/>
+                            <text x="200" y="290" text-anchor="middle" fill="white" font-size="10" font-weight="bold">成交 8</text>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- 本周业绩趋势 -->
+                <div class="card trend-card">
+                    <h3><i class="fas fa-chart-column"></i> 本周业绩趋势</h3>
+                    <div class="bar-chart">
+                        <div class="bar-item">
+                            <div class="bar" style="height: 60%;" data-value="6"></div>
+                            <span class="bar-label">周一</span>
+                        </div>
+                        <div class="bar-item">
+                            <div class="bar" style="height: 45%;" data-value="4"></div>
+                            <span class="bar-label">周二</span>
+                        </div>
+                        <div class="bar-item">
+                            <div class="bar" style="height: 80%;" data-value="8"></div>
+                            <span class="bar-label">周三</span>
+                        </div>
+                        <div class="bar-item">
+                            <div class="bar" style="height: 55%;" data-value="5"></div>
+                            <span class="bar-label">周四</span>
+                        </div>
+                        <div class="bar-item">
+                            <div class="bar" style="height: 90%;" data-value="9"></div>
+                            <span class="bar-label">周五</span>
+                        </div>
+                        <div class="bar-item">
+                            <div class="bar" style="height: 40%;" data-value="4"></div>
+                            <span class="bar-label">周六</span>
+                        </div>
+                        <div class="bar-item">
+                            <div class="bar" style="height: 30%;" data-value="3"></div>
+                            <span class="bar-label">周日</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 快速入口 -->
+            <div class="quick-access">
+                <h3><i class="fas fa-rocket"></i> 快速入口</h3>
+                <div class="quick-grid">
+                    <div class="quick-card" data-page="ai-studio">
+                        <i class="fas fa-robot"></i>
+                        <span>AI话术工坊</span>
+                        <small>智能生成话术</small>
+                    </div>
+                    <div class="quick-card" data-page="competitors">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>竞品情报站</span>
+                        <small>多维度对比分析</small>
+                    </div>
+                    <div class="quick-card" data-page="universities">
+                        <i class="fas fa-university"></i>
+                        <span>院校数据库</span>
+                        <small>全球院校信息</small>
+                    </div>
+                    <div class="quick-card" data-page="scripts">
+                        <i class="fas fa-comments"></i>
+                        <span>话术库</span>
+                        <small>20+场景模板</small>
+                    </div>
+                    <div class="quick-card" data-page="tools">
+                        <i class="fas fa-tools"></i>
+                        <span>销售工具箱</span>
+                        <small>5A模型工具包</small>
+                    </div>
+                    <div class="quick-card" data-page="enneagram">
+                        <i class="fas fa-user-circle"></i>
+                        <span>九型人格</span>
+                        <small>客户心理洞察</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== AI话术工坊 ==================== -->
+        <div class="page" id="page-ai-studio">
+            <h1 class="page-title"><i class="fas fa-robot"></i> AI话术工坊</h1>
+            
+            <div class="ai-studio-layout">
+                <!-- 左侧输入区 -->
+                <div class="ai-input-section">
+                    <div class="card">
+                        <h3><i class="fas fa-edit"></i> 输入客户信息</h3>
+                        <div class="form-group">
+                            <label>客户行业</label>
+                            <select id="clientIndustry">
+                                <option value="金融">金融</option>
+                                <option value="互联网">互联网</option>
+                                <option value="教育">教育</option>
+                                <option value="医疗">医疗</option>
+                                <option value="制造">制造业</option>
+                                <option value="贸易">贸易</option>
+                                <option value="房地产">房地产</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>客户阶段</label>
+                            <select id="clientStage">
+                                <option value="意向">意向阶段</option>
+                                <option value="选校">选校阶段</option>
+                                <option value="申请">申请阶段</option>
+                                <option value="签证">签证阶段</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>客户痛点描述</label>
+                            <textarea id="painPoint" placeholder="请描述客户的痛点或需求，例如：孩子成绩一般，想申请世界前50名校..."></textarea>
+                        </div>
+                        <button class="btn btn-primary btn-lg" id="generateScript">
+                            <i class="fas fa-magic"></i> 一键生成话术
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 中间结果区 -->
+                <div class="ai-result-section">
+                    <div class="card" id="scriptResult">
+                        <h3><i class="fas fa-clipboard-list"></i> 生成结果</h3>
+                        <div class="script-section">
+                            <div class="script-header">
+                                <i class="fas fa-bullhorn"></i>
+                                <span>开场白</span>
+                            </div>
+                            <div class="script-content">请先填写客户信息，点击"一键生成话术"获取定制化话术...</div>
+                        </div>
+                        <div class="script-section">
+                            <div class="script-header">
+                                <i class="fas fa-search"></i>
+                                <span>需求挖掘</span>
+                            </div>
+                            <div class="script-content">-</div>
+                        </div>
+                        <div class="script-section">
+                            <div class="script-header">
+                                <i class="fas fa-hand-holding-medical"></i>
+                                <span>痛点回应</span>
+                            </div>
+                            <div class="script-content">-</div>
+                        </div>
+                        <div class="script-section">
+                            <div class="script-header">
+                                <i class="fas fa-money-bill-wave"></i>
+                                <span>促单话术</span>
+                            </div>
+                            <div class="script-content">-</div>
+                        </div>
+                        <div class="script-actions">
+                            <button class="btn btn-secondary" onclick="copyScript()">
+                                <i class="fas fa-copy"></i> 复制全部
+                            </button>
+                            <button class="btn btn-outline" onclick="favoriteScript()">
+                                <i class="fas fa-heart"></i> 收藏
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧历史记录 -->
+                <div class="ai-history-section">
+                    <div class="card">
+                        <h3><i class="fas fa-history"></i> 历史记录</h3>
+                        <ul class="history-list" id="historyList">
+                            <li class="history-item" data-script="1">
+                                <span class="history-title">金融行业 - 选校阶段</span>
+                                <span class="history-time">10分钟前</span>
+                            </li>
+                            <li class="history-item" data-script="2">
+                                <span class="history-title">互联网 - 申请阶段</span>
+                                <span class="history-time">今天 14:30</span>
+                            </li>
+                            <li class="history-item" data-script="3">
+                                <span class="history-title">教育行业 - 意向阶段</span>
+                                <span class="history-time">今天 11:20</span>
+                            </li>
+                            <li class="history-item" data-script="4">
+                                <span class="history-title">医疗行业 - 签证阶段</span>
+                                <span class="history-time">昨天 16:45</span>
+                            </li>
+                            <li class="history-item" data-script="5">
+                                <span class="history-title">制造业 - 选校阶段</span>
+                                <span class="history-time">昨天 09:15</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 竞品情报站 ==================== -->
+        <div class="page" id="page-competitors">
+            <h1 class="page-title"><i class="fas fa-chart-bar"></i> 竞品情报站</h1>
+            
+            <!-- 筛选器 -->
+            <div class="filters-bar">
+                <div class="filter-group">
+                    <label>国家/地区</label>
+                    <select id="filterCountry">
+                        <option value="all">全部</option>
+                        <option value="国内">国内机构</option>
+                        <option value="美国">美国</option>
+                        <option value="英国">英国</option>
+                        <option value="澳洲">澳洲</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>产品线</label>
+                    <select id="filterProduct">
+                        <option value="all">全部</option>
+                        <option value="高端">高端申请</option>
+                        <option value="中端">中端申请</option>
+                        <option value="基础">基础申请</option>
+                    </select>
+                </div>
+                <button class="btn btn-secondary" onclick="filterCompetitors()">
+                    <i class="fas fa-filter"></i> 应用筛选
+                </button>
+                <button class="btn btn-outline" onclick="exportData()">
+                    <i class="fas fa-download"></i> 导出数据
+                </button>
+            </div>
+
+            <!-- 竞品对比表格 -->
+            <div class="card">
+                <h3><i class="fas fa-table"></i> 竞品列表</h3>
+                <div class="table-wrapper">
+                    <table class="data-table" id="competitorTable">
+                        <thead>
+                            <tr>
+                                <th>机构名称</th>
+                                <th>国家</th>
+                                <th>产品定位</th>
+                                <th>核心优势</th>
+                                <th>主要劣势</th>
+                                <th>综合评分</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr data-country="国内" data-product="高端">
+                                <td>新东方前途出国</td>
+                                <td>国内</td>
+                                <td><span class="tag tag-primary">高端</span></td>
+                                <td>品牌知名度高、资源丰富</td>
+                                <td>价格较高、服务标准化</td>
+                                <td><span class="score">4.5</span></td>
+                                <td><button class="btn-icon" onclick="viewDetail('xdf')"><i class="fas fa-eye"></i></button></td>
+                            </tr>
+                            <tr data-country="国内" data-product="中端">
+                                <td>启德教育</td>
+                                <td>国内</td>
+                                <td><span class="tag tag-info">中端</span></td>
+                                <td>澳洲留学优势明显</td>
+                                <td>欧洲资源相对薄弱</td>
+                                <td><span class="score">4.2</span></td>
+                                <td><button class="btn-icon" onclick="viewDetail('qide')"><i class="fas fa-eye"></i></button></td>
+                            </tr>
+                            <tr data-country="美国" data-product="高端">
+                                <td>啄木鸟教育</td>
+                                <td>美国</td>
+                                <td><span class="tag tag-primary">高端</span></td>
+                                <td>美国申请案例丰富</td>
+                                <td>其他地区覆盖不足</td>
+                                <td><span class="score">4.3</span></td>
+                                <td><button class="btn-icon" onclick="viewDetail('zmn')"><i class="fas fa-eye"></i></button></td>
+                            </tr>
+                            <tr data-country="英国" data-product="中端">
+                                <td>IDP诺思留学</td>
+                                <td>英国</td>
+                                <td><span class="tag tag-info">中端</span></td>
+                                <td>英国院校官方合作</td>
+                                <td>个性化服务有待提升</td>
+                                <td><span class="score">4.0</span></td>
+                                <td><button class="btn-icon" onclick="viewDetail('idp')"><i class="fas fa-eye"></i></button></td>
+                            </tr>
+                            <tr data-country="澳洲" data-product="基础">
+                                <td>澳际教育</td>
+                                <td>澳洲</td>
+                                <td><span class="tag tag-secondary">基础</span></td>
+                                <td>澳洲资源深厚、价格实惠</td>
+                                <td>高端申请能力有限</td>
+                                <td><span class="score">3.8</span></td>
+                                <td><button class="btn-icon" onclick="viewDetail('aoji')"><i class="fas fa-eye"></i></button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 雷达图对比 -->
+            <div class="card radar-card">
+                <h3><i class="fas fa-chart-radar"></i> 多维度能力对比</h3>
+                <div class="radar-container">
+                    <svg viewBox="0 0 500 400" class="radar-svg">
+                        <defs>
+                            <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+                                <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#e5e7eb" stroke-width="1"/>
+                            </pattern>
+                        </defs>
+                        <rect width="500" height="400" fill="url(#grid)"/>
+                        <!-- 雷达图轴线 -->
+                        <line x1="250" y1="50" x2="250" y2="350" stroke="#d1d5db" stroke-width="1"/>
+                        <line x1="50" y1="200" x2="450" y2="200" stroke="#d1d5db" stroke-width="1"/>
+                        <line x1="100" y1="85" x2="400" y2="315" stroke="#d1d5db" stroke-width="1"/>
+                        <line x1="400" y1="85" x2="100" y2="315" stroke="#d1d5db" stroke-width="1"/>
+                        <!-- 标签 -->
+                        <text x="250" y="30" text-anchor="middle" fill="#374151" font-size="12">品牌力</text>
+                        <text x="460" y="205" text-anchor="start" fill="#374151" font-size="12">价格优势</text>
+                        <text x="410" y="330" text-anchor="start" fill="#374151" font-size="12">服务专业度</text>
+                        <text x="90" y="330" text-anchor="end" fill="#374151" font-size="12">资源丰富度</text>
+                        <text x="30" y="205" text-anchor="end" fill="#374151" font-size="12">响应速度</text>
+                        <!-- 我们 -->
+                        <polygon points="250,80 420,200 380,300 120,300 80,200" 
+                                 fill="rgba(79, 70, 229, 0.2)" stroke="#4F46E5" stroke-width="2"/>
+                        <!-- 竞品1 -->
+                        <polygon points="250,100 400,200 360,280 140,280 100,200" 
+                                 fill="rgba(16, 185, 129, 0.2)" stroke="#10B981" stroke-width="2"/>
+                        <!-- 竞品2 -->
+                        <polygon points="250,120 380,200 340,260 160,260 120,200" 
+                                 fill="rgba(245, 158, 11, 0.2)" stroke="#F59E0B" stroke-width="2"/>
+                        <!-- 图例 -->
+                        <circle cx="50" cy="370" r="6" fill="#4F46E5"/>
+                        <text x="65" y="374" fill="#374151" font-size="11">我们</text>
+                        <circle cx="130" cy="370" r="6" fill="#10B981"/>
+                        <text x="145" y="374" fill="#374151" font-size="11">新东方</text>
+                        <circle cx="210" cy="370" r="6" fill="#F59E0B"/>
+                        <text x="225" y="374" fill="#374151" font-size="11">启德</text>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- 竞品动态时间线 -->
+            <div class="card timeline-card">
+                <h3><i class="fas fa-clock"></i> 竞品动态</h3>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-date">今天</div>
+                        <div class="timeline-content">
+                            <span class="timeline-tag">价格调整</span>
+                            <p>新东方前途出国下调英澳留学服务费用，最高优惠15%</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-date">昨天</div>
+                        <div class="timeline-content">
+                            <span class="timeline-tag">新品发布</span>
+                            <p>启德教育推出"名校保录计划"，承诺申请失败全额退款</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-date">3天前</div>
+                        <div class="timeline-content">
+                            <span class="timeline-tag">战略合作</span>
+                            <p>IDP诺思与剑桥大学建立官方招生合作通道</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-date">上周</div>
+                        <div class="timeline-content">
+                            <span class="timeline-tag">营销活动</span>
+                            <p>澳际教育启动"暑期留学嘉年华"，签约即送iPad</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 院校数据库 ==================== -->
+        <div class="page" id="page-universities">
+            <h1 class="page-title"><i class="fas fa-university"></i> 院校数据库</h1>
+            
+            <!-- 筛选器 -->
+            <div class="filters-bar">
+                <div class="filter-group">
+                    <label>国家/地区</label>
+                    <select id="filterUniCountry">
+                        <option value="all">全部</option>
+                        <option value="美国">美国</option>
+                        <option value="英国">英国</option>
+                        <option value="澳洲">澳洲</option>
+                        <option value="加拿大">加拿大</option>
+                        <option value="新加坡">新加坡</option>
+                        <option value="香港">香港</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>QS排名</label>
+                    <select id="filterRank">
+                        <option value="all">全部</option>
+                        <option value="top10">Top 10</option>
+                        <option value="top50">Top 11-50</option>
+                        <option value="top100">Top 51-100</option>
+                        <option value="top200">Top 100+</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>专业方向</label>
+                    <select id="filterMajor">
+                        <option value="all">全部</option>
+                        <option value="商科">商科</option>
+                        <option value="理工">理工科</option>
+                        <option value="文科">文科</option>
+                        <option value="艺术">艺术设计</option>
+                    </select>
+                </div>
+                <button class="btn btn-secondary" onclick="filterUniversities()">
+                    <i class="fas fa-filter"></i> 应用筛选
+                </button>
+            </div>
+
+            <!-- 院校卡片网格 -->
+            <div class="university-grid" id="universityGrid">
+                <!-- 卡片将通过JS动态生成 -->
+            </div>
+
+            <!-- 院校详情弹窗 -->
+            <div class="modal" id="uniModal">
+                <div class="modal-content">
+                    <span class="modal-close" onclick="closeModal('uniModal')">&times;</span>
+                    <div id="uniModalBody"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 客户漏斗 ==================== -->
+        <div class="page" id="page-funnel">
+            <h1 class="page-title"><i class="fas fa-filter"></i> 客户漏斗</h1>
+            
+            <div class="funnel-analysis">
+                <!-- 漏斗可视化 -->
+                <div class="card funnel-visual">
+                    <h3><i class="fas fa-layer-group"></i> 销售漏斗</h3>
+                    <div class="funnel-stages">
+                        <div class="funnel-stage" data-stage="1" onclick="showStageDetail(1)">
+                            <div class="stage-bar stage-1">
+                                <span class="stage-name">线索获取</span>
+                                <span class="stage-count">156人</span>
+                                <span class="stage-rate">100%</span>
+                            </div>
+                        </div>
+                        <div class="funnel-stage" data-stage="2" onclick="showStageDetail(2)">
+                            <div class="stage-bar stage-2">
+                                <span class="stage-name">初次沟通</span>
+                                <span class="stage-count">98人</span>
+                                <span class="stage-rate">62.8%</span>
+                            </div>
+                        </div>
+                        <div class="funnel-stage" data-stage="3" onclick="showStageDetail(3)">
+                            <div class="stage-bar stage-3">
+                                <span class="stage-name">需求确认</span>
+                                <span class="stage-count">67人</span>
+                                <span class="stage-rate">42.9%</span>
+                            </div>
+                        </div>
+                        <div class="funnel-stage" data-stage="4" onclick="showStageDetail(4)">
+                            <div class="stage-bar stage-4">
+                                <span class="stage-name">方案呈现</span>
+                                <span class="stage-count">45人</span>
+                                <span class="stage-rate">28.8%</span>
+                            </div>
+                        </div>
+                        <div class="funnel-stage" data-stage="5" onclick="showStageDetail(5)">
+                            <div class="stage-bar stage-5">
+                                <span class="stage-name">谈判签约</span>
+                                <span class="stage-count">18人</span>
+                                <span class="stage-rate">11.5%</span>
+                            </div>
+                        </div>
+                        <div class="funnel-stage" data-stage="6" onclick="showStageDetail(6)">
+                            <div class="stage-bar stage-6">
+                                <span class="stage-name">成交</span>
+                                <span class="stage-count">8人</span>
+                                <span class="stage-rate">5.1%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 阶段详情 -->
+                <div class="card stage-detail" id="stageDetail">
+                    <h3><i class="fas fa-info-circle"></i> 阶段详情</h3>
+                    <p class="hint">点击漏斗中的阶段查看该阶段的客户列表</p>
+                    <div class="customer-list" id="customerList">
+                        <!-- 动态生成 -->
+                    </div>
+                </div>
+
+                <!-- 关键指标 -->
+                <div class="card metrics-card">
+                    <h3><i class="fas fa-chart-line"></i> 关键指标</h3>
+                    <div class="metric-item">
+                        <span class="metric-label">平均成交周期</span>
+                        <span class="metric-value">28天</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">线索转成交率</span>
+                        <span class="metric-value">5.1%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">跟进频次(人均/周)</span>
+                        <span class="metric-value">12次</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">客户满意度</span>
+                        <span class="metric-value">94.2%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 话术库 ==================== -->
+        <div class="page" id="page-scripts">
+            <h1 class="page-title"><i class="fas fa-comments"></i> 话术库</h1>
+            
+            <!-- 搜索和筛选 -->
+            <div class="filters-bar">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="scriptSearch" placeholder="搜索话术...">
+                </div>
+                <div class="filter-group">
+                    <label>分类</label>
+                    <select id="scriptCategory">
+                        <option value="all">全部</option>
+                        <option value="opening">开场白</option>
+                        <option value="discovery">需求挖掘</option>
+                        <option value="objection">异议处理</option>
+                        <option value="closing">促单</option>
+                        <option value="followup">售后维护</option>
+                    </select>
+                </div>
+                <button class="btn btn-secondary" onclick="filterScripts()">
+                    <i class="fas fa-search"></i> 搜索
+                </button>
+            </div>
+
+            <!-- 话术标签 -->
+            <div class="script-tags">
+                <span class="tag active" data-category="all">全部</span>
+                <span class="tag" data-category="opening" onclick="filterByTag('opening')">开场白</span>
+                <span class="tag" data-category="discovery" onclick="filterByTag('discovery')">需求挖掘</span>
+                <span class="tag" data-category="objection" onclick="filterByTag('objection')">异议处理</span>
+                <span class="tag" data-category="closing" onclick="filterByTag('closing')">促单</span>
+                <span class="tag" data-category="followup" onclick="filterByTag('followup')">售后维护</span>
+            </div>
+
+            <!-- 话术卡片列表 -->
+            <div class="script-cards" id="scriptCards">
+                <!-- 动态生成 -->
+            </div>
+        </div>
+
+        <!-- ==================== 销售工具箱 ==================== -->
+        <div class="page" id="page-tools">
+            <h1 class="page-title"><i class="fas fa-tools"></i> 销售工具箱</h1>
+            
+            <div class="tools-grid" id="toolsGrid">
+                <div class="tool-card" onclick="openTool('5a')">
+                    <div class="tool-icon"><i class="fas fa-stream"></i></div>
+                    <h4>5A模型工具包</h4>
+                    <p>完整版销售流程框架，包含每个环节的执行要点和话术模板</p>
+                    <span class="tool-tag">核心工具</span>
+                </div>
+                <div class="tool-card" onclick="openTool('persona')">
+                    <div class="tool-icon"><i class="fas fa-user"></i></div>
+                    <h4>客户画像模板</h4>
+                    <p>标准化客户信息采集表，涵盖背景、需求、决策链等维度</p>
+                    <span class="tool-tag">模板</span>
+                </div>
+                <div class="tool-card" onclick="openTool('compare')">
+                    <div class="tool-icon"><i class="fas fa-balance-scale"></i></div>
+                    <h4>竞品对比表</h4>
+                    <p>多维度竞品分析表格，支持自定义对比维度</p>
+                    <span class="tool-tag">分析</span>
+                </div>
+                <div class="tool-card" onclick="openTool('quote')">
+                    <div class="tool-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+                    <h4>方案报价模板</h4>
+                    <p>专业留学方案及报价单模板，支持个性化定制</p>
+                    <span class="tool-tag">商务</span>
+                </div>
+                <div class="tool-card" onclick="openTool('followup')">
+                    <div class="tool-icon"><i class="fas fa-calendar-check"></i></div>
+                    <h4>跟进计划表</h4>
+                    <p>客户跟进时间线和任务管理表</p>
+                    <span class="tool-tag">管理</span>
+                </div>
+                <div class="tool-card" onclick="openTool('report')">
+                    <div class="tool-icon"><i class="fas fa-chart-pie"></i></div>
+                    <h4>周报模板</h4>
+                    <p>销售周报标准格式，便于总结和汇报</p>
+                    <span class="tool-tag">汇报</span>
+                </div>
+            </div>
+
+            <!-- 工具详情弹窗 -->
+            <div class="modal" id="toolModal">
+                <div class="modal-content modal-lg">
+                    <span class="modal-close" onclick="closeModal('toolModal')">&times;</span>
+                    <div id="toolModalBody"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 九型人格 ==================== -->
+        <div class="page" id="page-enneagram">
+            <h1 class="page-title"><i class="fas fa-user-circle"></i> 九型人格</h1>
+            
+            <div class="enneagram-tabs">
+                <button class="tab-btn active" onclick="showEnneaTab('types')">九型详解</button>
+                <button class="tab-btn" onclick="showEnneaTab('test')">互动测试</button>
+                <button class="tab-btn" onclick="showEnneaTab('team')">团队搭配</button>
+                <button class="tab-btn" onclick="showEnneaTab('match')">速查表</button>
+            </div>
+
+            <!-- 九型详解 -->
+            <div class="enneagram-content active" id="ennea-types">
+                <div class="enneagram-grid" id="enneagramCards">
+                    <!-- 动态生成 -->
+                </div>
+            </div>
+
+            <!-- 互动测试 -->
+            <div class="enneagram-content" id="ennea-test">
+                <div class="test-container" id="testContainer">
+                    <div class="test-progress">
+                        <span>题目 <span id="currentQ">1</span> / 9</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="testProgress"></div>
+                        </div>
+                    </div>
+                    <div class="test-question" id="testQuestion"></div>
+                    <div class="test-options" id="testOptions"></div>
+                </div>
+                <div class="test-result" id="testResult" style="display:none;"></div>
+            </div>
+
+            <!-- 团队搭配 -->
+            <div class="enneagram-content" id="ennea-team">
+                <div class="team-builder">
+                    <h3>选择团队成员类型</h3>
+                    <div class="team-select-grid">
+                        <button class="team-btn" data-type="1">1号</button>
+                        <button class="team-btn" data-type="2">2号</button>
+                        <button class="team-btn" data-type="3">3号</button>
+                        <button class="team-btn" data-type="4">4号</button>
+                        <button class="team-btn" data-type="5">5号</button>
+                        <button class="team-btn" data-type="6">6号</button>
+                        <button class="team-btn" data-type="7">7号</button>
+                        <button class="team-btn" data-type="8">8号</button>
+                        <button class="team-btn" data-type="9">9号</button>
+                    </div>
+                    <div class="selected-team">
+                        <h4>已选成员：</h4>
+                        <div id="selectedMembers"></div>
+                    </div>
+                    <button class="btn btn-primary" onclick="generateTeamAdvice()">
+                        <i class="fas fa-magic"></i> 生成搭配建议
+                    </button>
+                    <div class="team-advice" id="teamAdvice"></div>
+                </div>
+            </div>
+
+            <!-- 速查表 -->
+            <div class="enneagram-content" id="ennea-match">
+                <div class="card">
+                    <h3><i class="fas fa-exchange-alt"></i> 九型人格组合速查表</h3>
+                    <table class="match-table">
+                        <thead>
+                            <tr>
+                                <th>类型组合</th>
+                                <th>沟通要点</th>
+                                <th>推荐话术风格</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1+2</td>
+                                <td>注重规范与关怀的平衡</td>
+                                <td>用"帮助他/她成长"的角度切入</td>
+                            </tr>
+                            <tr>
+                                <td>1+3</td>
+                                <td>强调效率与成果</td>
+                                <td>直接展示成功案例和数据</td>
+                            </tr>
+                            <tr>
+                                <td>2+4</td>
+                                <td>情感共鸣是核心</td>
+                                <td>讲述感人的留学故事</td>
+                            </tr>
+                            <tr>
+                                <td>3+6</td>
+                                <td>安全感与成就并重</td>
+                                <td>强调风险控制和目标达成</td>
+                            </tr>
+                            <tr>
+                                <td>4+8</td>
+                                <td>追求独特性和掌控力</td>
+                                <td>提供个性化高端方案</td>
+                            </tr>
+                            <tr>
+                                <td>5+9</td>
+                                <td>需要时间和空间</td>
+                                <td>提供充分信息，避免催促</td>
+                            </tr>
+                            <tr>
+                                <td>6+7</td>
+                                <td>乐观中保持谨慎</td>
+                                <td>展示机遇同时提供保障</td>
+                            </tr>
+                            <tr>
+                                <td>7+1</td>
+                                <td>创意与原则结合</td>
+                                <td>用新颖方案满足标准要求</td>
+                            </tr>
+                            <tr>
+                                <td>8+5</td>
+                                <td>强强联手的掌控</td>
+                                <td>专业深度+决策魄力</td>
+                            </tr>
+                            <tr>
+                                <td>9+3</td>
+                                <td>和谐氛围中的进取</td>
+                                <td>温和推进，关注团队认可</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 九型详情弹窗 -->
+            <div class="modal" id="enneaModal">
+                <div class="modal-content modal-lg">
+                    <span class="modal-close" onclick="closeModal('enneaModal')">&times;</span>
+                    <div id="enneaModalBody"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 实战案例库 ==================== -->
+        <div class="page" id="page-cases">
+            <h1 class="page-title"><i class="fas fa-briefcase"></i> 实战案例库</h1>
+            
+            <!-- 筛选 -->
+            <div class="filters-bar">
+                <div class="filter-group">
+                    <label>案例类型</label>
+                    <select id="caseType">
+                        <option value="all">全部</option>
+                        <option value="success">成功案例</option>
+                        <option value="fail">失败复盘</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>难度等级</label>
+                    <select id="caseLevel">
+                        <option value="all">全部</option>
+                        <option value="easy">简单</option>
+                        <option value="medium">中等</option>
+                        <option value="hard">困难</option>
+                    </select>
+                </div>
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="caseSearch" placeholder="搜索案例...">
+                </div>
+                <button class="btn btn-secondary" onclick="filterCases()">
+                    <i class="fas fa-search"></i> 搜索
+                </button>
+            </div>
+
+            <!-- 案例卡片 -->
+            <div class="case-grid" id="caseGrid">
+                <!-- 动态生成 -->
+            </div>
+
+            <!-- 案例详情弹窗 -->
+            <div class="modal" id="caseModal">
+                <div class="modal-content modal-lg">
+                    <span class="modal-close" onclick="closeModal('caseModal')">&times;</span>
+                    <div id="caseModalBody"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
