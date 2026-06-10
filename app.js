@@ -1,6 +1,23 @@
+// ==================== Supabase 配置 ====================
+const SUPABASE_URL = 'https://hgtxozgpvccgsvslokud.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_9Sc9FFYAqKl2eJUdyP0HmA_w8RdAcKH';
+const ADMIN_PASSWORD = 'fancy2024'; // 管理密码，可在首次登录后修改
+
+let supabaseClient = null;
+let isAdminMode = false;
+let allSubmissions = []; // 管理后台用：所有提交数据
+let currentAdminFilter = 'pending';
+
+// 初始化 Supabase 客户端
+try {
+    supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+} catch(e) {
+    console.warn('Supabase 客户端初始化失败:', e);
+}
+
 // ==================== 全局数据 ====================
 
-// 竞品数据
+// 竞品数据（本地兜底）
 const competitors = [
     {
         name: "HTI",
@@ -501,6 +518,7 @@ function renderCompetitors(filtered = null) {
         const tr = document.createElement('tr');
         const b2bTag = comp.isB2B ? '<span class="tag tag-primary">是</span>' : '<span class="tag tag-secondary">否</span>';
         const scoreBar = `<div class="score-bar"><div class="score-fill" style="width:${comp.score*10}%"></div><span class="score-num">${comp.score}</span></div>`;
+        const compId = comp._id || ''; // Supabase 记录 ID
         
         tr.innerHTML = `
             <td style="cursor:pointer" onclick="showCompetitorDetail('${comp.name}')"><strong>${comp.name}</strong><br><span style="font-size:0.75rem;color:#6B7280">${comp.fullName}</span></td>
@@ -588,19 +606,55 @@ function saveCompetitor(event) {
     };
     
     if (index === -1) {
-        // 新增
-        competitors.push(compData);
+        // 新增 — 写入 Supabase
+        if (supabaseClient) {
+            const row = {
+                ...compData,
+                is_b2b: compData.isB2B,
+                full_name: compData.fullName,
+                strong_region: compData.strongRegion,
+                status: 'approved',
+                radar: compData.radar
+            };
+            delete row.isB2B; delete row.fullName; delete row.strongRegion;
+            supabaseClient.from('competitor_submissions').insert([row]).then(({error}) => {
+                if (error) { console.error('Supabase insert error:', error); }
+                loadCompetitorsFromSupabase();
+            });
+        } else {
+            competitors.push(compData);
+            renderCompetitors();
+        }
     } else {
-        // 编辑
-        competitors[index] = compData;
+        // 编辑 — 更新 Supabase
+        const comp = competitors[index];
+        if (supabaseClient && comp._id) {
+            const row = {
+                name: compData.name,
+                full_name: compData.fullName,
+                country: compData.country,
+                coverage: compData.coverage,
+                product: compData.product,
+                is_b2b: compData.isB2B,
+                strong_region: compData.strongRegion,
+                advantage: compData.advantage,
+                disadvantage: compData.disadvantage,
+                commission: compData.commission,
+                service: compData.service,
+                score: compData.score,
+                radar: compData.radar
+            };
+            supabaseClient.from('competitor_submissions').update(row).eq('id', comp._id).then(({error}) => {
+                if (error) { console.error('Supabase update error:', error); }
+                loadCompetitorsFromSupabase();
+            });
+        } else {
+            competitors[index] = compData;
+            renderCompetitors();
+            renderRadarChart();
+        }
     }
     
-    // 保存到 localStorage
-    saveCompetitorsLocal();
-    
-    // 重新渲染
-    renderCompetitors();
-    renderRadarChart();
     closeModal('competitorEditModal');
 }
 
@@ -609,10 +663,16 @@ function deleteCompetitor(index) {
     if (!comp) return;
     
     if (confirm(`确定要删除竞品「${comp.name}」吗？此操作不可撤销。`)) {
-        competitors.splice(index, 1);
-        saveCompetitorsLocal();
-        renderCompetitors();
-        renderRadarChart();
+        if (supabaseClient && comp._id) {
+            supabaseClient.from('competitor_submissions').delete().eq('id', comp._id).then(({error}) => {
+                if (error) { console.error('Supabase delete error:', error); }
+                loadCompetitorsFromSupabase();
+            });
+        } else {
+            competitors.splice(index, 1);
+            renderCompetitors();
+            renderRadarChart();
+        }
     }
 }
 
@@ -642,7 +702,82 @@ function exportCompetitors() {
     URL.revokeObjectURL(url);
 }
 
-// localStorage 持久化
+// Supabase 数据加载
+async function loadCompetitorsFromSupabase() {
+    if (!supabaseClient) {
+        // 无 Supabase，使用本地兜底数据
+        renderCompetitors();
+        renderRadarChart();
+        return;
+    }
+    
+    try {
+        const { data, error } = await supabaseClient
+            .from('competitor_submissions')
+            .select('*')
+            .eq('status', 'approved')
+            .order('created_at', { ascending: true });
+        
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+            competitors.length = 0;
+            data.forEach(row => {
+                competitors.push(supabaseRowToCompetitor(row));
+            });
+        }
+    } catch(e) {
+        console.warn('从 Supabase 加载失败，使用本地数据:', e);
+    }
+    
+    renderCompetitors();
+    renderRadarChart();
+}
+
+// Supabase 行数据转前端竞品对象
+function supabaseRowToCompetitor(row) {
+    return {
+        _id: row.id,
+        name: row.name,
+        fullName: row.full_name || '',
+        country: row.country || '多国',
+        coverage: row.coverage || '',
+        product: row.product || '多国',
+        isB2B: row.is_b2b || false,
+        strongRegion: row.strong_region || '',
+        advantage: row.advantage || '',
+        disadvantage: row.disadvantage || '',
+        commission: row.commission || '',
+        service: row.service || '',
+        score: row.score || 7.0,
+        radar: row.radar || { brand:7, price:7, service:7, channel:7, product:7, tech:7 },
+        _status: row.status,
+        _submitter: row.submitter,
+        _source: row.source,
+        _createdAt: row.created_at
+    };
+}
+
+// 前端竞品对象转 Supabase 行数据
+function competitorToSupabaseRow(comp) {
+    return {
+        name: comp.name,
+        full_name: comp.fullName,
+        country: comp.country,
+        coverage: comp.coverage,
+        product: comp.product,
+        is_b2b: comp.isB2B,
+        strong_region: comp.strongRegion,
+        advantage: comp.advantage,
+        disadvantage: comp.disadvantage,
+        commission: comp.commission,
+        service: comp.service,
+        score: comp.score,
+        radar: comp.radar
+    };
+}
+
+// 保留 localStorage 作为离线备用（已不再主动使用）
 function saveCompetitorsLocal() {
     try {
         localStorage.setItem('salesEmpowerment_competitors', JSON.stringify(competitors));
@@ -671,7 +806,7 @@ function loadCompetitorsLocal() {
 function resetCompetitorsData() {
     if (confirm('确定要重置竞品数据为初始状态吗？所有自定义修改将丢失。')) {
         localStorage.removeItem('salesEmpowerment_competitors');
-        location.reload();
+        loadCompetitorsFromSupabase();
     }
 }
 
@@ -900,17 +1035,17 @@ function generateShareLink(type) {
     }
 }
 
-// 提交反馈
-function submitFeedback(e) {
+// 提交反馈（写入 Supabase）
+async function submitFeedback(e) {
     e.preventDefault();
     
-    const name = document.getElementById('fbName').value;
+    const name = document.getElementById('fbName').value.trim();
     const country = document.getElementById('fbCountry').value;
-    const product = document.getElementById('fbProduct').value;
-    const advantage = document.getElementById('fbAdvantage').value;
-    const disadvantage = document.getElementById('fbDisadvantage').value;
-    const source = document.getElementById('fbSource').value;
-    const submitter = document.getElementById('fbSubmitter').value;
+    const product = document.getElementById('fbProduct').value.trim();
+    const advantage = document.getElementById('fbAdvantage').value.trim();
+    const disadvantage = document.getElementById('fbDisadvantage').value.trim();
+    const source = document.getElementById('fbSource').value.trim();
+    const submitter = document.getElementById('fbSubmitter').value.trim();
     
     // 显示处理动画
     document.getElementById('competitorFeedbackForm').style.display = 'none';
@@ -918,11 +1053,44 @@ function submitFeedback(e) {
     document.getElementById('processingAnimation').style.display = 'block';
     document.getElementById('resultContent').style.display = 'none';
     
-    // 模拟AI整理
-    setTimeout(() => {
-        document.getElementById('processingAnimation').style.display = 'none';
-        document.getElementById('resultContent').style.display = 'block';
-        
+    // 写入 Supabase
+    let success = false;
+    let errorMsg = '';
+    
+    if (supabaseClient) {
+        try {
+            const { data, error } = await supabaseClient
+                .from('competitor_submissions')
+                .insert([{
+                    name: name,
+                    country: country === '国内' ? '多国' : country,
+                    product: product,
+                    advantage: advantage,
+                    disadvantage: disadvantage,
+                    source: source,
+                    submitter: submitter,
+                    status: 'pending',
+                    score: 7.0,
+                    radar: { brand: 7, price: 7, service: 7, channel: 7, product: 7, tech: 7 }
+                }])
+                .select();
+            
+            if (error) throw error;
+            success = true;
+        } catch(err) {
+            console.error('提交到 Supabase 失败:', err);
+            errorMsg = err.message || '提交失败';
+        }
+    } else {
+        // 无 Supabase，模拟成功
+        success = true;
+    }
+    
+    // 显示结果
+    document.getElementById('processingAnimation').style.display = 'none';
+    document.getElementById('resultContent').style.display = 'block';
+    
+    if (success) {
         const 整理结果 = `【竞品信息整理结果】
 
 📋 基本信息
@@ -943,7 +1111,9 @@ ${disadvantage}
 系统已将此信息标记为"待审核"状态，管理员审核通过后将更新至竞品数据库。`;
         
         document.getElementById('整理结果Box').textContent = 整理结果;
-    }, 2000);
+    } else {
+        document.getElementById('整理结果Box').textContent = `提交失败：${errorMsg}\n\n请稍后重试或联系管理员。`;
+    }
 }
 
 // ==================== AI话术工坊功能 ====================
@@ -1475,6 +1645,9 @@ function checkShareMode() {
         document.getElementById('mainContent').classList.add('share-mode');
         switchPage('enneagram');
         showEnneaTab('test');
+    } else if (hash === '#admin') {
+        // 管理后台模式
+        enableAdminMode();
     }
 }
 
@@ -1507,8 +1680,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // 初始化数据
-    loadCompetitorsLocal();
-    renderCompetitors();
+    loadCompetitorsFromSupabase();
     renderTimeline();
     renderRadarChart();
     renderScripts();
@@ -1540,3 +1712,259 @@ document.addEventListener('visibilitychange', function() {
         updateDateTime();
     }
 });
+
+
+// ==================== 后台管理功能 ====================
+
+// 启用管理后台模式
+function enableAdminMode() {
+    isAdminMode = true;
+    const navItem = document.getElementById('adminNavItem');
+    if (navItem) navItem.style.display = 'flex';
+    // 检查是否已登录
+    if (localStorage.getItem('salesEmpowerment_admin') === 'true') {
+        showAdminPanel();
+    }
+    switchPage('admin');
+}
+
+// 管理员登录
+function adminLogin() {
+    const pwd = document.getElementById('adminPassword').value;
+    if (pwd === ADMIN_PASSWORD) {
+        localStorage.setItem('salesEmpowerment_admin', 'true');
+        showAdminPanel();
+    } else {
+        alert('密码错误，请重试');
+    }
+}
+
+// 显示管理面板
+function showAdminPanel() {
+    document.getElementById('adminLoginCard').style.display = 'none';
+    document.getElementById('adminPanel').style.display = 'block';
+    isAdminMode = true;
+    loadAllSubmissions();
+}
+
+// 加载所有提交数据
+async function loadAllSubmissions() {
+    if (!supabaseClient) {
+        document.getElementById('adminSubmissionList').innerHTML = '<p class="hint" style="text-align:center;padding:40px 0;color:#EF4444;"><i class="fas fa-exclamation-circle"></i> 数据库未连接，请先完成 Supabase 配置</p>';
+        return;
+    }
+    
+    try {
+        const { data, error } = await supabaseClient
+            .from('competitor_submissions')
+            .select('*')
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        allSubmissions = data || [];
+        updateAdminStats();
+        renderAdminSubmissions();
+    } catch(err) {
+        console.error('加载提交数据失败:', err);
+        document.getElementById('adminSubmissionList').innerHTML = '<p class="hint" style="text-align:center;padding:40px 0;color:#EF4444;"><i class="fas fa-exclamation-circle"></i> 加载失败: ' + err.message + '</p>';
+    }
+}
+
+// 更新统计数据
+function updateAdminStats() {
+    const pending = allSubmissions.filter(s => s.status === 'pending').length;
+    const approved = allSubmissions.filter(s => s.status === 'approved').length;
+    const rejected = allSubmissions.filter(s => s.status === 'rejected').length;
+    
+    document.getElementById('statPending').textContent = pending;
+    document.getElementById('statApproved').textContent = approved;
+    document.getElementById('statRejected').textContent = rejected;
+    document.getElementById('badgePending').textContent = pending;
+    document.getElementById('badgeApproved').textContent = approved;
+    document.getElementById('badgeRejected').textContent = rejected;
+}
+
+// 筛选管理标签
+function filterAdminSubmissions(status) {
+    currentAdminFilter = status;
+    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector(`.admin-tab[data-status="${status}"]`).classList.add('active');
+    renderAdminSubmissions();
+}
+
+// 渲染管理列表
+function renderAdminSubmissions() {
+    const container = document.getElementById('adminSubmissionList');
+    
+    let filtered = allSubmissions;
+    if (currentAdminFilter !== 'all') {
+        filtered = allSubmissions.filter(s => s.status === currentAdminFilter);
+    }
+    
+    if (filtered.length === 0) {
+        container.innerHTML = '<p class="hint" style="text-align:center;padding:40px 0;">暂无数据</p>';
+        return;
+    }
+    
+    container.innerHTML = filtered.map(item => {
+        const statusBadge = item.status === 'pending' 
+            ? '<span class="admin-status pending"><i class="fas fa-clock"></i> 待审核</span>'
+            : item.status === 'approved' 
+            ? '<span class="admin-status approved"><i class="fas fa-check-circle"></i> 已发布</span>'
+            : '<span class="admin-status rejected"><i class="fas fa-times-circle"></i> 已拒绝</span>';
+        
+        const dateStr = item.created_at ? new Date(item.created_at).toLocaleString('zh-CN') : '';
+        
+        return `
+            <div class="admin-submission-card" data-id="${item.id}">
+                <div class="admin-card-header">
+                    <div>
+                        <strong style="font-size:1.1rem;">${item.name}</strong>
+                        ${item.full_name ? `<span style="color:#6B7280;margin-left:8px;">${item.full_name}</span>` : ''}
+                        ${statusBadge}
+                    </div>
+                    <div class="admin-card-meta">
+                        ${item.submitter ? `<span><i class="fas fa-user"></i> ${item.submitter}</span>` : ''}
+                        ${dateStr ? `<span><i class="fas fa-clock"></i> ${dateStr}</span>` : ''}
+                    </div>
+                </div>
+                <div class="admin-card-body">
+                    ${item.coverage ? `<p><strong>覆盖：</strong>${item.coverage}</p>` : ''}
+                    ${item.advantage ? `<p><span style="color:#10B981">✓ 优势：</span>${item.advantage.substring(0, 80)}${item.advantage.length > 80 ? '...' : ''}</p>` : ''}
+                    ${item.disadvantage ? `<p><span style="color:#EF4444">✗ 劣势：</span>${item.disadvantage.substring(0, 80)}${item.disadvantage.length > 80 ? '...' : ''}</p>` : ''}
+                    ${item.source ? `<p><strong>来源：</strong>${item.source}</p>` : ''}
+                </div>
+                <div class="admin-card-actions">
+                    ${item.status === 'pending' ? `<button class="btn btn-sm" style="background:#10B981;color:white;" onclick="updateSubmissionStatus('${item.id}','approved')"><i class="fas fa-check"></i> 发布</button>` : ''}
+                    ${item.status === 'pending' ? `<button class="btn btn-sm" style="background:#EF4444;color:white;" onclick="updateSubmissionStatus('${item.id}','rejected')"><i class="fas fa-times"></i> 拒绝</button>` : ''}
+                    ${item.status === 'rejected' ? `<button class="btn btn-sm" style="background:#10B981;color:white;" onclick="updateSubmissionStatus('${item.id}','approved')"><i class="fas fa-check"></i> 发布</button>` : ''}
+                    ${item.status === 'approved' ? `<button class="btn btn-sm" style="background:#F59E0B;color:white;" onclick="updateSubmissionStatus('${item.id}','pending')"><i class="fas fa-undo"></i> 撤回</button>` : ''}
+                    <button class="btn btn-outline btn-sm" onclick="openAdminEdit('${item.id}')"><i class="fas fa-pen"></i> 编辑</button>
+                    <button class="btn btn-sm" style="background:#EF4444;color:white;" onclick="deleteSubmission('${item.id}')"><i class="fas fa-trash-alt"></i> 删除</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// 更新提交状态
+async function updateSubmissionStatus(id, newStatus) {
+    if (!supabaseClient) return;
+    
+    const action = newStatus === 'approved' ? '发布' : newStatus === 'rejected' ? '拒绝' : '撤回';
+    if (!confirm(`确定要${action}这条竞品信息吗？`)) return;
+    
+    try {
+        const { error } = await supabaseClient
+            .from('competitor_submissions')
+            .update({ status: newStatus })
+            .eq('id', id);
+        
+        if (error) throw error;
+        
+        // 刷新管理列表和主页面
+        await loadAllSubmissions();
+        await loadCompetitorsFromSupabase();
+    } catch(err) {
+        alert('操作失败: ' + err.message);
+    }
+}
+
+// 删除提交
+async function deleteSubmission(id) {
+    if (!supabaseClient) return;
+    if (!confirm('确定要删除这条竞品信息吗？此操作不可撤销。')) return;
+    
+    try {
+        const { error } = await supabaseClient
+            .from('competitor_submissions')
+            .delete()
+            .eq('id', id);
+        
+        if (error) throw error;
+        
+        await loadAllSubmissions();
+        await loadCompetitorsFromSupabase();
+    } catch(err) {
+        alert('删除失败: ' + err.message);
+    }
+}
+
+// 打开管理编辑弹窗
+function openAdminEdit(id) {
+    const item = allSubmissions.find(s => s.id === id);
+    if (!item) return;
+    
+    document.getElementById('adminEditTitle').innerHTML = '<i class="fas fa-edit"></i> 编辑竞品 - ' + item.name;
+    document.getElementById('adminEditId').value = id;
+    document.getElementById('adminCompName').value = item.name || '';
+    document.getElementById('adminCompFullName').value = item.full_name || '';
+    document.getElementById('adminCompCountry').value = item.country || '多国';
+    document.getElementById('adminCompCoverage').value = item.coverage || '';
+    document.getElementById('adminCompIsB2B').value = String(item.is_b2b || false);
+    document.getElementById('adminCompStrongRegion').value = item.strong_region || '';
+    document.getElementById('adminCompScore').value = item.score || 7.0;
+    document.getElementById('adminCompAdvantage').value = item.advantage || '';
+    document.getElementById('adminCompDisadvantage').value = item.disadvantage || '';
+    document.getElementById('adminCompCommission').value = item.commission || '';
+    document.getElementById('adminCompService').value = item.service || '';
+    
+    const radar = item.radar || {};
+    document.getElementById('adminRadarBrand').value = radar.brand || 7;
+    document.getElementById('adminRadarPrice').value = radar.price || 7;
+    document.getElementById('adminRadarService').value = radar.service || 7;
+    document.getElementById('adminRadarChannel').value = radar.channel || 7;
+    document.getElementById('adminRadarProduct').value = radar.product || 7;
+    document.getElementById('adminRadarTech').value = radar.tech || 7;
+    
+    document.getElementById('adminCompStatus').value = item.status || 'pending';
+    
+    document.getElementById('adminEditModal').classList.add('active');
+}
+
+// 保存管理编辑
+async function saveAdminEdit(event) {
+    event.preventDefault();
+    
+    const id = document.getElementById('adminEditId').value;
+    if (!id || !supabaseClient) return;
+    
+    const row = {
+        name: document.getElementById('adminCompName').value.trim(),
+        full_name: document.getElementById('adminCompFullName').value.trim(),
+        country: document.getElementById('adminCompCountry').value,
+        coverage: document.getElementById('adminCompCoverage').value.trim(),
+        is_b2b: document.getElementById('adminCompIsB2B').value === 'true',
+        strong_region: document.getElementById('adminCompStrongRegion').value.trim(),
+        score: parseFloat(document.getElementById('adminCompScore').value) || 7.0,
+        advantage: document.getElementById('adminCompAdvantage').value.trim(),
+        disadvantage: document.getElementById('adminCompDisadvantage').value.trim(),
+        commission: document.getElementById('adminCompCommission').value.trim(),
+        service: document.getElementById('adminCompService').value.trim(),
+        radar: {
+            brand: parseInt(document.getElementById('adminRadarBrand').value) || 7,
+            price: parseInt(document.getElementById('adminRadarPrice').value) || 7,
+            service: parseInt(document.getElementById('adminRadarService').value) || 7,
+            channel: parseInt(document.getElementById('adminRadarChannel').value) || 7,
+            product: parseInt(document.getElementById('adminRadarProduct').value) || 7,
+            tech: parseInt(document.getElementById('adminRadarTech').value) || 7
+        },
+        status: document.getElementById('adminCompStatus').value
+    };
+    
+    try {
+        const { error } = await supabaseClient
+            .from('competitor_submissions')
+            .update(row)
+            .eq('id', id);
+        
+        if (error) throw error;
+        
+        closeModal('adminEditModal');
+        await loadAllSubmissions();
+        await loadCompetitorsFromSupabase();
+    } catch(err) {
+        alert('保存失败: ' + err.message);
+    }
+}

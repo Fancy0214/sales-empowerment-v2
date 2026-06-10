@@ -8,6 +8,7 @@
     <title>留学销售赋能平台 - 精简版</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <!-- 顶部状态栏 -->
@@ -54,6 +55,10 @@
             <li class="nav-item" data-page="enneagram">
                 <i class="fas fa-user-circle"></i>
                 <span>九型人格</span>
+            </li>
+            <li class="nav-item" data-page="admin" id="adminNavItem" style="display:none;">
+                <i class="fas fa-shield-alt"></i>
+                <span>后台管理</span>
             </li>
         </ul>
     </nav>
@@ -594,6 +599,158 @@
                 </div>
             </div>
         </div>
+        <!-- ==================== 后台管理页面 ==================== -->
+        <div class="page" id="page-admin">
+            <h1 class="page-title"><i class="fas fa-shield-alt"></i> 后台管理</h1>
+            
+            <!-- 管理员登录 -->
+            <div class="card" id="adminLoginCard">
+                <h3><i class="fas fa-lock"></i> 管理员验证</h3>
+                <p class="hint">请输入管理密码以访问后台管理功能</p>
+                <div class="form-group">
+                    <label>管理密码</label>
+                    <input type="password" id="adminPassword" placeholder="请输入管理密码" onkeydown="if(event.key==='Enter')adminLogin()">
+                </div>
+                <button class="btn btn-primary" onclick="adminLogin()"><i class="fas fa-sign-in-alt"></i> 进入管理</button>
+            </div>
+
+            <!-- 管理面板（登录后显示） -->
+            <div id="adminPanel" style="display:none;">
+                <!-- 统计概览 -->
+                <div class="admin-stats" id="adminStats">
+                    <div class="stat-card stat-pending">
+                        <div class="stat-num" id="statPending">0</div>
+                        <div class="stat-label">待审核</div>
+                    </div>
+                    <div class="stat-card stat-approved">
+                        <div class="stat-num" id="statApproved">0</div>
+                        <div class="stat-label">已发布</div>
+                    </div>
+                    <div class="stat-card stat-rejected">
+                        <div class="stat-num" id="statRejected">0</div>
+                        <div class="stat-label">已拒绝</div>
+                    </div>
+                </div>
+
+                <!-- 筛选标签 -->
+                <div class="admin-filter-tabs">
+                    <button class="admin-tab active" data-status="pending" onclick="filterAdminSubmissions('pending')">
+                        <i class="fas fa-clock"></i> 待审核 <span class="badge" id="badgePending">0</span>
+                    </button>
+                    <button class="admin-tab" data-status="approved" onclick="filterAdminSubmissions('approved')">
+                        <i class="fas fa-check-circle"></i> 已发布 <span class="badge" id="badgeApproved">0</span>
+                    </button>
+                    <button class="admin-tab" data-status="rejected" onclick="filterAdminSubmissions('rejected')">
+                        <i class="fas fa-times-circle"></i> 已拒绝 <span class="badge" id="badgeRejected">0</span>
+                    </button>
+                    <button class="admin-tab" data-status="all" onclick="filterAdminSubmissions('all')">
+                        <i class="fas fa-list"></i> 全部
+                    </button>
+                </div>
+
+                <!-- 提交列表 -->
+                <div class="card">
+                    <div class="card-header-with-actions">
+                        <h3><i class="fas fa-inbox"></i> 竞品信息管理</h3>
+                        <button class="btn btn-outline btn-sm" onclick="loadAllSubmissions()"><i class="fas fa-sync-alt"></i> 刷新</button>
+                    </div>
+                    <div id="adminSubmissionList">
+                        <p class="hint" style="text-align:center;padding:40px 0;">加载中...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 管理员编辑弹窗 -->
+        <div class="modal" id="adminEditModal">
+            <div class="modal-content modal-lg">
+                <span class="modal-close" onclick="closeModal('adminEditModal')">&times;</span>
+                <h2 id="adminEditTitle"><i class="fas fa-edit"></i> 编辑竞品信息</h2>
+                <form id="adminEditForm" onsubmit="saveAdminEdit(event)">
+                    <input type="hidden" id="adminEditId" value="">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>机构简称 <span class="required">*</span></label>
+                            <input type="text" id="adminCompName" placeholder="例如：HTI" required>
+                        </div>
+                        <div class="form-group">
+                            <label>机构全称 <span class="required">*</span></label>
+                            <input type="text" id="adminCompFullName" placeholder="例如：HTI 留学" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>覆盖国别分类</label>
+                            <select id="adminCompCountry">
+                                <option value="多国">多国覆盖</option>
+                                <option value="北美">北美</option>
+                                <option value="英国">英国</option>
+                                <option value="澳洲">澳洲</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>具体覆盖国家/地区</label>
+                            <input type="text" id="adminCompCoverage" placeholder="例如：英国、美国、澳洲">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>是否B2B</label>
+                            <select id="adminCompIsB2B">
+                                <option value="false">否</option>
+                                <option value="true">是</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>优势区域</label>
+                            <input type="text" id="adminCompStrongRegion" placeholder="例如：江浙沪">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>综合评分 (1-10)</label>
+                        <input type="number" id="adminCompScore" min="1" max="10" step="0.1" value="7.0">
+                    </div>
+                    <div class="form-group">
+                        <label>核心优势 <span class="required">*</span></label>
+                        <textarea id="adminCompAdvantage" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>主要劣势 <span class="required">*</span></label>
+                        <textarea id="adminCompDisadvantage" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>佣金政策</label>
+                        <textarea id="adminCompCommission" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>服务评价</label>
+                        <textarea id="adminCompService" rows="2"></textarea>
+                    </div>
+                    <h4 style="margin: 16px 0 8px; color: var(--text-secondary);"><i class="fas fa-chart-radar"></i> 六维能力评分 (1-10)</h4>
+                    <div class="form-row-six">
+                        <div class="form-group"><label>品牌力</label><input type="number" id="adminRadarBrand" min="1" max="10" value="7"></div>
+                        <div class="form-group"><label>价格竞争力</label><input type="number" id="adminRadarPrice" min="1" max="10" value="7"></div>
+                        <div class="form-group"><label>服务能力</label><input type="number" id="adminRadarService" min="1" max="10" value="7"></div>
+                        <div class="form-group"><label>渠道覆盖</label><input type="number" id="adminRadarChannel" min="1" max="10" value="7"></div>
+                        <div class="form-group"><label>产品力</label><input type="number" id="adminRadarProduct" min="1" max="10" value="7"></div>
+                        <div class="form-group"><label>技术实力</label><input type="number" id="adminRadarTech" min="1" max="10" value="7"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>审核状态</label>
+                        <select id="adminCompStatus">
+                            <option value="pending">待审核</option>
+                            <option value="approved">发布到主页面</option>
+                            <option value="rejected">拒绝</option>
+                        </select>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-outline" onclick="closeModal('adminEditModal')">取消</button>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> 保存</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
     </main>
 
     <script src="app.js"></script>
