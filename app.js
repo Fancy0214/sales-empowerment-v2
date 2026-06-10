@@ -495,24 +495,184 @@ function renderCompetitors(filtered = null) {
     const tbody = document.getElementById('competitorBody');
     tbody.innerHTML = '';
     
-    data.forEach(comp => {
+    data.forEach((comp, idx) => {
+        // 找到在原始 competitors 数组中的真实索引
+        const realIndex = competitors.indexOf(comp);
         const tr = document.createElement('tr');
-        tr.style.cursor = 'pointer';
-        tr.onclick = () => showCompetitorDetail(comp.name);
         const b2bTag = comp.isB2B ? '<span class="tag tag-primary">是</span>' : '<span class="tag tag-secondary">否</span>';
         const scoreBar = `<div class="score-bar"><div class="score-fill" style="width:${comp.score*10}%"></div><span class="score-num">${comp.score}</span></div>`;
         
         tr.innerHTML = `
-            <td><strong>${comp.name}</strong><br><span style="font-size:0.75rem;color:#6B7280">${comp.fullName}</span></td>
-            <td>${comp.coverage}</td>
-            <td>${b2bTag}</td>
-            <td>${comp.strongRegion}</td>
-            <td><span style="color:#10B981">✓</span> ${comp.advantage.substring(0, 50)}...</td>
-            <td><span style="color:#EF4444">✗</span> ${comp.disadvantage.substring(0, 40)}...</td>
-            <td>${scoreBar}</td>
+            <td style="cursor:pointer" onclick="showCompetitorDetail('${comp.name}')"><strong>${comp.name}</strong><br><span style="font-size:0.75rem;color:#6B7280">${comp.fullName}</span></td>
+            <td style="cursor:pointer" onclick="showCompetitorDetail('${comp.name}')">${comp.coverage}</td>
+            <td style="cursor:pointer" onclick="showCompetitorDetail('${comp.name}')">${b2bTag}</td>
+            <td style="cursor:pointer" onclick="showCompetitorDetail('${comp.name}')">${comp.strongRegion}</td>
+            <td style="cursor:pointer" onclick="showCompetitorDetail('${comp.name}')"><span style="color:#10B981">✓</span> ${comp.advantage.substring(0, 50)}...</td>
+            <td style="cursor:pointer" onclick="showCompetitorDetail('${comp.name}')"><span style="color:#EF4444">✗</span> ${comp.disadvantage.substring(0, 40)}...</td>
+            <td style="cursor:pointer" onclick="showCompetitorDetail('${comp.name}')">${scoreBar}</td>
+            <td class="action-cell">
+                <button class="btn-icon btn-edit" title="编辑" onclick="openEditCompetitor(${realIndex})"><i class="fas fa-pen"></i></button>
+                <button class="btn-icon btn-delete" title="删除" onclick="deleteCompetitor(${realIndex})"><i class="fas fa-trash-alt"></i></button>
+            </td>
         `;
         tbody.appendChild(tr);
     });
+}
+
+// ==================== 竞品CRUD功能 ====================
+
+function openAddCompetitor() {
+    document.getElementById('compEditTitle').innerHTML = '<i class="fas fa-plus-circle"></i> 新增竞品';
+    document.getElementById('compEditIndex').value = -1;
+    document.getElementById('compEditForm').reset();
+    // 重置雷达评分默认值
+    ['compRadarBrand','compRadarPrice','compRadarService','compRadarChannel','compRadarProduct','compRadarTech'].forEach(id => {
+        document.getElementById(id).value = 7;
+    });
+    document.getElementById('competitorEditModal').classList.add('active');
+}
+
+function openEditCompetitor(index) {
+    const comp = competitors[index];
+    if (!comp) return;
+    
+    document.getElementById('compEditTitle').innerHTML = '<i class="fas fa-edit"></i> 编辑竞品 - ' + comp.name;
+    document.getElementById('compEditIndex').value = index;
+    document.getElementById('compName').value = comp.name;
+    document.getElementById('compFullName').value = comp.fullName;
+    document.getElementById('compCountry').value = comp.country;
+    document.getElementById('compCoverage').value = comp.coverage;
+    document.getElementById('compProduct').value = comp.product;
+    document.getElementById('compIsB2B').value = String(comp.isB2B);
+    document.getElementById('compStrongRegion').value = comp.strongRegion;
+    document.getElementById('compScore').value = comp.score;
+    document.getElementById('compAdvantage').value = comp.advantage;
+    document.getElementById('compDisadvantage').value = comp.disadvantage;
+    document.getElementById('compCommission').value = comp.commission;
+    document.getElementById('compService').value = comp.service;
+    document.getElementById('compRadarBrand').value = comp.radar.brand;
+    document.getElementById('compRadarPrice').value = comp.radar.price;
+    document.getElementById('compRadarService').value = comp.radar.service;
+    document.getElementById('compRadarChannel').value = comp.radar.channel;
+    document.getElementById('compRadarProduct').value = comp.radar.product;
+    document.getElementById('compRadarTech').value = comp.radar.tech;
+    
+    document.getElementById('competitorEditModal').classList.add('active');
+}
+
+function saveCompetitor(event) {
+    event.preventDefault();
+    
+    const index = parseInt(document.getElementById('compEditIndex').value);
+    const compData = {
+        name: document.getElementById('compName').value.trim(),
+        fullName: document.getElementById('compFullName').value.trim(),
+        country: document.getElementById('compCountry').value,
+        coverage: document.getElementById('compCoverage').value.trim(),
+        product: document.getElementById('compProduct').value,
+        isB2B: document.getElementById('compIsB2B').value === 'true',
+        strongRegion: document.getElementById('compStrongRegion').value.trim(),
+        advantage: document.getElementById('compAdvantage').value.trim(),
+        disadvantage: document.getElementById('compDisadvantage').value.trim(),
+        commission: document.getElementById('compCommission').value.trim(),
+        service: document.getElementById('compService').value.trim(),
+        score: parseFloat(document.getElementById('compScore').value) || 7.0,
+        radar: {
+            brand: parseInt(document.getElementById('compRadarBrand').value) || 7,
+            price: parseInt(document.getElementById('compRadarPrice').value) || 7,
+            service: parseInt(document.getElementById('compRadarService').value) || 7,
+            channel: parseInt(document.getElementById('compRadarChannel').value) || 7,
+            product: parseInt(document.getElementById('compRadarProduct').value) || 7,
+            tech: parseInt(document.getElementById('compRadarTech').value) || 7
+        }
+    };
+    
+    if (index === -1) {
+        // 新增
+        competitors.push(compData);
+    } else {
+        // 编辑
+        competitors[index] = compData;
+    }
+    
+    // 保存到 localStorage
+    saveCompetitorsLocal();
+    
+    // 重新渲染
+    renderCompetitors();
+    renderRadarChart();
+    closeModal('competitorEditModal');
+}
+
+function deleteCompetitor(index) {
+    const comp = competitors[index];
+    if (!comp) return;
+    
+    if (confirm(`确定要删除竞品「${comp.name}」吗？此操作不可撤销。`)) {
+        competitors.splice(index, 1);
+        saveCompetitorsLocal();
+        renderCompetitors();
+        renderRadarChart();
+    }
+}
+
+function exportCompetitors() {
+    // 构建CSV内容
+    const headers = ['机构简称', '机构全称', '覆盖国别分类', '具体覆盖', '产品方向', '是否B2B', '优势区域', '综合评分', '核心优势', '主要劣势', '佣金政策', '服务评价', '品牌力', '价格竞争力', '服务能力', '渠道覆盖', '产品力', '技术实力'];
+    const rows = competitors.map(c => [
+        c.name, c.fullName, c.country, c.coverage, c.product,
+        c.isB2B ? '是' : '否', c.strongRegion, c.score,
+        '"' + c.advantage.replace(/"/g, '""') + '"',
+        '"' + c.disadvantage.replace(/"/g, '""') + '"',
+        '"' + c.commission.replace(/"/g, '""') + '"',
+        '"' + c.service.replace(/"/g, '""') + '"',
+        c.radar.brand, c.radar.price, c.radar.service, c.radar.channel, c.radar.product, c.radar.tech
+    ]);
+    
+    // 添加BOM以支持Excel正确识别中文
+    const bom = '\uFEFF';
+    const csv = bom + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `竞品总览_${new Date().toISOString().slice(0,10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+}
+
+// localStorage 持久化
+function saveCompetitorsLocal() {
+    try {
+        localStorage.setItem('salesEmpowerment_competitors', JSON.stringify(competitors));
+    } catch(e) {
+        console.warn('保存到localStorage失败:', e);
+    }
+}
+
+function loadCompetitorsLocal() {
+    try {
+        const saved = localStorage.getItem('salesEmpowerment_competitors');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                competitors.length = 0;
+                parsed.forEach(c => competitors.push(c));
+                return true;
+            }
+        }
+    } catch(e) {
+        console.warn('从localStorage加载失败:', e);
+    }
+    return false;
+}
+
+function resetCompetitorsData() {
+    if (confirm('确定要重置竞品数据为初始状态吗？所有自定义修改将丢失。')) {
+        localStorage.removeItem('salesEmpowerment_competitors');
+        location.reload();
+    }
 }
 
 function showCompetitorDetail(name) {
@@ -1347,6 +1507,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // 初始化数据
+    loadCompetitorsLocal();
     renderCompetitors();
     renderTimeline();
     renderRadarChart();

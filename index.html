@@ -94,7 +94,17 @@
 
             <!-- 竞品对比表格 -->
             <div class="card">
-                <h3><i class="fas fa-table"></i> 竞品总览 <span style="font-size:0.8rem;color:#6B7280;font-weight:400">点击行查看详情</span></h3>
+                <div class="card-header-with-actions">
+                    <h3><i class="fas fa-table"></i> 竞品总览 <span style="font-size:0.8rem;color:#6B7280;font-weight:400">点击行查看详情</span></h3>
+                    <div class="card-actions">
+                        <button class="btn btn-primary btn-sm" onclick="openAddCompetitor()">
+                            <i class="fas fa-plus"></i> 新增竞品
+                        </button>
+                        <button class="btn btn-outline btn-sm" onclick="exportCompetitors()">
+                            <i class="fas fa-file-export"></i> 导出
+                        </button>
+                    </div>
+                </div>
                 <div class="table-wrapper">
                     <table class="data-table" id="competitorTable">
                         <thead>
@@ -106,11 +116,123 @@
                                 <th>核心优势</th>
                                 <th>主要劣势</th>
                                 <th>综合评分</th>
+                                <th style="width:100px;text-align:center">操作</th>
                             </tr>
                         </thead>
                         <tbody id="competitorBody">
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- 竞品编辑/新增弹窗 -->
+            <div class="modal" id="competitorEditModal">
+                <div class="modal-content modal-lg">
+                    <span class="modal-close" onclick="closeModal('competitorEditModal')">&times;</span>
+                    <h2 id="compEditTitle"><i class="fas fa-plus-circle"></i> 新增竞品</h2>
+                    <form id="compEditForm" onsubmit="saveCompetitor(event)">
+                        <input type="hidden" id="compEditIndex" value="-1">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>机构简称 <span class="required">*</span></label>
+                                <input type="text" id="compName" placeholder="例如：HTI" required>
+                            </div>
+                            <div class="form-group">
+                                <label>机构全称 <span class="required">*</span></label>
+                                <input type="text" id="compFullName" placeholder="例如：HTI 留学" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>覆盖国别分类</label>
+                                <select id="compCountry">
+                                    <option value="多国">多国覆盖</option>
+                                    <option value="北美">北美</option>
+                                    <option value="英国">英国</option>
+                                    <option value="澳洲">澳洲</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>具体覆盖国家/地区</label>
+                                <input type="text" id="compCoverage" placeholder="例如：英国、美国、澳洲">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>产品方向</label>
+                                <select id="compProduct">
+                                    <option value="多国">多国</option>
+                                    <option value="北美">北美</option>
+                                    <option value="英国">英国</option>
+                                    <option value="澳洲">澳洲</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>是否B2B</label>
+                                <select id="compIsB2B">
+                                    <option value="false">否</option>
+                                    <option value="true">是</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>优势区域</label>
+                                <input type="text" id="compStrongRegion" placeholder="例如：江浙沪">
+                            </div>
+                            <div class="form-group">
+                                <label>综合评分 (1-10)</label>
+                                <input type="number" id="compScore" min="1" max="10" step="0.1" placeholder="7.0">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>核心优势 <span class="required">*</span></label>
+                            <textarea id="compAdvantage" rows="3" placeholder="描述该竞品的核心优势..." required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>主要劣势 <span class="required">*</span></label>
+                            <textarea id="compDisadvantage" rows="3" placeholder="描述该竞品的主要劣势..." required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>佣金政策</label>
+                            <textarea id="compCommission" rows="2" placeholder="描述佣金政策..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>服务评价</label>
+                            <textarea id="compService" rows="2" placeholder="描述服务评价..."></textarea>
+                        </div>
+                        <h4 style="margin: 16px 0 8px; color: var(--text-secondary);"><i class="fas fa-chart-radar"></i> 六维能力评分 (1-10)</h4>
+                        <div class="form-row-six">
+                            <div class="form-group">
+                                <label>品牌力</label>
+                                <input type="number" id="compRadarBrand" min="1" max="10" value="7">
+                            </div>
+                            <div class="form-group">
+                                <label>价格竞争力</label>
+                                <input type="number" id="compRadarPrice" min="1" max="10" value="7">
+                            </div>
+                            <div class="form-group">
+                                <label>服务能力</label>
+                                <input type="number" id="compRadarService" min="1" max="10" value="7">
+                            </div>
+                            <div class="form-group">
+                                <label>渠道覆盖</label>
+                                <input type="number" id="compRadarChannel" min="1" max="10" value="7">
+                            </div>
+                            <div class="form-group">
+                                <label>产品力</label>
+                                <input type="number" id="compRadarProduct" min="1" max="10" value="7">
+                            </div>
+                            <div class="form-group">
+                                <label>技术实力</label>
+                                <input type="number" id="compRadarTech" min="1" max="10" value="7">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-outline" onclick="closeModal('competitorEditModal')">取消</button>
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> 保存</button>
+                        </div>
+                    </form>
                 </div>
             </div>
 
