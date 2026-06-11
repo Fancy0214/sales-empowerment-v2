@@ -938,7 +938,11 @@ function renderRadarChart() {
         { fill: 'rgba(74, 144, 217, 0.25)', stroke: '#4a90d9' },
         { fill: 'rgba(16, 185, 129, 0.15)', stroke: '#10B981' },
         { fill: 'rgba(245, 158, 11, 0.15)', stroke: '#F59E0B' },
-        { fill: 'rgba(139, 92, 246, 0.15)', stroke: '#8B5CF6' }
+        { fill: 'rgba(139, 92, 246, 0.15)', stroke: '#8B5CF6' },
+        { fill: 'rgba(239, 68, 68, 0.15)', stroke: '#EF4444' },
+        { fill: 'rgba(236, 72, 153, 0.15)', stroke: '#EC4899' },
+        { fill: 'rgba(20, 184, 166, 0.15)', stroke: '#14B8A6' },
+        { fill: 'rgba(249, 115, 22, 0.15)', stroke: '#F97316' }
     ];
     const cx = 250, cy = 220, maxR = 160, max = 10;
     
@@ -979,7 +983,7 @@ function renderRadarChart() {
             const y = cy + (v / max) * maxR * Math.sin(angle);
             pts += `${x},${y} `;
         });
-        const c = colors[idx];
+        const c = colors[idx % colors.length];
         polyHtml += `<polygon points="${pts}" fill="${c.fill}" stroke="${c.stroke}" stroke-width="2"/>`;
     });
     
@@ -987,7 +991,7 @@ function renderRadarChart() {
     let legendHtml = '<g transform="translate(100, 420)">';
     competitors.forEach((comp, idx) => {
         const xOff = idx * 90;
-        legendHtml += `<circle cx="${xOff}" cy="0" r="8" fill="${colors[idx].stroke}"/>`;
+        legendHtml += `<circle cx="${xOff}" cy="0" r="8" fill="${colors[idx % colors.length].stroke}"/>`;
         legendHtml += `<text x="${xOff + 15}" y="4" fill="#374151" font-size="12">${comp.name}</text>`;
     });
     legendHtml += '</g>';
