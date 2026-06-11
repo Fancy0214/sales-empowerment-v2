@@ -508,7 +508,7 @@ function switchPage(pageName) {
 // ==================== 竞品情报站功能 ====================
 
 function renderCompetitors(filtered = null) {
-    const data = filtered || competitors;
+    const data = (filtered || competitors).slice().sort((a, b) => (b.score || 0) - (a.score || 0));
     const tbody = document.getElementById('competitorBody');
     tbody.innerHTML = '';
     
