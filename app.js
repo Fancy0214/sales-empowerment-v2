@@ -1122,7 +1122,7 @@ ${disadvantage}
 
 // ==================== AI话术工坊功能 ====================
 
-let currentFramework = 'RTF';
+let currentFramework = 'auto'; // 自动选择沟通模型
 
 function showStudioTab(tab) {
     document.querySelectorAll('.studio-content').forEach(c => c.classList.remove('active'));
@@ -1132,96 +1132,226 @@ function showStudioTab(tab) {
     document.querySelector(`#page-ai-studio [onclick="showStudioTab('${tab}')"]`).classList.add('active');
 }
 
-function selectFramework(framework) {
-    currentFramework = framework;
-    
-    document.querySelectorAll('.framework-option').forEach(opt => {
-        opt.classList.remove('active');
-    });
-    document.querySelector(`[data-framework="${framework}"]`).classList.add('active');
-    
-    // 显示/隐藏对应字段
-    document.querySelectorAll('.rtf-field, .race-field, .rise-field').forEach(el => {
-        el.style.display = 'none';
-    });
-    
-    if (framework === 'RTF') {
-        document.querySelector('.rtf-field').style.display = 'block';
-    } else if (framework === 'RACE') {
-        document.querySelector('.race-field').style.display = 'block';
-    } else if (framework === 'RISE') {
-        document.querySelectorAll('.rise-field').forEach(el => el.style.display = 'block');
+// 展开/收起我司情况
+function toggleCompanyInfo() {
+    const wrapper = document.getElementById('companyInfoWrapper');
+    const icon = document.getElementById('companyInfoIcon');
+    if (wrapper.style.display === 'none') {
+        wrapper.style.display = 'block';
+        icon.className = 'fas fa-minus-circle collapsible-icon';
+    } else {
+        wrapper.style.display = 'none';
+        icon.className = 'fas fa-plus-circle collapsible-icon';
     }
 }
 
-function generateScript() {
-    const industry = document.getElementById('clientIndustry').value;
-    const stage = document.getElementById('clientStage').value;
-    const painPoint = document.getElementById('painPoint').value;
+// 九型人格沟通策略映射
+const enneagramStrategies = {
+    '1号完美型': '用数据、标准和合规性打动；强调我司27年行业规范、佣金透明安全',
+    '2号助人型': '强调合作共赢、助力对方学生成长；突出服务口碑和陪伴感',
+    '3号成就型': '用结果说话——成功案例、签约数据、效率提升；突出"签约更多学生"',
+    '4号独特型': '强调我司差异化优势——专注英国27年的独特定位、人工+AI双线',
+    '5号理智型': '提供详实信息、院校名单、佣金结构；给足思考空间，不急于逼单',
+    '6号忠诚型': '强调安全感和稳定性——27年历史、佣金安全保障、长期合作案例',
+    '7号活跃型': '用新鲜感吸引——AI赋能、创新服务模式；保持节奏轻快有趣',
+    '8号领袖型': '尊重对方主导权，提供选择而非指令；突出实力和可靠伙伴形象',
+    '9号和平型': '营造轻松氛围，减少压力；强调合作省心、一站式服务'
+};
+
+// 根据触达阶段选择沟通模型
+function selectModels(reachStage, clientIdentity) {
+    const models = [];
     
-    let framework = '';
-    if (currentFramework === 'RTF') {
-        const format = document.getElementById('outputFormat').value;
-        framework = `【使用RTF框架生成】
-
-【角色】留学销售顾问，专为${industry}行业客户提供专业留学规划
-【任务】为${stage}阶段客户定制留学话术，解决其痛点：${painPoint || '无'}
-【格式】结构化输出，包含开场白、需求挖掘、痛点回应、促单话术`;
-    } else if (currentFramework === 'RACE') {
-        const context = document.getElementById('contextInfo').value;
-        framework = `【使用RACE框架生成】
-
-【角色】资深留学规划顾问
-【行动】提供个性化留学方案，解决客户需求
-【背景】客户来自${industry}行业，处于${stage}阶段，${context || '需要全面的留学规划'}
-【期望】帮助客户明确目标，建立信任，推动决策`;
-    } else if (currentFramework === 'RISE') {
-        const steps = document.getElementById('stepsReq').value;
-        const goal = document.getElementById('endGoal').value;
-        framework = `【使用RISE框架生成】
-
-【角色】专业留学销售顾问
-【指令】为${industry}行业${stage}客户定制话术
-【步骤】${steps || '开场建立信任→需求深度挖掘→方案呈现→异议处理→促成签约'}
-【最终目标】${goal || '帮助客户做出留学决策并签约'}`;
+    // 根据触达阶段选择核心模型
+    switch(reachStage) {
+        case '首次触达':
+            models.push({ name: '30秒电梯法则', desc: '用最短时间传递核心价值主张' });
+            models.push({ name: '黄金圈模型', desc: '从Why出发，建立情感共鸣' });
+            break;
+        case '二次触达':
+            models.push({ name: 'FFC赞美法则', desc: '肯定对方优势，建立好感' });
+            models.push({ name: '乔哈里视窗', desc: '扩大开放区，建立信任' });
+            break;
+        case '三次触达':
+        case '四次触达':
+            models.push({ name: '异议模型', desc: '预判并化解潜在顾虑' });
+            models.push({ name: '说服圆环', desc: '多角度论证，逐步推进' });
+            break;
+        case '需求挖掘':
+            models.push({ name: '乔哈里视窗', desc: '通过提问揭示隐藏需求' });
+            models.push({ name: 'OELS反馈模型', desc: '观察-解释-评估-建议，精准回应' });
+            break;
+        case '意向确认阶段':
+            models.push({ name: 'RIDE说服模型', desc: '风险-利益-差异-影响，推动决策' });
+            models.push({ name: '说服圆环', desc: '循环论证，强化意向' });
+            break;
+        case '签约阶段':
+            models.push({ name: 'RIDE说服模型', desc: '强调不签约风险和签约收益' });
+            models.push({ name: '30秒电梯法则', desc: '浓缩核心价值，临门一脚' });
+            break;
+        case '产出阶段':
+            models.push({ name: 'OELS反馈模型', desc: '及时反馈，保障交付质量' });
+            models.push({ name: 'FFC赞美法则', desc: '肯定合作成果，强化关系' });
+            break;
+        case '维护阶段':
+            models.push({ name: 'FOSSA情绪模型', desc: '感知情绪，维护长期关系' });
+            models.push({ name: '乔哈里视窗', desc: '持续扩大互信区域' });
+            break;
+        default:
+            models.push({ name: '黄金圈模型', desc: '从Why出发，建立共鸣' });
+            models.push({ name: '说服圆环', desc: '多角度推进' });
     }
     
-    const scriptContent = `
-【开场白】
-"您好，我是XX留学的顾问老师。看到您想了解${stage}阶段的留学规划，很高兴能帮到您。我们团队专门服务${industry}行业的客户，对这类背景的申请有很多成功经验。"
-
-【需求挖掘】
-"想先了解一下，您目前是为自己还是为孩子咨询呢？目标国家大概在什么范围？对于专业方向有没有初步的想法？"
-
-【痛点回应】
-"您提到${painPoint || '对留学申请流程不太了解'}，这也是很多家长都会遇到的顾虑。我们会用专业的经验帮您把这些不确定性降到最低，确保每一步都有清晰的规划。"
-
-【促单话术】
-"我们今天先把您的基本情况做一个免费评估，我会给您一份个性化的方案建议。这个优惠名额本周只剩2个了，您看方便现在确认下吗？"
-`;
+    // 决策者额外加RIDE
+    if (clientIdentity === '决策者' && !models.find(m => m.name === 'RIDE说服模型')) {
+        models.push({ name: 'RIDE说服模型', desc: '决策者关注风险收益比' });
+    }
+    // 影响者额外加FFC
+    if (clientIdentity === '影响者' && !models.find(m => m.name === 'FFC赞美法则')) {
+        models.push({ name: 'FFC赞美法则', desc: '影响者需要被认可' });
+    }
     
-    document.getElementById('generatedContent').innerHTML = `
-        <div class="framework-used">
-            <span class="framework-label">已使用框架：<strong>${currentFramework}</strong></span>
-        </div>
-        <div class="script-block">
-            <div class="script-block-title"><i class="fas fa-bullhorn"></i> 开场白</div>
-            <div class="script-block-content">您好，我是XX留学的顾问老师。看到您想了解${stage}阶段的留学规划，很高兴能帮到您。我们团队专门服务${industry}行业的客户，对这类背景的申请有很多成功经验。</div>
-        </div>
-        <div class="script-block">
-            <div class="script-block-title"><i class="fas fa-search"></i> 需求挖掘</div>
-            <div class="script-block-content">想先了解一下，您目前是为自己还是为孩子咨询呢？目标国家大概在什么范围？对于专业方向有没有初步的想法？</div>
-        </div>
-        <div class="script-block">
-            <div class="script-block-title"><i class="fas fa-hand-holding-medical"></i> 痛点回应</div>
-            <div class="script-block-content">您提到${painPoint || '对留学申请流程不太了解'}，这也是很多家长都会遇到的顾虑。我们会用专业的经验帮您把这些不确定性降到最低，确保每一步都有清晰的规划。</div>
-        </div>
-        <div class="script-block">
-            <div class="script-block-title"><i class="fas fa-money-bill-wave"></i> 促单话术</div>
-            <div class="script-block-content">我们今天先把您的基本情况做一个免费评估，我会给您一份个性化的方案建议。这个优惠名额本周只剩2个了，您看方便现在确认下吗？</div>
-        </div>
-    `;
+    return models;
+}
+
+// 从背景信息中提取九型
+function extractEnneagram(background) {
+    if (!background) return null;
+    const patterns = ['1号','2号','3号','4号','5号','6号','7号','8号','9号',
+                      '完美型','助人型','成就型','独特型','理智型','忠诚型','活跃型','领袖型','和平型',
+                      '完美主义','助人','成就','独特','理智','忠诚','活跃','领袖','和平'];
+    for (const p of patterns) {
+        if (background.includes(p)) {
+            // 匹配完整九型名称
+            for (const key of Object.keys(enneagramStrategies)) {
+                if (key.includes(p) || p.includes(key.substring(0,2))) return key;
+            }
+        }
+    }
+    return null;
+}
+
+function generateScript() {
+    const myRole = document.getElementById('myRole').value.trim();
+    const companyInfo = document.getElementById('myCompanyInfo')?.value.trim() || '';
+    const clientLevel = document.getElementById('clientLevel').value;
+    const clientIdentity = document.getElementById('clientIdentity').value;
+    const reachStage = document.getElementById('clientReachStage').value;
+    const clientBackground = document.getElementById('clientBackground').value.trim();
+    const clientNeeds = document.getElementById('clientNeeds').value.trim();
     
+    if (!reachStage) {
+        alert('请选择触达阶段');
+        return;
+    }
+    
+    // 自动选择沟通模型
+    const models = selectModels(reachStage, clientIdentity);
+    const enneagramType = extractEnneagram(clientBackground);
+    const enneagramTip = enneagramType ? enneagramStrategies[enneagramType] : '';
+    
+    // 构建我司优势摘要
+    const companyHighlight = companyInfo 
+        ? companyInfo.substring(0, 80) + (companyInfo.length > 80 ? '...' : '')
+        : '专注英国留学领域，27年行业经验，佣金安全有保障';
+    
+    // 根据不同触达阶段生成话术
+    let scriptBlocks = [];
+    let modelNames = models.map(m => m.name).join(' + ');
+    if (enneagramType) modelNames += ' + 九型人格（' + enneagramType + '）';
+    
+    // === 开场白 ===
+    let opening = '';
+    if (reachStage === '首次触达') {
+        opening = `您好，我是${myRole}，我们专注英国留学领域已经27年了。了解到贵司在${clientBackground ? clientBackground.substring(0,30) : '留学行业'}方面有深厚积累，想跟您聊聊，看看我们能不能帮贵司在英国方向再增加一个可靠的合作伙伴？`;
+    } else if (reachStage === '二次触达') {
+        opening = `您好，上次跟您沟通后，我整理了一些贵司可能感兴趣的英国院校资源和合作方案。特别是${clientBackground ? '结合贵司主做的方向' : '针对您目前的需求'}，我们有几个亮点想跟您分享一下。`;
+    } else if (reachStage === '三次触达' || reachStage === '四次触达') {
+        opening = `您好，考虑到之前咱们聊的情况，我这边专门准备了一份针对贵司的合作方案。${clientNeeds ? '关于您提到的' + clientNeeds.substring(0,20) + '这个问题' : '关于合作的一些核心关注点'}，我有了更具体的建议。`;
+    } else if (reachStage === '需求挖掘') {
+        opening = `您好，想跟您深入了解一下贵司目前在英国方向的业务情况和合作需求，这样我可以更有针对性地匹配我们的资源。`;
+    } else if (reachStage === '意向确认阶段') {
+        opening = `您好，根据咱们前几次的沟通，我对贵司的需求已经有了比较清晰的了解。现在想跟您确认一下合作方向，看看下一步怎么推进最合适。`;
+    } else if (reachStage === '签约阶段') {
+        opening = `您好，咱们前期的沟通已经比较充分了，关于合作的具体条款和流程，我想跟您做最后的确认，争取尽快启动。`;
+    } else if (reachStage === '产出阶段') {
+        opening = `您好，合作启动以来进展如何？我这边想跟进一下目前的产出情况，确保一切顺利。`;
+    } else if (reachStage === '维护阶段') {
+        opening = `您好，最近业务怎么样？想跟您聊聊后续的服务优化，也了解一下有没有新的需求我们可以支持。`;
+    } else {
+        opening = `您好，我是${myRole}，我们专注英国留学领域27年，想跟您探讨一下合作机会。`;
+    }
+    scriptBlocks.push({ title: '开场白', icon: 'fa-bullhorn', content: opening });
+    
+    // === 需求挖掘/痛点切入 ===
+    let discovery = '';
+    const levelTips = {
+        'A级（头部企业）': '贵司在行业里是标杆，我们非常重视跟头部伙伴的合作',
+        'B级（大型企业）': '贵司规模和实力都很有优势，我们希望能成为贵司的长期合作伙伴',
+        'C级（中型企业）': '中型机构其实最需要性价比高的合作伙伴，这正是我们的强项',
+        'D级（小型企业）': '小而精的团队往往对服务响应速度要求更高，我们正好能满足',
+        'E级（个人工作室）': '工作室的优势是灵活，我们的合作模式也很灵活，能配合您的节奏',
+        'F级（个人代理）': '个人代理最关心的就是佣金安全和操作便捷，这两点我们都是强项'
+    };
+    if (clientNeeds) {
+        discovery = `关于您提到的"${clientNeeds.substring(0, 40)}"，这在${clientLevel || '留学行业'}里其实是很常见的痛点。${levelTips[clientLevel] || ''}。我们的方案是这样的——`;
+    } else {
+        discovery = `想了解一下，贵司目前在英国方向最关注的是什么？${clientLevel ? levelTips[clientLevel] + '。' : ''}是院校资源、佣金政策，还是服务响应速度？`;
+    }
+    scriptBlocks.push({ title: '需求切入', icon: 'fa-search', content: discovery });
+    
+    // === 核心价值呈现 ===
+    let valueProp = '';
+    if (clientIdentity === '决策者') {
+        valueProp = `从决策角度来看，跟我们合作有三个核心价值：\n1️⃣ 【安全感】27年专注英国，佣金安全有保障，合作方零风险\n2️⃣ 【增量】英国前100代理院校覆盖广（KCL、曼大、华威、格拉斯哥等），爱尔兰TCD也有佣金，帮您扩大可签约院校池\n3️⃣ 【效率】人工+AI双线护航，提升签约入学效率，让您用更少精力签更多学生`;
+    } else if (clientIdentity === '影响者') {
+        valueProp = `您的专业判断对合作决策很关键，我想从实操层面跟您分享：我们的院校资源覆盖英国前100有开放代理的都可做，操作流程简洁高效，佣金结算透明安全。很多合作方的老师反馈，跟我们对接后英国方向的签约效率明显提升。`;
+    } else {
+        valueProp = `从实际使用体验来说，我们的系统和服务都是围绕"省心"设计的：院校资源全、佣金安全有保障、人工+AI双线服务响应快。您日常对接学生的时候，英国方向的case基本可以放心交给我们来配合。`;
+    }
+    scriptBlocks.push({ title: '核心价值呈现', icon: 'fa-gem', content: valueProp });
+    
+    // === 异议处理 ===
+    let objection = '';
+    if (reachStage === '签约阶段' || reachStage === '意向确认阶段') {
+        objection = `您可能还在考虑几个问题，我逐个回应：\n• "已经有合作机构了" → 完全理解，我们不要求排他，多一个合作伙伴就是多一份保障和资源补充\n• "佣金政策不够灵活" → 我们可以针对贵司体量定制佣金方案，大客户有专项优惠\n• "担心服务质量" → 27年专注英国不是虚的，我们可以先小规模试合作，用结果说话`;
+    } else {
+        objection = `如果您有任何顾虑，比如担心佣金安全、服务响应速度或院校覆盖范围，我们可以先从一个小case试起。我们很多合作方都是从1-2个学生开始，后来发现确实靠谱，才逐步扩大合作规模的。`;
+    }
+    scriptBlocks.push({ title: '异议预判与化解', icon: 'fa-shield-alt', content: objection });
+    
+    // === 促单/下一步 ===
+    let closing = '';
+    if (reachStage === '签约阶段') {
+        closing = `这样，我建议我们本周先把合作框架敲定，下周一正式启动第一个case。我们会安排专人对接，确保整个流程顺畅。您看这个节奏可以吗？`;
+    } else if (reachStage === '意向确认阶段') {
+        closing = `要不我们约个时间，我把详细的合作方案和院校清单带过去，面对面聊会更高效？您看这周四或周五方便吗？`;
+    } else if (reachStage === '维护阶段' || reachStage === '产出阶段') {
+        closing = `后续我会定期跟您同步最新院校政策和佣金变化，有任何问题随时联系我。另外我们最近有几个新签约的优质院校，我整理好发给您看看。`;
+    } else {
+        closing = `不如这样，我把我们最新的英国院校资源清单和佣金政策发给您参考，您先了解一下。有任何问题随时联系我，我们可以约个时间详细聊。`;
+    }
+    scriptBlocks.push({ title: '促单/下一步', icon: 'fa-handshake', content: closing });
+    
+    // 九型人格特别提示
+    if (enneagramTip) {
+        scriptBlocks.push({ title: '九型沟通策略', icon: 'fa-user-circle', content: `检测到客户可能为${enneagramType}：${enneagramTip}\n\n请在实际沟通中注意调整语气和侧重点，让话术更贴合对方性格偏好。` });
+    }
+    
+    // 渲染结果
+    let html = `<div class="framework-used">
+        <span class="framework-label">智能匹配模型：<strong>${modelNames}</strong></span>
+        <span class="framework-sub">触达阶段：${reachStage}${clientIdentity ? ' | 客户身份：' + clientIdentity : ''}${clientLevel ? ' | 客户层级：' + clientLevel : ''}</span>
+    </div>`;
+    
+    scriptBlocks.forEach(block => {
+        html += `<div class="script-block">
+            <div class="script-block-title"><i class="fas ${block.icon}"></i> ${block.title}</div>
+            <div class="script-block-content">${block.content.replace(/\n/g, '<br>')}</div>
+        </div>`;
+    });
+    
+    document.getElementById('generatedContent').innerHTML = html;
     document.getElementById('scriptActions').style.display = 'flex';
 }
 

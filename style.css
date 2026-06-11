@@ -743,70 +743,58 @@ body {
 
 .studio-layout {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 380px 1fr;
     gap: 24px;
+    align-items: start;
 }
 
-/* 框架选择 */
-.framework-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.framework-option {
-    padding: 16px;
-    border: 2px solid var(--border);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    transition: var(--transition);
-}
-
-.framework-option:hover {
-    border-color: var(--accent);
-}
-
-.framework-option.active {
-    border-color: var(--accent);
-    background: rgba(74, 144, 217, 0.05);
-}
-
-.framework-header {
+/* 可折叠标签 */
+.collapsible-label {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 10px;
+    cursor: pointer;
+    user-select: none;
+    margin-bottom: 6px;
 }
 
-.framework-name {
-    font-weight: 600;
-    color: var(--primary);
+.collapsible-label span {
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 0.875rem;
 }
 
-.framework-badge {
-    background: var(--accent);
-    color: white;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 0.7rem;
+.collapsible-icon {
+    color: var(--accent);
+    font-size: 1rem;
+    transition: var(--transition);
 }
 
-.framework-desc {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+.collapsible-content textarea {
+    margin-top: 4px;
 }
 
-.framework-item {
-    background: var(--bg-primary);
-    padding: 4px 10px;
-    border-radius: 4px;
-    font-size: 0.8rem;
+/* 话术输入卡片 */
+.script-input-card {
+    position: sticky;
+    top: 80px;
+}
+
+.script-input-card .btn-generate {
+    width: 100%;
+    margin-top: 8px;
+}
+
+/* 话术结果卡片 */
+.script-result-card {
+    min-height: 400px;
+}
+
+.framework-sub {
+    display: block;
+    font-size: 0.78rem;
     color: var(--text-secondary);
-}
-
-.framework-item strong {
-    color: var(--primary-mid);
+    margin-top: 4px;
 }
 
 /* 输入卡片 */
@@ -826,7 +814,7 @@ body {
 
 /* 结果卡片 */
 .result-card {
-    grid-column: span 2;
+    grid-column: span 1;
 }
 
 .generated-content {

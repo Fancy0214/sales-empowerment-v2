@@ -347,97 +347,89 @@
             <!-- Tab A: AI话术工坊 -->
             <div class="studio-content active" id="studio-tab">
                 <div class="studio-layout">
-                    <!-- 框架选择 -->
-                    <div class="card framework-card">
-                        <h3><i class="fas fa-layer-group"></i> 选择提示词框架</h3>
-                        <div class="framework-grid">
-                            <div class="framework-option active" data-framework="RTF" onclick="selectFramework('RTF')">
-                                <div class="framework-header">
-                                    <span class="framework-name">RTF框架</span>
-                                    <span class="framework-badge">推荐</span>
-                                </div>
-                                <div class="framework-desc">
-                                    <div class="framework-item"><strong>R</strong> - Role 角色定位</div>
-                                    <div class="framework-item"><strong>T</strong> - Task 任务目标</div>
-                                    <div class="framework-item"><strong>F</strong> - Format 输出格式</div>
-                                </div>
-                            </div>
-                            <div class="framework-option" data-framework="RACE" onclick="selectFramework('RACE')">
-                                <div class="framework-header">
-                                    <span class="framework-name">RACE框架</span>
-                                </div>
-                                <div class="framework-desc">
-                                    <div class="framework-item"><strong>R</strong> - Role 角色</div>
-                                    <div class="framework-item"><strong>A</strong> - Action 行动</div>
-                                    <div class="framework-item"><strong>C</strong> - Context 背景</div>
-                                    <div class="framework-item"><strong>E</strong> - Expectation 期望效果</div>
-                                </div>
-                            </div>
-                            <div class="framework-option" data-framework="RISE" onclick="selectFramework('RISE')">
-                                <div class="framework-header">
-                                    <span class="framework-name">RISE框架</span>
-                                </div>
-                                <div class="framework-desc">
-                                    <div class="framework-item"><strong>R</strong> - Role 角色</div>
-                                    <div class="framework-item"><strong>I</strong> - Instructions 指令</div>
-                                    <div class="framework-item"><strong>S</strong> - Steps 步骤</div>
-                                    <div class="framework-item"><strong>E</strong> - End goal 最终目标</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- 输入区 -->
-                    <div class="card input-card">
-                        <h3><i class="fas fa-edit"></i> 输入客户信息</h3>
+                    <div class="card input-card script-input-card">
+                        <h3><i class="fas fa-edit"></i> 话术生成配置</h3>
+                        
+                        <!-- 我方角色 -->
                         <div class="form-group">
-                            <label>客户行业</label>
-                            <select id="clientIndustry">
-                                <option value="金融">金融</option>
-                                <option value="互联网">互联网</option>
-                                <option value="教育">教育</option>
-                                <option value="医疗">医疗</option>
-                                <option value="制造">制造业</option>
-                                <option value="贸易">贸易</option>
-                                <option value="企业主">企业主</option>
+                            <label>我方角色</label>
+                            <input type="text" id="myRole" value="B2B留学顾问（销售）" placeholder="例如：B2B留学顾问（销售）">
+                        </div>
+
+                        <!-- 我司情况（默认隐藏，点击展开） -->
+                        <div class="form-group">
+                            <label class="collapsible-label" onclick="toggleCompanyInfo()">
+                                <span>我司情况</span>
+                                <i class="fas fa-plus-circle collapsible-icon" id="companyInfoIcon"></i>
+                            </label>
+                            <div id="companyInfoWrapper" class="collapsible-content" style="display:none;">
+                                <textarea id="myCompanyInfo" rows="4" placeholder="描述我司核心优势和服务范围...">我司英爱均可接单，基本英国前100院校有开放代理的都可做，比如KCL、爱丁堡（仅语言）、曼大、布里斯托、华威、格拉斯哥、利兹、南安普顿、谢菲、杜伦、诺丁汉等；爱尔兰前100比如TCD也有佣金。专注英国领域已有27年，以服务为导向，佣金安全为保障，人工+AI双线护航，助力我们合作方签约入学更多学生，实现共赢。</textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <!-- 客户层级 -->
+                            <div class="form-group">
+                                <label>客户层级</label>
+                                <select id="clientLevel">
+                                    <option value="">请选择</option>
+                                    <option value="A级（头部企业）">A级（头部企业）</option>
+                                    <option value="B级（大型企业）">B级（大型企业）</option>
+                                    <option value="C级（中型企业）">C级（中型企业）</option>
+                                    <option value="D级（小型企业）">D级（小型企业）</option>
+                                    <option value="E级（个人工作室）">E级（个人工作室）</option>
+                                    <option value="F级（个人代理）">F级（个人代理）</option>
+                                </select>
+                            </div>
+                            <!-- 客户身份 -->
+                            <div class="form-group">
+                                <label>客户身份</label>
+                                <select id="clientIdentity">
+                                    <option value="">请选择</option>
+                                    <option value="决策者">决策者</option>
+                                    <option value="影响者">影响者</option>
+                                    <option value="使用者">使用者</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- 触达阶段 -->
+                        <div class="form-group">
+                            <label>触达阶段</label>
+                            <select id="clientReachStage">
+                                <option value="">请选择</option>
+                                <option value="首次触达">首次触达</option>
+                                <option value="二次触达">二次触达</option>
+                                <option value="三次触达">三次触达</option>
+                                <option value="四次触达">四次触达</option>
+                                <option value="需求挖掘">需求挖掘</option>
+                                <option value="意向确认阶段">意向确认阶段</option>
+                                <option value="签约阶段">签约阶段</option>
+                                <option value="产出阶段">产出阶段</option>
+                                <option value="维护阶段">维护阶段</option>
                             </select>
                         </div>
+
+                        <!-- 客户背景信息 -->
                         <div class="form-group">
-                            <label>客户阶段</label>
-                            <select id="clientStage">
-                                <option value="意向">意向阶段</option>
-                                <option value="选校">选校阶段</option>
-                                <option value="申请">申请阶段</option>
-                                <option value="签证">签证阶段</option>
-                            </select>
+                            <label>客户背景信息</label>
+                            <textarea id="clientBackground" rows="3" placeholder="如主做国家或产品、合作中机构、常申院校、生源情况、九型（性格）等"></textarea>
                         </div>
-                        <div class="form-group" id="painPointGroup">
-                            <label>痛点描述</label>
-                            <textarea id="painPoint" placeholder="请描述客户的痛点或需求，例如：孩子成绩一般，想申请世界前50名校..."></textarea>
+
+                        <!-- 客户需求描述 -->
+                        <div class="form-group">
+                            <label>客户需求描述</label>
+                            <textarea id="clientNeeds" rows="3" placeholder="请描述客户的核心需求或痛点..."></textarea>
                         </div>
-                        <div class="form-group rtf-field" style="display: none;">
-                            <label>期望输出格式</label>
-                            <textarea id="outputFormat" placeholder="例如：输出结构化的问答形式，包含开场白、问题、回应三部分..."></textarea>
-                        </div>
-                        <div class="form-group race-field" style="display: none;">
-                            <label>背景信息</label>
-                            <textarea id="contextInfo" placeholder="请提供更多背景信息，如客户预算、时间要求等..."></textarea>
-                        </div>
-                        <div class="form-group rise-field" style="display: none;">
-                            <label>执行步骤要求</label>
-                            <textarea id="stepsReq" placeholder="描述对话的具体步骤要求..."></textarea>
-                        </div>
-                        <div class="form-group rise-field" style="display: none;">
-                            <label>最终目标</label>
-                            <input type="text" id="endGoal" placeholder="例如：促成签约">
-                        </div>
-                        <button class="btn btn-primary btn-lg" id="generateScript" onclick="generateScript()">
+
+                        <button class="btn btn-primary btn-lg btn-generate" id="generateScript" onclick="generateScript()">
                             <i class="fas fa-magic"></i> 一键生成话术
                         </button>
                     </div>
 
                     <!-- 结果区 -->
-                    <div class="card result-card" id="scriptResult">
+                    <div class="card result-card script-result-card" id="scriptResult">
                         <h3><i class="fas fa-clipboard-list"></i> 生成结果</h3>
                         <div class="generated-content" id="generatedContent">
                             <div class="placeholder-text">
