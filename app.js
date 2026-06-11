@@ -90,25 +90,26 @@ const competitorTimeline = [
     { date: "上周", tag: "服务升级", content: "啄木鸟教育上线AI智能选校系统，提升选校精准度", source: "啄木鸟教育官网", link: "https://www.zhuomuniao.com" }
 ];
 
-// 话术库（17条）
+// 话术库（B2B留学顾问实战话术）
 const scripts = [
-    { id: 1, category: "opening", title: "初次电话开场", scene: "首次接到客户来电", content: "您好，我是XX留学的张老师，请问您是想了解出国留学的哪个国家呢？我们这里有英国、美国、澳洲等主流留学目的地的专业申请服务。", rating: 5, type: "电话开发" },
-    { id: 2, category: "opening", title: "微信破冰话术", scene: "添加客户微信后", content: "您好呀！感谢您添加我的微信。我是专门负责XX国家留学申请规划的张老师，后期有任何留学相关的问题都可以随时问我，我会第一时间为您解答~", rating: 4, type: "微信沟通" },
-    { id: 3, category: "opening", title: "展会邀约", scene: "邀请参加留学展", content: "您好，我们这个周六会举办一场大型留学展会，汇集了英美澳等20多所海外院校的招生官现场咨询。我看您之前有了解过英国留学，这次有很多英国名校参与，想邀请您来看看~", rating: 5, type: "活动邀约" },
-    { id: 4, category: "discovery", title: "挖掘客户需求", scene: "了解客户基本情况", content: "想先了解一下，您目前是在读什么年级呢？有没有意向的国家和专业方向？这样我可以先给您匹配一些适合的院校方案参考。", rating: 5, type: "需求挖掘" },
-    { id: 5, category: "discovery", title: "探询预算范围", scene: "了解客户支付能力", content: "想问一下您对留学预算大概在什么范围呢？因为不同预算能选择的院校层次差异还是比较大的，这样可以帮您更精准地推荐。", rating: 4, type: "需求挖掘" },
-    { id: 6, category: "discovery", title: "了解家庭决策链", scene: "确认谁是决策人", content: "留学这个决定是您自己做主，还是会和家人一起商量呢？如果需要家长配合准备材料的话，我们可以把方案做得更完善一些。", rating: 4, type: "需求挖掘" },
-    { id: 7, category: "objection", title: "应对「我再考虑考虑」", scene: "客户犹豫不决", content: "完全理解您的顾虑，留学确实是一个重大的决定。不过我建议我们可以先做一个免费的留学评估，看看您目前的情况适合申请哪些学校，这样您在做决定时也会有更多依据。", rating: 5, type: "异议处理" },
-    { id: 8, category: "objection", title: "应对「价格太贵了」", scene: "客户嫌价格高", content: "您说得对，我们的价格确实不是市场上最低的。但正是因为我们的专业度和申请成功率，您能申请到的学校层次是完全不同的。比如去年我们XX同学，从XX排名100多名申请到了前30，这其中的差距您可以算算。", rating: 5, type: "异议处理" },
-    { id: 9, category: "objection", title: "应对「别家更便宜」", scene: "竞品比价", content: "市面上确实有价格更低的服务，但我建议您关注两点：一是申请成功率，二是服务过程中是否有足够的专业支持。毕竟留学申请只有一次机会，如果因为服务不到位导致申请失败，损失的不仅是金钱，更是时间和机会。", rating: 4, type: "异议处理" },
-    { id: 10, category: "objection", title: "应对「想自己申请」", scene: "客户想DIY", content: "自己申请当然是可以的，但如果您愿意了解的话，我可以给您一些专业的建议。DIY最大的风险是信息不对称导致选校失误，或者文书不够出色而被好学校拒绝。我们每年处理几百个案例，经验会帮您避很多坑。", rating: 4, type: "异议处理" },
-    { id: 11, category: "closing", title: "促单话术-限时优惠", scene: "利用时间紧迫感", content: "我们这个月有一个早鸟优惠活动，现在报名可以节省3000元，而且可以优先安排资深的申请老师。不过这个优惠明天就要截止了，不知道您今天方便把合同签了吗？", rating: 5, type: "促单" },
-    { id: 12, category: "closing", title: "促单话术-名额紧张", scene: "利用稀缺性", content: "您看中的这位王老师，他今年只剩下2个名额了，而且已经有多位家长在排队等他了。如果您确定要选择王老师的话，我建议今天就把名额定下来，否则可能会被其他家长抢先。", rating: 5, type: "促单" },
-    { id: 13, category: "closing", title: "处理最后犹豫", scene: "签约前最后一次犹豫", content: "我能感觉到您对孩子的教育是非常用心的，其实您现在的顾虑是什么？可以告诉我，我们一起看看能不能解决。我知道做决定需要谨慎，但我相信这个服务是值得您信任的。", rating: 4, type: "促单" },
-    { id: 14, category: "closing", title: "直接成交", scene: "客户意向明确", content: "好的，既然您对我们的服务比较认可，那我们现在就把合同签了吧？整个申请流程我们会给您拉一个专属服务群，每一步进展我都会及时同步给您。", rating: 5, type: "促单" },
-    { id: 15, category: "followup", title: "签约后维护", scene: "签单后第一天", content: "您好，合同已经收到了，我这边已经建好了您的专属服务群。接下来我们会开始帮您准备申请材料，您先按我们发的清单准备就行，有任何问题随时联系我。", rating: 4, type: "售后维护" },
-    { id: 16, category: "followup", title: "节假日祝福", scene: "节日群发", content: "中秋节快到了，祝您和家人节日快乐！感谢您一直以来的信任和支持，我们会继续努力为孩子的留学申请保驾护航~", rating: 3, type: "售后维护" },
-    { id: 17, category: "followup", title: "申请成功跟进", scene: "拿到offer后", content: "恭喜您！孩子收到了XX大学的offer！这是孩子努力的成果，也是我们共同努力的回报。接下来我帮您处理offer确认和后续的签证申请事宜。", rating: 5, type: "售后维护" }
+    { id: 1, category: "cold_outreach", title: "首次电话-找对人的开场", scene: "首次联系机构负责人", content: "王总您好，我是XX（公司名）的Lily，我们专注英国留学做了27年了。今天打过来不是想推销什么，是看到贵司在英国方向做得挺不错的，想了解一下有没有可能在这方面增加一个靠谱的合作伙伴？就耽误您两分钟。", rating: 5, type: "电话开发" },
+    { id: 2, category: "cold_outreach", title: "微信加人-不尴尬的自我介绍", scene: "展会/活动后加微信", content: "王总好，我是今天在展会上跟您聊了几句的Lily，咱们公司是专做英国方向的。您之前提到英国这边想找新渠道，我回去整理了几个您可能用得上的院校资源，方便的时候发您看看？", rating: 5, type: "微信沟通" },
+    { id: 3, category: "cold_outreach", title: "冷邮件-别写成长篇大论", scene: "邮件首次触达", content: "王总好，\n\n简单介绍下，我们是专注英国留学27年的B2B服务机构，英国前100有代理的院校基本都能做（KCL、曼大、华威、格拉斯哥等），爱尔兰TCD也有佣金。\n\n如果您这边英国方向有增量需求，我们可以先从1-2个case试起，用结果说话。\n\n方便的话约个15分钟电话聊聊？\n\nLily", rating: 4, type: "邮件触达" },
+    { id: 4, category: "cold_outreach", title: "被前台/助理挡住怎么办", scene: "电话被转接或拦截", content: "理解您的工作安排，我就不占王总太多时间了。能不能帮我把一张名片转交给王总？或者您方便告诉我他的微信吗？我就聊两分钟，绝对是王总会感兴趣的内容，不会浪费他时间。", rating: 4, type: "电话开发" },
+    { id: 5, category: "warm_follow", title: "二次跟进-有理由地回来", scene: "首次沟通后3-5天跟进", content: "王总，上次跟您聊完之后我特意查了一下，您提到的那个XX院校我们刚好新拿到了代理权，佣金政策也出来了，比市面上的同行好不少。想着第一时间跟您同步一下，您看这周哪天方便电话聊聊？", rating: 5, type: "二次触达" },
+    { id: 6, category: "warm_follow", title: "对方说'考虑考虑'-别真等", scene: "客户态度模糊", content: "完全理解，这种合作确实需要慎重。这样吧，我不催您做决定，但能不能给我一个具体的跟进时间？比如下周三我再联系您？这样我也能提前把最新的院校清单和佣金政策准备好，不浪费您时间。", rating: 5, type: "跟进升温" },
+    { id: 7, category: "warm_follow", title: "对方态度冷淡-找到撬点", scene: "客户兴趣不高", content: "王总，我也理解您现在可能不缺合作伙伴。不过我想问一下，贵司目前英国方向的学生签约转化率大概在什么水平？我们最近帮一家跟贵司体量差不多的机构，英国方向转化率提升了15%，主要是靠院校资源匹配和响应速度。要不我先把这个案例发您看看？", rating: 4, type: "跟进升温" },
+    { id: 8, category: "objection", title: "「我们已经有合作方了」", scene: "最常见的异议", content: "那挺好的，说明您在英国方向确实有积累。我也不说让我们替代谁，就是想问一句：您现在的合作伙伴，有没有哪方面您觉得还差点意思？比如响应速度、佣金结算、院校覆盖？多一个渠道不是坏事，关键时刻能兜底。", rating: 5, type: "异议拆解" },
+    { id: 9, category: "objection", title: "「你们佣金没有XX高」", scene: "价格敏感型客户", content: "佣金高低确实重要，但我建议您也关注一下结算周期和隐性成本。我们是月度结算，不少同行是季度甚至半年才打款。另外我们人工+AI双线跟进，签约效率高，实际上您算算总收益，可能比单纯看佣金比例更划算。", rating: 5, type: "异议拆解" },
+    { id: 10, category: "objection", title: "「我不确定你们服务行不行」", scene: "信任未建立", content: "这个担心很正常，谁都不想拿学生的事冒险。这样，我们先不签框架协议，您先推1-2个学生过来试一下，感受一下我们的响应速度和专业度。如果体验不好，随时可以停。27年不是白做的，我们有这个底气。", rating: 5, type: "异议拆解" },
+    { id: 11, category: "objection", title: "「我只做美加，不做英国」", scene: "业务方向不匹配", content: "了解，不过很多原来只做美加的机构，这两年也开始加英国线了——毕竟英国申请周期短、出结果快，对现金流很友好。如果将来您有这个打算，我们可以先建个联系，需要的时候随时能接上。", rating: 3, type: "异议拆解" },
+    { id: 12, category: "closing", title: "试合作推动-降低决策门槛", scene: "意向有了但还在犹豫", content: "王总，咱也别想太复杂。这样，您先推1-2个英国的学生过来，我们全程跟进，您看看效果。不需要签什么大协议，就一个简单的合作确认函就行。跑通一个case，后面的事自然就顺了。您看这周能安排吗？", rating: 5, type: "临门促单" },
+    { id: 13, category: "closing", title: "锚定签约节奏", scene: "对方说好但一直不推进", content: "王总，既然咱们方向都聊对了，我建议这周就把合作确认函签了，下周我这边就可以开始对接您的学生。英国申请的窗口期就那么几个月，早启动一天就多一分优势。您看周四还是周五方便？", rating: 5, type: "临门促单" },
+    { id: 14, category: "closing", title: "最后犹豫-直面顾虑", scene: "签约前最后一哆嗦", content: "王总，我能感觉您还有点犹豫，您直说，最担心的是什么？佣金？服务？还是别的？咱们敞开聊，能解决的我就当场给您方案，不能解决的我也实话实说。合作嘛，最怕的就是有话憋着，后面反而容易出问题。", rating: 4, type: "临门促单" },
+    { id: 15, category: "nurture", title: "首单交付后-趁热打铁", scene: "第一个case出结果后", content: "王总，XX同学的offer下来了，整个过程从提交到出结果也就X天，比市场平均快了不少吧？趁这个势头，咱们可以聊聊扩大合作范围的事了。最近又有几个新签的优质院校，我整理一下发您？", rating: 5, type: "长期培育" },
+    { id: 16, category: "nurture", title: "节日问候-带点价值", scene: "节日/假期前", content: "王总，中秋快乐！知道您忙就不多聊了，顺便提一句：我们刚拿到XX大学2026年的最新佣金政策，比去年涨了2个点。节后我发您详细看看？", rating: 4, type: "长期培育" },
+    { id: 17, category: "nurture", title: "沉睡客户唤醒-给个新理由", scene: "很久没合作的客户", content: "王总好久不见！最近我们英国那边有几个新变化想跟您同步一下——曼大和利兹2026年新增了几个专业的代理通道，佣金也有调整。您那边最近英国方向的学生量怎么样？如果有需求的话，这次的政策窗口挺值得抓的。", rating: 4, type: "长期培育" },
+    { id: 18, category: "nurture", title: "续约/升级合作", scene: "试合作期结束", content: "王总，咱们合作也有一阵了，感觉配合得还不错吧？接下来我想跟您聊聊深度合作的事——如果签约量到一定规模，我们可以给到更优的佣金档位，还会配专属的对接经理，响应更快。您看有没有兴趣升级一下？", rating: 4, type: "长期培育" }
 ];
 
 // 九型人格完整数据
@@ -464,14 +465,31 @@ const toolContents = {
 
 // 话术分类映射
 const categoryNames = {
-    opening: "开场白",
-    discovery: "需求挖掘",
-    objection: "异议处理",
-    closing: "促单",
-    followup: "售后维护"
+    cold_outreach: "冷触达",
+    warm_follow: "跟进升温",
+    objection: "异议拆解",
+    closing: "临门促单",
+    nurture: "长期培育"
 };
 
 // ==================== 工具函数 ====================
+
+// 头像菜单
+function toggleAvatarMenu() {
+    const menu = document.getElementById('avatarMenu');
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+
+function goAdmin() {
+    document.getElementById('avatarMenu').style.display = 'none';
+    enableAdminMode();
+}
+
+function goHome() {
+    document.getElementById('avatarMenu').style.display = 'none';
+    window.location.hash = '';
+    switchPage('competitors');
+}
 
 // 更新时间
 function updateDateTime() {
@@ -1386,6 +1404,11 @@ function renderScripts(category = 'all') {
         );
     }
     
+    if (filtered.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-secondary);"><i class="fas fa-inbox" style="font-size:2rem;margin-bottom:12px;display:block;"></i>暂无话术，点击上方"新增话术"添加</div>';
+        return;
+    }
+    
     filtered.forEach(script => {
         const card = document.createElement('div');
         card.className = 'script-card';
@@ -1400,14 +1423,18 @@ function renderScripts(category = 'all') {
                     <div class="script-card-title">${script.title}</div>
                     <div class="script-card-scene">${script.scene}</div>
                 </div>
-                <div class="script-rating">${stars}</div>
+                <div class="script-card-actions-top">
+                    <div class="script-rating">${stars}</div>
+                    <button class="script-action-btn" title="编辑" onclick="openEditScript(${script.id})"><i class="fas fa-pen"></i></button>
+                    <button class="script-action-btn script-action-btn-danger" title="删除" onclick="deleteScript(${script.id})"><i class="fas fa-trash"></i></button>
+                </div>
             </div>
-            <div class="script-card-content">${script.content}</div>
+            <div class="script-card-content">${script.content.replace(/\n/g, '<br>')}</div>
             <div class="script-card-footer">
-                <span class="script-type-tag">${categoryNames[script.category]}</span>
-                <button class="expand-btn" onclick="toggleScript(${script.id})">
-                    <span class="expand-text">展开</span> <i class="fas fa-chevron-down"></i>
-                </button>
+                <span class="script-type-tag">${categoryNames[script.category] || script.category}</span>
+                <div class="script-card-footer-actions">
+                    <button class="btn btn-sm btn-outline" onclick="copyScriptContent(${script.id})"><i class="fas fa-copy"></i> 复制</button>
+                </div>
             </div>
         `;
         
@@ -1415,20 +1442,121 @@ function renderScripts(category = 'all') {
     });
 }
 
-function toggleScript(id) {
-    const card = document.getElementById(`script-${id}`);
-    const btn = card.querySelector('.expand-btn');
-    const text = btn.querySelector('.expand-text');
-    const icon = btn.querySelector('i');
+function copyScriptContent(id) {
+    const script = scripts.find(s => s.id === id);
+    if (script) {
+        navigator.clipboard.writeText(script.content).then(() => {
+            const btn = document.querySelector(`#script-${id} .script-card-footer-actions button`);
+            if (btn) {
+                const original = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i> 已复制';
+                setTimeout(() => btn.innerHTML = original, 1500);
+            }
+        });
+    }
+}
+
+// 新增话术
+function openAddScript() {
+    document.getElementById('scriptEditTitle').innerHTML = '<i class="fas fa-plus-circle"></i> 新增话术';
+    document.getElementById('scriptEditId').value = '';
+    document.getElementById('scriptEditName').value = '';
+    document.getElementById('scriptEditScene').value = '';
+    document.getElementById('scriptEditCategory').value = 'cold_outreach';
+    document.getElementById('scriptEditRating').value = '4';
+    document.getElementById('scriptEditContent').value = '';
+    document.getElementById('scriptEditModal').classList.add('active');
+}
+
+// 编辑话术
+function openEditScript(id) {
+    const script = scripts.find(s => s.id === id);
+    if (!script) return;
     
-    if (card.classList.contains('expanded')) {
-        card.classList.remove('expanded');
-        text.textContent = '展开';
-        icon.className = 'fas fa-chevron-down';
+    document.getElementById('scriptEditTitle').innerHTML = '<i class="fas fa-edit"></i> 编辑话术';
+    document.getElementById('scriptEditId').value = id;
+    document.getElementById('scriptEditName').value = script.title;
+    document.getElementById('scriptEditScene').value = script.scene;
+    document.getElementById('scriptEditCategory').value = script.category;
+    document.getElementById('scriptEditRating').value = script.rating;
+    document.getElementById('scriptEditContent').value = script.content;
+    document.getElementById('scriptEditModal').classList.add('active');
+}
+
+// 保存话术（新增或编辑）
+function saveScriptEdit(event) {
+    event.preventDefault();
+    
+    const editId = document.getElementById('scriptEditId').value;
+    const title = document.getElementById('scriptEditName').value.trim();
+    const scene = document.getElementById('scriptEditScene').value.trim();
+    const category = document.getElementById('scriptEditCategory').value;
+    const rating = parseInt(document.getElementById('scriptEditRating').value);
+    const content = document.getElementById('scriptEditContent').value.trim();
+    
+    if (editId) {
+        // 编辑已有
+        const script = scripts.find(s => s.id === parseInt(editId));
+        if (script) {
+            script.title = title;
+            script.scene = scene;
+            script.category = category;
+            script.rating = rating;
+            script.content = content;
+            script.type = categoryNames[category] || category;
+        }
     } else {
-        card.classList.add('expanded');
-        text.textContent = '收起';
-        icon.className = 'fas fa-chevron-up';
+        // 新增
+        const maxId = scripts.reduce((max, s) => Math.max(max, s.id), 0);
+        scripts.push({
+            id: maxId + 1,
+            category: category,
+            title: title,
+            scene: scene,
+            content: content,
+            rating: rating,
+            type: categoryNames[category] || category
+        });
+    }
+    
+    saveScriptsLocal();
+    closeModal('scriptEditModal');
+    renderScripts();
+}
+
+// 删除话术
+function deleteScript(id) {
+    if (!confirm('确定删除这条话术吗？')) return;
+    const idx = scripts.findIndex(s => s.id === id);
+    if (idx !== -1) {
+        scripts.splice(idx, 1);
+        saveScriptsLocal();
+        renderScripts();
+    }
+}
+
+// 本地存储话术
+function saveScriptsLocal() {
+    try {
+        localStorage.setItem('salesEmpowerment_scripts', JSON.stringify(scripts));
+    } catch(e) {
+        console.warn('保存话术到localStorage失败:', e);
+    }
+}
+
+// 从本地存储加载话术
+function loadScriptsLocal() {
+    try {
+        const saved = localStorage.getItem('salesEmpowerment_scripts');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                scripts.length = 0;
+                parsed.forEach(s => scripts.push(s));
+            }
+        }
+    } catch(e) {
+        console.warn('从localStorage加载话术失败:', e);
     }
 }
 
@@ -1814,6 +1942,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // 初始化数据
+    loadScriptsLocal();
     loadCompetitorsFromSupabase();
     renderTimeline();
     renderRadarChart();
@@ -1825,6 +1954,15 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 监听hash变化
     window.addEventListener('hashchange', checkShareMode);
+    
+    // 头像菜单点击外部关闭
+    document.addEventListener('click', function(e) {
+        const menu = document.getElementById('avatarMenu');
+        const btn = document.getElementById('avatarBtn');
+        if (menu && btn && !btn.contains(e.target) && !menu.contains(e.target)) {
+            menu.style.display = 'none';
+        }
+    });
     
     // 移动端菜单
     if (window.innerWidth <= 768) {

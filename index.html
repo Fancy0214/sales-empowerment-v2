@@ -19,8 +19,17 @@
         </div>
         <div class="user-info">
             <span class="date-time" id="dateTime"></span>
-            <div class="avatar">
+            <div class="avatar" id="avatarBtn" onclick="toggleAvatarMenu()">
                 <i class="fas fa-user"></i>
+            </div>
+            <!-- 头像下拉菜单 -->
+            <div class="avatar-menu" id="avatarMenu" style="display:none;">
+                <div class="avatar-menu-item" onclick="goAdmin()">
+                    <i class="fas fa-shield-alt"></i> 后台管理
+                </div>
+                <div class="avatar-menu-item" onclick="goHome()">
+                    <i class="fas fa-home"></i> 返回首页
+                </div>
             </div>
         </div>
     </header>
@@ -457,16 +466,19 @@
                         <i class="fas fa-search"></i>
                         <input type="text" id="scriptSearch" placeholder="搜索话术..." oninput="filterScripts()">
                     </div>
+                    <button class="btn btn-primary btn-sm" onclick="openAddScript()">
+                        <i class="fas fa-plus"></i> 新增话术
+                    </button>
                 </div>
 
                 <!-- 话术标签 -->
                 <div class="script-tags" id="scriptTags">
                     <span class="tag active" data-category="all">全部</span>
-                    <span class="tag" data-category="opening">开场白</span>
-                    <span class="tag" data-category="discovery">需求挖掘</span>
-                    <span class="tag" data-category="objection">异议处理</span>
-                    <span class="tag" data-category="closing">促单</span>
-                    <span class="tag" data-category="followup">售后维护</span>
+                    <span class="tag" data-category="cold_outreach">冷触达</span>
+                    <span class="tag" data-category="warm_follow">跟进升温</span>
+                    <span class="tag" data-category="objection">异议拆解</span>
+                    <span class="tag" data-category="closing">临门促单</span>
+                    <span class="tag" data-category="nurture">长期培育</span>
                 </div>
 
                 <!-- 话术卡片列表 -->
@@ -744,6 +756,55 @@
         </div>
 
     </main>
+
+    <!-- 话术编辑弹窗 -->
+    <div class="modal" id="scriptEditModal">
+        <div class="modal-content modal-lg">
+            <span class="modal-close" onclick="closeModal('scriptEditModal')">&times;</span>
+            <h2 id="scriptEditTitle"><i class="fas fa-plus-circle"></i> 新增话术</h2>
+            <form id="scriptEditForm" onsubmit="saveScriptEdit(event)">
+                <input type="hidden" id="scriptEditId" value="">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>话术标题 <span class="required">*</span></label>
+                        <input type="text" id="scriptEditName" placeholder="例如：首次电话触达话术" required>
+                    </div>
+                    <div class="form-group">
+                        <label>适用场景 <span class="required">*</span></label>
+                        <input type="text" id="scriptEditScene" placeholder="例如：首次联系B端合作伙伴" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>话术分类</label>
+                        <select id="scriptEditCategory">
+                            <option value="cold_outreach">冷触达</option>
+                            <option value="warm_follow">跟进升温</option>
+                            <option value="objection">异议拆解</option>
+                            <option value="closing">临门促单</option>
+                            <option value="nurture">长期培育</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>实用评分 (1-5)</label>
+                        <select id="scriptEditRating">
+                            <option value="5">★★★★★ 必备</option>
+                            <option value="4">★★★★ 常用</option>
+                            <option value="3">★★★ 备用</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>话术内容 <span class="required">*</span></label>
+                    <textarea id="scriptEditContent" rows="8" placeholder="写出你实际会说的原话，别写教科书式的话术..." required></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('scriptEditModal')">取消</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> 保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script src="app.js"></script>
 </body>
