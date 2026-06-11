@@ -484,7 +484,10 @@ const categoryNames = {
     warm_follow: "跟进升温",
     objection: "异议拆解(LSCPA)",
     closing: "临门促单",
-    nurture: "长期培育"
+    nurture: "长期培育",
+    first_contact: "首次触达",
+    request_apply: "索要申请",
+    reward: "奖励发放"
 };
 
 // ==================== 工具函数 ====================
