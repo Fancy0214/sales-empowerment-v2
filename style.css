@@ -1936,13 +1936,14 @@ body {
 }
 
 /* ==================== 分享加载中遮罩 ==================== */
-body.share-loading .sidebar,
-body.share-loading .main-content {
-    opacity: 0;
-    visibility: hidden;
-    transition: none;
+html.share-loading .sidebar,
+html.share-loading .main-content,
+html.share-loading .top-bar {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transition: none !important;
 }
-body.share-loading .share-loading-mask {
+html.share-loading .share-loading-mask {
     display: flex !important;
 }
 

@@ -9,6 +9,12 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // 同步检测分享参数，在body渲染前隐藏内容防止闪烁
+        if (new URLSearchParams(window.location.search).get('share')) {
+            document.documentElement.classList.add('share-loading');
+        }
+    </script>
 </head>
 <body>
     <!-- 分享模式加载遮罩 -->
