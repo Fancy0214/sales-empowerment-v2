@@ -2000,3 +2000,417 @@ html.share-loading .share-loading-mask {
         gap: 4px;
     }
 }
+/* ==================== 简约清新风格工具内容样式 (st- 前缀) ==================== */
+
+/* 工具内容容器 */
+.st-tool-container {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+    background: linear-gradient(180deg, #eef2f7 0%, #e8edf5 50%, #f0f3f8 100%);
+    border-radius: 14px;
+    padding: 28px 20px 36px;
+    line-height: 1.7;
+    color: #2d3748;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 流体装饰背景 */
+.st-tool-container::before,
+.st-tool-container::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.25;
+    pointer-events: none;
+    z-index: 0;
+}
+.st-tool-container::before {
+    width: 300px;
+    height: 300px;
+    background: #93b4e8;
+    top: -80px;
+    right: -80px;
+}
+.st-tool-container::after {
+    width: 220px;
+    height: 220px;
+    background: #b8a9d4;
+    bottom: 100px;
+    left: -60px;
+}
+
+.st-tool-container > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* ===== 工具标题区 ===== */
+.st-tool-header {
+    text-align: center;
+    padding: 12px 0 24px;
+}
+.st-tool-header-icon {
+    width: 52px;
+    height: 52px;
+    background: linear-gradient(135deg, #4a7fc4, #6b9ce0);
+    border-radius: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+    color: white;
+    font-size: 1.4rem;
+    box-shadow: 0 4px 16px rgba(74,127,196,0.25);
+}
+.st-tool-header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2d3748;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+.st-tool-header .st-tag {
+    display: inline-block;
+    background: linear-gradient(135deg, #4a7fc4, #6b9ce0);
+    color: white;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    letter-spacing: 2px;
+}
+
+/* ===== 通用卡片 ===== */
+.st-card {
+    background: #ffffff;
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    border: 1px solid rgba(0,0,0,0.04);
+}
+.st-card-header {
+    background: linear-gradient(90deg, #4a7fc4 0%, #6b9ce0 100%);
+    padding: 11px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    clip-path: polygon(0 0, 100% 0, 100% 70%, 97% 100%, 0 100%);
+}
+.st-card-header .st-card-num {
+    background: rgba(255,255,255,0.25);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 0.72rem;
+    color: #fff;
+    font-weight: 600;
+}
+.st-card-header .st-card-title {
+    color: #fff;
+    font-size: 0.92rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+.st-card-body {
+    padding: 20px;
+}
+
+/* ===== 时间轴 ===== */
+.st-timeline {
+    position: relative;
+    padding-left: 24px;
+}
+.st-timeline::before {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 4px;
+    bottom: 4px;
+    width: 2px;
+    background: linear-gradient(to bottom, #4a7fc4, #a8c8f0);
+    border-radius: 1px;
+}
+.st-tl-node {
+    position: relative;
+    margin-bottom: 18px;
+    padding-left: 16px;
+}
+.st-tl-node::before {
+    content: '';
+    position: absolute;
+    left: -20px;
+    top: 6px;
+    width: 10px;
+    height: 10px;
+    background: #4a7fc4;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px #4a7fc4;
+}
+.st-tl-node:last-child {
+    margin-bottom: 0;
+}
+.st-tl-label {
+    font-weight: 700;
+    color: #2d3748;
+    font-size: 0.88rem;
+}
+.st-tl-desc {
+    font-size: 0.84rem;
+    color: #64748b;
+    margin-top: 4px;
+    line-height: 1.6;
+}
+.st-tl-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+}
+.st-tl-tag {
+    background: #f0f4fa;
+    color: #4a7fc4;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* ===== 清单 ===== */
+.st-checklist {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.st-checklist li {
+    padding: 8px 14px;
+    background: #f7f9fc;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    font-size: 0.86rem;
+    color: #374151;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    line-height: 1.6;
+}
+.st-checklist-icon {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    border: 2px solid #cbd5e1;
+    border-radius: 4px;
+    flex-shrink: 0;
+    display: inline-block;
+    margin-top: 2px;
+}
+
+/* ===== 流程图 ===== */
+.st-flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0;
+    margin: 8px 0;
+}
+.st-flow-step {
+    background: linear-gradient(135deg, #4a7fc4, #6b9ce0);
+    color: #fff;
+    border-radius: 10px;
+    padding: 8px 18px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-align: center;
+    min-width: 80px;
+    box-shadow: 0 2px 8px rgba(74,127,196,0.2);
+}
+.st-flow-arrow {
+    color: #a8c8f0;
+    font-size: 1.1rem;
+    padding: 0 6px;
+}
+
+/* ===== 对比表 ===== */
+.st-compare-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    font-size: 0.84rem;
+}
+.st-compare-table th {
+    background: linear-gradient(135deg, #4a7fc4, #6b9ce0);
+    color: #fff;
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+}
+.st-compare-table td {
+    padding: 9px 14px;
+    border-bottom: 1px solid #f0f4fa;
+}
+.st-compare-table tr:nth-child(even) td {
+    background: #f7f9fc;
+}
+.st-compare-table .st-highlight {
+    background: #eef4fb;
+    color: #4a7fc4;
+    font-weight: 600;
+}
+
+/* ===== 信息网格 ===== */
+.st-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 8px 0;
+}
+.st-info-grid-item {
+    background: #f7f9fc;
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+}
+.st-igi-label {
+    font-size: 0.78rem;
+    color: #94a3b8;
+    margin-bottom: 4px;
+}
+.st-igi-value {
+    font-size: 1.1rem;
+    color: #4a7fc4;
+    font-weight: 700;
+}
+.st-igi-sub {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    margin-top: 2px;
+}
+
+/* ===== 标签列表 ===== */
+.st-tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 8px 0;
+}
+.st-tag-item {
+    background: #f0f4fa;
+    color: #4a7fc4;
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.st-tag-num {
+    background: #4a7fc4;
+    color: #fff;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.68rem;
+    font-weight: 700;
+}
+
+/* ===== 提示条 ===== */
+.st-hint-bar {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    margin: 8px 0;
+    font-size: 0.83rem;
+    line-height: 1.6;
+}
+.st-hint-icon {
+    flex-shrink: 0;
+    font-size: 1rem;
+}
+.st-hint-bar.st-tip {
+    background: #eef8f0;
+    color: #2d6a3f;
+}
+.st-hint-bar.st-warn {
+    background: #fef6e6;
+    color: #92610a;
+}
+.st-hint-bar.st-info {
+    background: #eef4fb;
+    color: #2d5f8a;
+}
+
+/* ===== 页脚 ===== */
+.st-tool-footer {
+    text-align: center;
+    padding: 16px 0 0;
+    font-size: 0.78rem;
+    color: #94a3b8;
+}
+
+/* ===== 子标题分隔 ===== */
+.st-section-title {
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: #2d3748;
+    margin: 16px 0 8px;
+    padding-bottom: 4px;
+    border-bottom: 2px solid #e8edf5;
+}
+
+/* ===== 通用列表项（用于非checklist的bullet列表） ===== */
+.st-bullet-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.st-bullet-list li {
+    padding: 4px 0;
+    font-size: 0.86rem;
+    color: #374151;
+    line-height: 1.7;
+}
+.st-bullet-list li::before {
+    content: '•';
+    color: #4a7fc4;
+    font-weight: bold;
+    margin-right: 8px;
+}
+
+/* ===== 链接样式 ===== */
+.st-tool-container a {
+    color: #4a7fc4;
+    text-decoration: none;
+    word-break: break-all;
+}
+.st-tool-container a:hover {
+    text-decoration: underline;
+}
+
+/* ===== 响应式 ===== */
+@media (max-width: 600px) {
+    .st-tool-container {
+        padding: 16px 12px 24px;
+    }
+    .st-info-grid {
+        grid-template-columns: 1fr;
+    }
+    .st-flow {
+        flex-direction: column;
+        gap: 8px;
+    }
+    .st-flow-arrow {
+        transform: rotate(90deg);
+    }
+    .st-tool-header h1 {
+        font-size: 1.25rem;
+    }
+}
