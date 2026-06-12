@@ -623,46 +623,75 @@
 
             <!-- 管理面板（登录后显示） -->
             <div id="adminPanel" style="display:none;">
-                <!-- 统计概览 -->
-                <div class="admin-stats" id="adminStats">
-                    <div class="stat-card stat-pending">
-                        <div class="stat-num" id="statPending">0</div>
-                        <div class="stat-label">待审核</div>
-                    </div>
-                    <div class="stat-card stat-approved">
-                        <div class="stat-num" id="statApproved">0</div>
-                        <div class="stat-label">已发布</div>
-                    </div>
-                    <div class="stat-card stat-rejected">
-                        <div class="stat-num" id="statRejected">0</div>
-                        <div class="stat-label">已拒绝</div>
-                    </div>
-                </div>
-
-                <!-- 筛选标签 -->
-                <div class="admin-filter-tabs">
-                    <button class="admin-tab active" data-status="pending" onclick="filterAdminSubmissions('pending')">
-                        <i class="fas fa-clock"></i> 待审核 <span class="badge" id="badgePending">0</span>
+                <!-- 管理面板 Tab 切换 -->
+                <div class="admin-section-tabs">
+                    <button class="admin-section-tab active" data-section="competitor-mgmt" onclick="switchAdminSection('competitor-mgmt')">
+                        <i class="fas fa-chart-bar"></i> 竞品信息管理
                     </button>
-                    <button class="admin-tab" data-status="approved" onclick="filterAdminSubmissions('approved')">
-                        <i class="fas fa-check-circle"></i> 已发布 <span class="badge" id="badgeApproved">0</span>
-                    </button>
-                    <button class="admin-tab" data-status="rejected" onclick="filterAdminSubmissions('rejected')">
-                        <i class="fas fa-times-circle"></i> 已拒绝 <span class="badge" id="badgeRejected">0</span>
-                    </button>
-                    <button class="admin-tab" data-status="all" onclick="filterAdminSubmissions('all')">
-                        <i class="fas fa-list"></i> 全部
+                    <button class="admin-section-tab" data-section="share-mgmt" onclick="switchAdminSection('share-mgmt')">
+                        <i class="fas fa-share-alt"></i> 分享管理
                     </button>
                 </div>
 
-                <!-- 提交列表 -->
-                <div class="card">
-                    <div class="card-header-with-actions">
-                        <h3><i class="fas fa-inbox"></i> 竞品信息管理</h3>
-                        <button class="btn btn-outline btn-sm" onclick="loadAllSubmissions()"><i class="fas fa-sync-alt"></i> 刷新</button>
+                <!-- 竞品信息管理区 -->
+                <div class="admin-section-content active" id="adminSectionCompetitorMgmt">
+                    <!-- 统计概览 -->
+                    <div class="admin-stats" id="adminStats">
+                        <div class="stat-card stat-pending">
+                            <div class="stat-num" id="statPending">0</div>
+                            <div class="stat-label">待审核</div>
+                        </div>
+                        <div class="stat-card stat-approved">
+                            <div class="stat-num" id="statApproved">0</div>
+                            <div class="stat-label">已发布</div>
+                        </div>
+                        <div class="stat-card stat-rejected">
+                            <div class="stat-num" id="statRejected">0</div>
+                            <div class="stat-label">已拒绝</div>
+                        </div>
                     </div>
-                    <div id="adminSubmissionList">
-                        <p class="hint" style="text-align:center;padding:40px 0;">加载中...</p>
+
+                    <!-- 筛选标签 -->
+                    <div class="admin-filter-tabs">
+                        <button class="admin-tab active" data-status="pending" onclick="filterAdminSubmissions('pending')">
+                            <i class="fas fa-clock"></i> 待审核 <span class="badge" id="badgePending">0</span>
+                        </button>
+                        <button class="admin-tab" data-status="approved" onclick="filterAdminSubmissions('approved')">
+                            <i class="fas fa-check-circle"></i> 已发布 <span class="badge" id="badgeApproved">0</span>
+                        </button>
+                        <button class="admin-tab" data-status="rejected" onclick="filterAdminSubmissions('rejected')">
+                            <i class="fas fa-times-circle"></i> 已拒绝 <span class="badge" id="badgeRejected">0</span>
+                        </button>
+                        <button class="admin-tab" data-status="all" onclick="filterAdminSubmissions('all')">
+                            <i class="fas fa-list"></i> 全部
+                        </button>
+                    </div>
+
+                    <!-- 提交列表 -->
+                    <div class="card">
+                        <div class="card-header-with-actions">
+                            <h3><i class="fas fa-inbox"></i> 竞品信息管理</h3>
+                            <button class="btn btn-outline btn-sm" onclick="loadAllSubmissions()"><i class="fas fa-sync-alt"></i> 刷新</button>
+                        </div>
+                        <div id="adminSubmissionList">
+                            <p class="hint" style="text-align:center;padding:40px 0;">加载中...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 分享管理区 -->
+                <div class="admin-section-content" id="adminSectionShareMgmt">
+                    <div class="card">
+                        <div class="card-header-with-actions">
+                            <h3><i class="fas fa-share-alt"></i> 分享链接管理</h3>
+                            <div style="display:flex;gap:8px;">
+                                <button class="btn btn-primary btn-sm" onclick="openCreateShareLink()"><i class="fas fa-plus"></i> 创建分享链接</button>
+                                <button class="btn btn-outline btn-sm" onclick="loadShareLinks()"><i class="fas fa-sync-alt"></i> 刷新</button>
+                            </div>
+                        </div>
+                        <div id="shareLinksList">
+                            <p class="hint" style="text-align:center;padding:40px 0;">加载中...</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -759,6 +788,59 @@
         </div>
 
     </main>
+
+    <!-- 分享链接创建弹窗 -->
+    <div class="modal" id="createShareLinkModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('createShareLinkModal')">&times;</span>
+            <h2><i class="fas fa-share-alt"></i> 创建分享链接</h2>
+            <form id="createShareLinkForm" onsubmit="createShareLink(event)">
+                <div class="form-group">
+                    <label>分享标题/备注</label>
+                    <input type="text" id="shareLinkTitle" placeholder="例如：给XX机构的分享">
+                </div>
+                <div class="form-group">
+                    <label>选择要分享的板块 <span class="required">*</span></label>
+                    <div class="share-section-checkboxes">
+                        <label class="share-section-checkbox">
+                            <input type="checkbox" name="shareSection" value="competitors">
+                            <span class="share-section-label"><i class="fas fa-chart-bar"></i> 竞品情报站</span>
+                        </label>
+                        <label class="share-section-checkbox">
+                            <input type="checkbox" name="shareSection" value="ai-studio">
+                            <span class="share-section-label"><i class="fas fa-robot"></i> AI话术工坊</span>
+                        </label>
+                        <label class="share-section-checkbox">
+                            <input type="checkbox" name="shareSection" value="tools">
+                            <span class="share-section-label"><i class="fas fa-tools"></i> 销售工具箱</span>
+                        </label>
+                        <label class="share-section-checkbox">
+                            <input type="checkbox" name="shareSection" value="enneagram">
+                            <span class="share-section-label"><i class="fas fa-user-circle"></i> 九型人格</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>过期时间（可选）</label>
+                    <input type="datetime-local" id="shareLinkExpires">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('createShareLinkModal')">取消</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-link"></i> 创建链接</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 分享无效提示页面 -->
+    <div class="modal" id="shareInvalidModal">
+        <div class="modal-content" style="text-align:center;padding:60px 40px;">
+            <i class="fas fa-exclamation-triangle" style="font-size:3rem;color:var(--warning);margin-bottom:20px;display:block;"></i>
+            <h2 id="shareInvalidTitle">分享链接无效</h2>
+            <p id="shareInvalidMsg" style="color:var(--text-secondary);margin:16px 0 24px;">该分享链接不存在或已失效，请联系分享者获取新的链接。</p>
+            <button class="btn btn-primary" onclick="window.location.href=window.location.pathname">返回首页</button>
+        </div>
+    </div>
 
     <!-- 话术编辑弹窗 -->
     <div class="modal" id="scriptEditModal">

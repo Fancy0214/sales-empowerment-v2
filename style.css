@@ -1753,3 +1753,212 @@ body {
 .export-menu-item:hover {
     background: #f3f4f6;
 }
+
+/* ==================== 管理面板 Tab 切换 ==================== */
+.admin-section-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 24px;
+    border-bottom: 2px solid var(--border);
+}
+
+.admin-section-tab {
+    padding: 12px 24px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-section-tab:hover {
+    color: var(--accent);
+    background: rgba(74, 144, 217, 0.05);
+}
+
+.admin-section-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    font-weight: 600;
+}
+
+.admin-section-content {
+    display: none;
+}
+
+.admin-section-content.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+/* ==================== 分享链接管理 ==================== */
+.share-link-card {
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+    transition: var(--transition);
+}
+
+.share-link-card:hover {
+    box-shadow: var(--shadow);
+}
+
+.share-link-card.disabled {
+    opacity: 0.65;
+    background: #f9fafb;
+}
+
+.share-link-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.share-link-card-meta {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.share-link-card-body {
+    margin-bottom: 12px;
+}
+
+.share-link-sections {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.share-section-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    background: rgba(74, 144, 217, 0.1);
+    color: var(--accent);
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.share-link-url {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: #f3f4f6;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.share-link-url code {
+    flex: 1;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    word-break: break-all;
+    white-space: normal;
+}
+
+.share-link-card-actions {
+    display: flex;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+}
+
+/* 分享创建弹窗 - 板块勾选 */
+.share-section-checkboxes {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.share-section-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: var(--bg-white);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+    user-select: none;
+}
+
+.share-section-checkbox:hover {
+    border-color: var(--accent);
+    background: rgba(74, 144, 217, 0.03);
+}
+
+.share-section-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.share-section-checkbox input[type="checkbox"]:checked + .share-section-label {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.share-section-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    transition: var(--transition);
+}
+
+.share-section-checkbox:has(input:checked) {
+    border-color: var(--accent);
+    background: rgba(74, 144, 217, 0.06);
+}
+
+/* ==================== 分享模式下的隐藏规则 ==================== */
+.main-content.share-mode .action-cell,
+.main-content.share-mode .card-actions,
+.main-content.share-mode .script-card-actions-top .script-action-btn,
+.main-content.share-mode #toolEditBtn,
+.main-content.share-mode .tool-export-dropdown {
+    display: none !important;
+}
+
+.main-content.share-mode .script-card-footer .script-card-footer-actions {
+    /* 保留复制按钮 */
+}
+
+@media (max-width: 768px) {
+    .share-section-checkboxes {
+        grid-template-columns: 1fr;
+    }
+    
+    .share-link-card-header {
+        flex-direction: column;
+    }
+    
+    .share-link-card-meta {
+        flex-direction: column;
+        gap: 4px;
+    }
+}

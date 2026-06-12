@@ -1591,9 +1591,9 @@ function renderTimeline() {
     });
 }
 
-// 分享链接生成
+// 分享链接生成（旧版兼容，仍支持 hash 方式）
 function generateShareLink(type) {
-    const shareUrl = window.location.href.split('#')[0] + '#share-' + type;
+    const shareUrl = window.location.href.split('#')[0].split('?')[0] + '?share=' + type;
     
     if (navigator.clipboard) {
         navigator.clipboard.writeText(shareUrl).then(() => {
@@ -2737,23 +2737,40 @@ document.querySelectorAll('.modal').forEach(modal => {
 
 // ==================== 分享模式 ====================
 
+// 当前是否处于分享模式
+let isShareMode = false;
+let shareConfig = null; // 当前分享配置
+
 function checkShareMode() {
+    // 优先检查 URL 参数 ?share=token
+    const urlParams = new URLSearchParams(window.location.search);
+    const shareToken = urlParams.get('share');
+    
+    if (shareToken) {
+        // 基于 token 的分享模式
+        loadShareConfig(shareToken);
+        return;
+    }
+    
+    // 兼容旧的 hash 分享模式
     const hash = window.location.hash;
     
     if (hash === '#share-competitors') {
-        // 竞品分享模式
+        // 竞品分享模式（旧版兼容）
+        isShareMode = true;
+        shareConfig = { sections: ['competitors'] };
         document.getElementById('shareHeader').style.display = 'flex';
         document.getElementById('sidebar').style.display = 'none';
         document.getElementById('mainContent').classList.add('share-mode');
-        document.getElementById('competitorFilters').style.display = 'none';
-        document.getElementById('competitorFeedbackForm').style.display = 'block';
-        switchPage('competitors');
+        applyShareMode(shareConfig);
     } else if (hash === '#share-enneagram-test') {
-        // 九型测试分享模式
+        // 九型测试分享模式（旧版兼容）
+        isShareMode = true;
+        shareConfig = { sections: ['enneagram'] };
         document.getElementById('shareHeader').style.display = 'flex';
         document.getElementById('sidebar').style.display = 'none';
         document.getElementById('mainContent').classList.add('share-mode');
-        switchPage('enneagram');
+        applyShareMode(shareConfig);
         showEnneaTab('test');
     } else if (hash === '#admin') {
         // 管理后台模式
@@ -2761,8 +2778,149 @@ function checkShareMode() {
     }
 }
 
+// 从 Supabase 加载分享配置
+async function loadShareConfig(token) {
+    if (!supabaseClient) {
+        showShareInvalid('数据库未连接，无法验证分享链接');
+        return;
+    }
+    
+    try {
+        const { data, error } = await supabaseClient
+            .from('share_links')
+            .select('*')
+            .eq('token', token)
+            .single();
+        
+        if (error || !data) {
+            showShareInvalid('该分享链接不存在', '请确认链接是否正确，或联系分享者获取新的链接。');
+            return;
+        }
+        
+        // 检查是否启用
+        if (!data.is_active) {
+            showShareInvalid('该分享链接已被禁用', '请联系分享者了解详情。');
+            return;
+        }
+        
+        // 检查是否过期
+        if (data.expires_at && new Date(data.expires_at) < new Date()) {
+            showShareInvalid('该分享链接已过期', '链接已于 ' + new Date(data.expires_at).toLocaleString('zh-CN') + ' 过期，请联系分享者获取新的链接。');
+            return;
+        }
+        
+        // 有效链接，进入分享模式
+        isShareMode = true;
+        shareConfig = data;
+        
+        document.getElementById('shareHeader').style.display = 'flex';
+        document.getElementById('sidebar').style.display = 'none';
+        document.getElementById('mainContent').classList.add('share-mode');
+        
+        applyShareMode(data);
+        
+    } catch(err) {
+        console.error('加载分享配置失败:', err);
+        showShareInvalid('验证分享链接时出错', err.message);
+    }
+}
+
+// 显示分享无效提示
+function showShareInvalid(title, msg) {
+    document.getElementById('shareInvalidTitle').textContent = title || '分享链接无效';
+    document.getElementById('shareInvalidMsg').textContent = msg || '该分享链接不存在或已失效，请联系分享者获取新的链接。';
+    document.getElementById('shareInvalidModal').classList.add('active');
+    // 隐藏主内容区
+    document.getElementById('mainContent').style.opacity = '0.3';
+    document.getElementById('mainContent').style.pointerEvents = 'none';
+}
+
+// 根据分享配置隐藏/显示元素
+function applyShareMode(config) {
+    const sections = config.sections || [];
+    
+    // 隐藏后台管理入口
+    const adminNavItem = document.getElementById('adminNavItem');
+    if (adminNavItem) adminNavItem.style.display = 'none';
+    
+    // 隐藏头像菜单中的后台管理
+    const avatarMenu = document.getElementById('avatarMenu');
+    if (avatarMenu) avatarMenu.style.display = 'none';
+    const avatarBtn = document.getElementById('avatarBtn');
+    if (avatarBtn) avatarBtn.style.display = 'none';
+    
+    // 隐藏顶部导航中的后台管理
+    const goAdminItem = document.querySelector('.avatar-menu-item[onclick="goAdmin()"]');
+    if (goAdminItem) goAdminItem.style.display = 'none';
+    
+    // 只显示被允许的板块导航项
+    document.querySelectorAll('.nav-item').forEach(item => {
+        const page = item.dataset.page;
+        if (page === 'admin') {
+            item.style.display = 'none';
+        } else if (sections.includes(page)) {
+            item.style.display = 'flex';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+    
+    // 如果有多个板块，显示侧边栏；如果只有一个板块，隐藏侧边栏
+    if (sections.length > 1) {
+        document.getElementById('sidebar').style.display = 'block';
+    }
+    
+    // 切换到第一个允许的板块
+    if (sections.length > 0) {
+        switchPage(sections[0]);
+    }
+    
+    // ===== 各板块的特殊处理 =====
+    
+    // 竞品情报站：隐藏提交表单、编辑/删除按钮、新增/导出按钮
+    if (sections.includes('competitors')) {
+        // 隐藏筛选器中的分享按钮
+        const shareBtn = document.getElementById('shareCompetitorBtn');
+        if (shareBtn) shareBtn.style.display = 'none';
+        // 隐藏新增/导出按钮
+        const cardActions = document.querySelector('#page-competitors .card-actions');
+        if (cardActions) cardActions.style.display = 'none';
+        // 隐藏反馈表单
+        const feedbackForm = document.getElementById('competitorFeedbackForm');
+        if (feedbackForm) feedbackForm.style.display = 'none';
+        // 隐藏提交结果
+        const feedbackResult = document.getElementById('feedbackResult');
+        if (feedbackResult) feedbackResult.style.display = 'none';
+        // 竞品表格中的操作列会在渲染时通过CSS隐藏
+    }
+    
+    // AI话术工坊：隐藏自定义话术功能（新增话术按钮、编辑/删除按钮）
+    if (sections.includes('ai-studio')) {
+        // 隐藏新增话术按钮
+        const addScriptBtn = document.querySelector('#page-ai-studio .filters-bar .btn-primary');
+        if (addScriptBtn) addScriptBtn.style.display = 'none';
+        // 隐藏AI话术工坊的生成按钮区域（只显示话术库）
+        const generateBtn = document.getElementById('generateScript');
+        if (generateBtn) generateBtn.style.display = 'none';
+        // 话术卡片中的编辑/删除按钮通过CSS隐藏
+    }
+    
+    // 销售工具箱：隐藏编辑和导出按钮
+    if (sections.includes('tools')) {
+        // 工具详情弹窗中的编辑/导出按钮通过CSS隐藏
+    }
+    
+    // 九型人格：隐藏测试保存功能
+    if (sections.includes('enneagram')) {
+        // 测试保存按钮通过CSS隐藏
+    }
+}
+
 function exitShareMode() {
-    window.location.href = window.location.href.split('#')[0];
+    // 清除URL参数，回到首页
+    const url = new URL(window.location);
+    url.searchParams.delete('share');
+    window.location.href = url.pathname;
 }
 
 // ==================== 初始化 ====================
@@ -2865,6 +3023,7 @@ function showAdminPanel() {
     document.getElementById('adminPanel').style.display = 'block';
     isAdminMode = true;
     loadAllSubmissions();
+    // 不立即加载分享链接，等切换到分享管理 tab 时再加载
 }
 
 // 加载所有提交数据
@@ -3086,5 +3245,257 @@ async function saveAdminEdit(event) {
         await loadCompetitorsFromSupabase();
     } catch(err) {
         alert('保存失败: ' + err.message);
+    }
+}
+
+// ==================== 管理面板 Tab 切换 ====================
+
+function switchAdminSection(sectionName) {
+    // 切换 tab 按钮状态
+    document.querySelectorAll('.admin-section-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.section === sectionName);
+    });
+    
+    // 切换内容区
+    document.querySelectorAll('.admin-section-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    if (sectionName === 'competitor-mgmt') {
+        document.getElementById('adminSectionCompetitorMgmt').classList.add('active');
+    } else if (sectionName === 'share-mgmt') {
+        document.getElementById('adminSectionShareMgmt').classList.add('active');
+        loadShareLinks();
+    }
+}
+
+// ==================== 分享链接管理 ====================
+
+// 板块名称映射
+const SECTION_NAMES = {
+    'competitors': '竞品情报站',
+    'ai-studio': 'AI话术工坊',
+    'tools': '销售工具箱',
+    'enneagram': '九型人格'
+};
+
+// 生成8位随机 token
+function generateToken() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    const array = new Uint8Array(8);
+    crypto.getRandomValues(array);
+    let token = '';
+    for (let i = 0; i < 8; i++) {
+        token += chars[array[i] % chars.length];
+    }
+    return token;
+}
+
+// 加载分享链接列表
+async function loadShareLinks() {
+    if (!supabaseClient) {
+        document.getElementById('shareLinksList').innerHTML = '<p class="hint" style="text-align:center;padding:40px 0;color:#EF4444;"><i class="fas fa-exclamation-circle"></i> 数据库未连接，请先完成 Supabase 配置</p>';
+        return;
+    }
+    
+    try {
+        const { data, error } = await supabaseClient
+            .from('share_links')
+            .select('*')
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        renderShareLinks(data || []);
+    } catch(err) {
+        console.error('加载分享链接失败:', err);
+        if (err.message && err.message.includes('does not exist')) {
+            document.getElementById('shareLinksList').innerHTML = '<p class="hint" style="text-align:center;padding:40px 0;color:#EF4444;"><i class="fas fa-exclamation-circle"></i> share_links 表不存在，请先在 Supabase Dashboard 执行 supabase_share_links.sql 建表</p>';
+        } else {
+            document.getElementById('shareLinksList').innerHTML = '<p class="hint" style="text-align:center;padding:40px 0;color:#EF4444;"><i class="fas fa-exclamation-circle"></i> 加载失败: ' + err.message + '</p>';
+        }
+    }
+}
+
+// 渲染分享链接列表
+function renderShareLinks(links) {
+    const container = document.getElementById('shareLinksList');
+    
+    if (links.length === 0) {
+        container.innerHTML = '<p class="hint" style="text-align:center;padding:40px 0;">暂无分享链接，点击上方"创建分享链接"开始</p>';
+        return;
+    }
+    
+    container.innerHTML = links.map(link => {
+        const sectionTags = (link.sections || []).map(s => {
+            const name = SECTION_NAMES[s] || s;
+            return `<span class="share-section-tag">${name}</span>`;
+        }).join('');
+        
+        const statusBadge = link.is_active
+            ? '<span class="admin-status approved"><i class="fas fa-check-circle"></i> 启用中</span>'
+            : '<span class="admin-status rejected"><i class="fas fa-times-circle"></i> 已禁用</span>';
+        
+        const expireInfo = link.expires_at
+            ? `<span style="font-size:0.8rem;color:${new Date(link.expires_at) < new Date() ? '#EF4444' : '#6B7280'}"><i class="fas fa-clock"></i> ${new Date(link.expires_at) < new Date() ? '已过期' : '过期于'} ${new Date(link.expires_at).toLocaleString('zh-CN')}</span>`
+            : '<span style="font-size:0.8rem;color:#10B981"><i class="fas fa-infinity"></i> 永久有效</span>';
+        
+        const shareUrl = `https://fancy0214.github.io/sales-empowerment-v2/?share=${link.token}`;
+        
+        const dateStr = link.created_at ? new Date(link.created_at).toLocaleString('zh-CN') : '';
+        
+        return `
+            <div class="share-link-card ${link.is_active ? '' : 'disabled'}">
+                <div class="share-link-card-header">
+                    <div>
+                        <strong style="font-size:1.05rem;">${link.title || '未命名分享'}</strong>
+                        ${statusBadge}
+                    </div>
+                    <div class="share-link-card-meta">
+                        ${dateStr ? `<span><i class="fas fa-calendar"></i> ${dateStr}</span>` : ''}
+                        ${expireInfo}
+                    </div>
+                </div>
+                <div class="share-link-card-body">
+                    <div class="share-link-sections">${sectionTags}</div>
+                    <div class="share-link-url">
+                        <code>${shareUrl}</code>
+                        <button class="btn btn-sm btn-outline" onclick="copyShareLink('${link.token}')">
+                            <i class="fas fa-copy"></i> 复制
+                        </button>
+                    </div>
+                </div>
+                <div class="share-link-card-actions">
+                    <button class="btn btn-sm ${link.is_active ? 'btn-outline' : ''}" style="${link.is_active ? '' : 'background:#10B981;color:white;'}" onclick="toggleShareLink('${link.id}', ${!link.is_active})">
+                        <i class="fas fa-${link.is_active ? 'ban' : 'check'}"></i> ${link.is_active ? '禁用' : '启用'}
+                    </button>
+                    <button class="btn btn-sm" style="background:#EF4444;color:white;" onclick="deleteShareLink('${link.id}')">
+                        <i class="fas fa-trash-alt"></i> 删除
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// 打开创建分享链接弹窗
+function openCreateShareLink() {
+    document.getElementById('shareLinkTitle').value = '';
+    document.getElementById('shareLinkExpires').value = '';
+    document.querySelectorAll('input[name="shareSection"]').forEach(cb => cb.checked = false);
+    document.getElementById('createShareLinkModal').classList.add('active');
+}
+
+// 创建分享链接
+async function createShareLink(event) {
+    event.preventDefault();
+    
+    if (!supabaseClient) {
+        alert('数据库未连接，请先完成 Supabase 配置');
+        return;
+    }
+    
+    const title = document.getElementById('shareLinkTitle').value.trim();
+    const sections = [];
+    document.querySelectorAll('input[name="shareSection"]:checked').forEach(cb => {
+        sections.push(cb.value);
+    });
+    
+    if (sections.length === 0) {
+        alert('请至少选择一个要分享的板块');
+        return;
+    }
+    
+    const expiresAt = document.getElementById('shareLinkExpires').value || null;
+    
+    // 生成唯一 token
+    const token = generateToken();
+    
+    try {
+        const { data, error } = await supabaseClient
+            .from('share_links')
+            .insert([{
+                token: token,
+                title: title || '未命名分享',
+                sections: sections,
+                is_active: true,
+                expires_at: expiresAt
+            }])
+            .select();
+        
+        if (error) throw error;
+        
+        closeModal('createShareLinkModal');
+        await loadShareLinks();
+        
+        // 自动复制新链接
+        const shareUrl = `https://fancy0214.github.io/sales-empowerment-v2/?share=${token}`;
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                alert('分享链接已创建并复制到剪贴板！\n\n链接：' + shareUrl);
+            });
+        } else {
+            prompt('分享链接已创建！请复制以下链接：', shareUrl);
+        }
+        
+    } catch(err) {
+        console.error('创建分享链接失败:', err);
+        if (err.message && err.message.includes('does not exist')) {
+            alert('share_links 表不存在，请先在 Supabase Dashboard 执行 supabase_share_links.sql 建表');
+        } else {
+            alert('创建失败: ' + err.message);
+        }
+    }
+}
+
+// 启用/禁用分享链接
+async function toggleShareLink(id, isActive) {
+    if (!supabaseClient) return;
+    
+    const action = isActive ? '启用' : '禁用';
+    if (!confirm(`确定要${action}该分享链接吗？`)) return;
+    
+    try {
+        const { error } = await supabaseClient
+            .from('share_links')
+            .update({ is_active: isActive })
+            .eq('id', id);
+        
+        if (error) throw error;
+        
+        await loadShareLinks();
+    } catch(err) {
+        alert('操作失败: ' + err.message);
+    }
+}
+
+// 删除分享链接
+async function deleteShareLink(id) {
+    if (!supabaseClient) return;
+    if (!confirm('确定要删除该分享链接吗？此操作不可撤销。')) return;
+    
+    try {
+        const { error } = await supabaseClient
+            .from('share_links')
+            .delete()
+            .eq('id', id);
+        
+        if (error) throw error;
+        
+        await loadShareLinks();
+    } catch(err) {
+        alert('删除失败: ' + err.message);
+    }
+}
+
+// 复制分享链接
+function copyShareLink(token) {
+    const shareUrl = `https://fancy0214.github.io/sales-empowerment-v2/?share=${token}`;
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            alert('分享链接已复制到剪贴板！\n\n链接：' + shareUrl);
+        });
+    } else {
+        prompt('请复制以下分享链接：', shareUrl);
     }
 }
