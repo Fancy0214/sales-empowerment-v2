@@ -1748,3 +1748,8 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+/* ==================== 工具导出菜单 ==================== */
+.export-menu-item:hover {
+    background: #f3f4f6;
+}

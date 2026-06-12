@@ -2193,23 +2193,248 @@ function openTool(toolId) {
     const body = document.getElementById('toolModalBody');
     
     const tool = toolContents[toolId];
+    // 从localStorage读取自定义内容（如有）
+    const savedContent = localStorage.getItem('tool_' + toolId);
+    const currentContent = savedContent || tool.content;
     
     body.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
+        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px;">
             <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #3b5998, #4a90d9); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
                 <i class="fas ${tool.icon}" style="font-size: 1.5rem; color: white;"></i>
             </div>
-            <h2>${tool.title}</h2>
+            <h2 style="flex:1">${tool.title}</h2>
         </div>
-        <div class="template-box">${tool.content}</div>
-        <div style="text-align: center; margin-top: 24px;">
-            <button class="btn btn-primary" onclick="navigator.clipboard.writeText(document.querySelector('.template-box').textContent).then(() => alert('已复制到剪贴板！'))">
-                <i class="fas fa-download"></i> 复制模板
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+            <button class="btn btn-primary btn-sm" onclick="toggleToolEdit('${toolId}')" id="toolEditBtn">
+                <i class="fas fa-edit"></i> 编辑
             </button>
+            <div class="tool-export-dropdown" style="position:relative;display:inline-block;">
+                <button class="btn btn-outline btn-sm" onclick="toggleExportMenu()">
+                    <i class="fas fa-file-export"></i> 导出
+                </button>
+                <div class="export-menu" id="exportMenu" style="display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:100;min-width:140px;margin-top:4px;">
+                    <div class="export-menu-item" onclick="exportTool('${toolId}','word')" style="padding:10px 16px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:.875rem;color:#374151;border-bottom:1px solid #f3f4f6;">
+                        <i class="fas fa-file-word" style="color:#2b579a"></i> Word
+                    </div>
+                    <div class="export-menu-item" onclick="exportTool('${toolId}','pdf')" style="padding:10px 16px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:.875rem;color:#374151;border-bottom:1px solid #f3f4f6;">
+                        <i class="fas fa-file-pdf" style="color:#e74c3c"></i> PDF
+                    </div>
+                    <div class="export-menu-item" onclick="exportTool('${toolId}','jpg')" style="padding:10px 16px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:.875rem;color:#374151;border-bottom:1px solid #f3f4f6;">
+                        <i class="fas fa-file-image" style="color:#e67e22"></i> JPG
+                    </div>
+                    <div class="export-menu-item" onclick="exportTool('${toolId}','png')" style="padding:10px 16px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:.875rem;color:#374151;">
+                        <i class="fas fa-file-image" style="color:#27ae60"></i> PNG
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('toolContentArea').textContent).then(() => { const b=document.getElementById('toolCopyBtn'); b.innerHTML='<i class=\\'fas fa-check\\'></i> 已复制'; setTimeout(()=>b.innerHTML='<i class=\\'fas fa-copy\\'></i> 复制',1500); })" id="toolCopyBtn">
+                <i class="fas fa-copy"></i> 复制
+            </button>
+        </div>
+        <div id="toolContentArea" class="template-box" data-tool-id="${toolId}">${currentContent}</div>
+        <div id="toolEditArea" style="display:none;">
+            <textarea id="toolEditTextarea" style="width:100%;min-height:400px;border:1px solid #e5e7eb;border-radius:8px;padding:16px;font-size:.875rem;line-height:1.6;font-family:inherit;resize:vertical;">${currentContent}</textarea>
+            <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end;">
+                <button class="btn btn-outline btn-sm" onclick="cancelToolEdit('${toolId}')">取消</button>
+                <button class="btn btn-primary btn-sm" onclick="saveToolEdit('${toolId}')"><i class="fas fa-save"></i> 保存</button>
+                <button class="btn btn-outline btn-sm" style="color:#ef4444;border-color:#fecaca;" onclick="resetToolEdit('${toolId}')"><i class="fas fa-undo"></i> 恢复默认</button>
+            </div>
         </div>
     `;
     
     modal.classList.add('active');
+}
+
+// 切换编辑模式
+function toggleToolEdit(toolId) {
+    const contentArea = document.getElementById('toolContentArea');
+    const editArea = document.getElementById('toolEditArea');
+    const editBtn = document.getElementById('toolEditBtn');
+    
+    if (editArea.style.display === 'none') {
+        contentArea.style.display = 'none';
+        editArea.style.display = 'block';
+        editBtn.innerHTML = '<i class="fas fa-eye"></i> 预览';
+        editBtn.classList.remove('btn-primary');
+        editBtn.classList.add('btn-outline');
+        document.getElementById('toolEditTextarea').focus();
+    } else {
+        // 预览：把textarea内容临时显示
+        const textarea = document.getElementById('toolEditTextarea');
+        contentArea.textContent = textarea.value;
+        contentArea.style.display = 'block';
+        editArea.style.display = 'none';
+        editBtn.innerHTML = '<i class="fas fa-edit"></i> 编辑';
+        editBtn.classList.remove('btn-outline');
+        editBtn.classList.add('btn-primary');
+    }
+}
+
+function cancelToolEdit(toolId) {
+    const contentArea = document.getElementById('toolContentArea');
+    const editArea = document.getElementById('toolEditArea');
+    const editBtn = document.getElementById('toolEditBtn');
+    contentArea.style.display = 'block';
+    editArea.style.display = 'none';
+    editBtn.innerHTML = '<i class="fas fa-edit"></i> 编辑';
+    editBtn.classList.remove('btn-outline');
+    editBtn.classList.add('btn-primary');
+}
+
+function saveToolEdit(toolId) {
+    const textarea = document.getElementById('toolEditTextarea');
+    const newContent = textarea.value;
+    localStorage.setItem('tool_' + toolId, newContent);
+    
+    const contentArea = document.getElementById('toolContentArea');
+    contentArea.textContent = newContent;
+    
+    cancelToolEdit(toolId);
+    
+    // 保存成功提示
+    const toast = document.createElement('div');
+    toast.style.cssText = 'position:fixed;top:20px;right:20px;background:#10b981;color:#fff;padding:12px 24px;border-radius:8px;z-index:10000;font-size:.875rem;box-shadow:0 4px 12px rgba(0,0,0,.2);';
+    toast.innerHTML = '<i class="fas fa-check-circle"></i> 已保存';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2000);
+}
+
+function resetToolEdit(toolId) {
+    if (!confirm('确定恢复为默认内容？您的自定义修改将丢失。')) return;
+    localStorage.removeItem('tool_' + toolId);
+    const tool = toolContents[toolId];
+    const contentArea = document.getElementById('toolContentArea');
+    const textarea = document.getElementById('toolEditTextarea');
+    contentArea.textContent = tool.content;
+    textarea.value = tool.content;
+    cancelToolEdit(toolId);
+}
+
+// 导出菜单切换
+function toggleExportMenu() {
+    const menu = document.getElementById('exportMenu');
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+
+// 点击其他区域关闭导出菜单
+document.addEventListener('click', function(e) {
+    const dropdown = document.querySelector('.tool-export-dropdown');
+    const menu = document.getElementById('exportMenu');
+    if (menu && dropdown && !dropdown.contains(e.target)) {
+        menu.style.display = 'none';
+    }
+});
+
+// 导出功能
+async function exportTool(toolId, format) {
+    const menu = document.getElementById('exportMenu');
+    if (menu) menu.style.display = 'none';
+    
+    const tool = toolContents[toolId];
+    const savedContent = localStorage.getItem('tool_' + toolId);
+    const content = savedContent || tool.content;
+    
+    // 创建用于导出的临时DOM
+    const exportDiv = document.createElement('div');
+    exportDiv.style.cssText = 'position:absolute;left:-9999px;top:0;width:800px;background:#fff;padding:48px;font-family:"Microsoft YaHei","PingFang SC",sans-serif;';
+    exportDiv.innerHTML = `
+        <div style="border-bottom:3px solid #3b5998;padding-bottom:16px;margin-bottom:24px;">
+            <h1 style="font-size:24px;color:#1f2937;margin:0 0 4px;">${tool.title}</h1>
+            <p style="font-size:12px;color:#9ca3af;margin:0;">留学销售赋能平台</p>
+        </div>
+        <div style="font-size:14px;line-height:1.8;color:#374151;white-space:pre-wrap;">${content}</div>
+        <div style="border-top:1px solid #e5e7eb;margin-top:32px;padding-top:12px;font-size:11px;color:#9ca3af;text-align:right;">
+            导出时间：${new Date().toLocaleString('zh-CN')}
+        </div>
+    `;
+    document.body.appendChild(exportDiv);
+
+    try {
+        if (format === 'word') {
+            exportAsWord(tool.title, exportDiv.innerHTML);
+        } else if (format === 'pdf') {
+            await exportAsImage(exportDiv, tool.title, 'pdf');
+        } else {
+            await exportAsImage(exportDiv, tool.title, format);
+        }
+    } catch (err) {
+        console.error('导出失败:', err);
+        alert('导出失败，请重试');
+    } finally {
+        document.body.removeChild(exportDiv);
+    }
+}
+
+// 导出为Word
+function exportAsWord(title, htmlContent) {
+    const wordHtml = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+        <head><meta charset="utf-8"><title>${title}</title>
+        <style>
+            body { font-family: "Microsoft YaHei","PingFang SC",sans-serif; font-size: 14px; line-height: 1.8; color: #374151; }
+            h1 { font-size: 24px; color: #1f2937; margin-bottom: 4px; }
+            p { margin: 4px 0; }
+        </style></head>
+        <body>${htmlContent}</body></html>`;
+    const blob = new Blob(['\ufeff' + wordHtml], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = title + '.doc';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+// 导出为图片或PDF
+async function exportAsImage(element, title, format) {
+    // 动态加载html2canvas
+    if (!window.html2canvas) {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+        document.head.appendChild(script);
+        await new Promise((resolve, reject) => { script.onload = resolve; script.onerror = reject; });
+    }
+    
+    const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+    
+    if (format === 'pdf') {
+        // 动态加载jsPDF
+        if (!window.jspdf) {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js';
+            document.head.appendChild(script);
+            await new Promise((resolve, reject) => { script.onload = resolve; script.onerror = reject; });
+        }
+        const { jsPDF } = window.jspdf;
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        const imgWidth = 210; // A4 width in mm
+        const pageHeight = 297; // A4 height in mm
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        let heightLeft = imgHeight;
+        let position = 0;
+        
+        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+        
+        while (heightLeft > 0) {
+            position = heightLeft - imgHeight;
+            pdf.addPage();
+            pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+        }
+        pdf.save(title + '.pdf');
+    } else {
+        const a = document.createElement('a');
+        if (format === 'jpg') {
+            a.href = canvas.toDataURL('image/jpeg', 0.95);
+            a.download = title + '.jpg';
+        } else {
+            a.href = canvas.toDataURL('image/png');
+            a.download = title + '.png';
+        }
+        a.click();
+    }
 }
 
 // ==================== 九型人格功能 ====================
