@@ -2339,12 +2339,11 @@ async function exportTool(toolId, format) {
     exportDiv.style.cssText = 'position:absolute;left:-9999px;top:0;width:800px;background:#fff;padding:48px;font-family:"Microsoft YaHei","PingFang SC",sans-serif;';
     exportDiv.innerHTML = `
         <div style="border-bottom:3px solid #3b5998;padding-bottom:16px;margin-bottom:24px;">
-            <h1 style="font-size:24px;color:#1f2937;margin:0 0 4px;">${tool.title}</h1>
-            <p style="font-size:12px;color:#9ca3af;margin:0;">留学销售赋能平台</p>
+            <h1 style="font-size:24px;color:#1f2937;margin:0;">${tool.title}</h1>
         </div>
         <div style="font-size:14px;line-height:1.8;color:#374151;white-space:pre-wrap;">${content}</div>
         <div style="border-top:1px solid #e5e7eb;margin-top:32px;padding-top:12px;font-size:11px;color:#9ca3af;text-align:right;">
-            导出时间：${new Date().toLocaleString('zh-CN')}
+            以上信息仅供参考，具体请以官方信息为准。
         </div>
     `;
     document.body.appendChild(exportDiv);
@@ -2367,15 +2366,19 @@ async function exportTool(toolId, format) {
 
 // 导出为Word
 function exportAsWord(title, htmlContent) {
+    // 将换行符转为<br>，确保Word中正确换行
+    const formattedContent = htmlContent.replace(/\n/g, '<br>');
     const wordHtml = `
         <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
         <head><meta charset="utf-8"><title>${title}</title>
+        <!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->
         <style>
-            body { font-family: "Microsoft YaHei","PingFang SC",sans-serif; font-size: 14px; line-height: 1.8; color: #374151; }
-            h1 { font-size: 24px; color: #1f2937; margin-bottom: 4px; }
-            p { margin: 4px 0; }
+            body { font-family: "Microsoft YaHei","PingFang SC",sans-serif; font-size: 14px; line-height: 2; color: #374151; padding: 0; margin: 0; }
+            h1 { font-size: 22px; color: #1f2937; margin: 0 0 16px; padding-bottom: 12px; border-bottom: 2px solid #3b5998; }
+            br { display: block; margin: 0; line-height: 1; }
+            div { margin: 0; padding: 0; }
         </style></head>
-        <body>${htmlContent}</body></html>`;
+        <body>${formattedContent}</body></html>`;
     const blob = new Blob(['\ufeff' + wordHtml], { type: 'application/msword' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
