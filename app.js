@@ -3171,8 +3171,9 @@ function openTool(toolId) {
     const tool = toolContents[toolId];
     // 从localStorage读取自定义内容（如有）
     const savedContent = localStorage.getItem('tool_' + toolId);
-    // savedContent is raw text from editing; tool.content is structured HTML; tool.rawText is plain text for editing
-    const currentContent = savedContent || tool.content;
+    // 如果savedContent是旧纯文本（不以<开头），显示时用新的结构化HTML，编辑时用rawText
+    const isSavedHtml = savedContent && savedContent.trim().startsWith('<');
+    const currentContent = isSavedHtml ? savedContent : tool.content;
     const currentRawText = savedContent || tool.rawText || tool.content;
     
     const toolTag = tool.tag || '';
@@ -3316,7 +3317,8 @@ async function exportTool(toolId, format) {
     
     const tool = toolContents[toolId];
     const savedContent = localStorage.getItem('tool_' + toolId);
-    const content = savedContent || tool.content;
+    const isSavedHtml = savedContent && savedContent.trim().startsWith('<');
+    const content = isSavedHtml ? savedContent : tool.content;
     const isHtmlContent = content.trim().startsWith('<');
     const rawForExport = savedContent || tool.rawText || tool.content;
     
