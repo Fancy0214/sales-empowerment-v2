@@ -1935,6 +1935,44 @@ body {
     background: rgba(74, 144, 217, 0.06);
 }
 
+/* ==================== 分享加载中遮罩 ==================== */
+body.share-loading .sidebar,
+body.share-loading .main-content {
+    opacity: 0;
+    visibility: hidden;
+    transition: none;
+}
+body.share-loading .share-loading-mask {
+    display: flex !important;
+}
+
+.share-loading-mask {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: #f5f7fa;
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 16px;
+}
+.share-loading-mask .spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid #e5e7eb;
+    border-top-color: #3b5998;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+.share-loading-mask .loading-text {
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
 /* ==================== 分享模式下的隐藏规则 ==================== */
 .main-content.share-mode .action-cell,
 .main-content.share-mode .card-actions,

@@ -2747,6 +2747,8 @@ function checkShareMode() {
     const shareToken = urlParams.get('share');
     
     if (shareToken) {
+        // 立即隐藏所有内容，防止闪烁
+        document.body.classList.add('share-loading');
         // 基于 token 的分享模式
         loadShareConfig(shareToken);
         return;
@@ -2781,6 +2783,7 @@ function checkShareMode() {
 // 从 Supabase 加载分享配置
 async function loadShareConfig(token) {
     if (!supabaseClient) {
+        document.body.classList.remove('share-loading');
         showShareInvalid('数据库未连接，无法验证分享链接');
         return;
     }
@@ -2793,18 +2796,21 @@ async function loadShareConfig(token) {
             .single();
         
         if (error || !data) {
+            document.body.classList.remove('share-loading');
             showShareInvalid('该分享链接不存在', '请确认链接是否正确，或联系分享者获取新的链接。');
             return;
         }
         
         // 检查是否启用
         if (!data.is_active) {
+            document.body.classList.remove('share-loading');
             showShareInvalid('该分享链接已被禁用', '请联系分享者了解详情。');
             return;
         }
         
         // 检查是否过期
         if (data.expires_at && new Date(data.expires_at) < new Date()) {
+            document.body.classList.remove('share-loading');
             showShareInvalid('该分享链接已过期', '链接已于 ' + new Date(data.expires_at).toLocaleString('zh-CN') + ' 过期，请联系分享者获取新的链接。');
             return;
         }
@@ -2819,8 +2825,12 @@ async function loadShareConfig(token) {
         
         applyShareMode(data);
         
+        // 验证完成，移除加载遮罩，显示内容
+        document.body.classList.remove('share-loading');
+        
     } catch(err) {
         console.error('加载分享配置失败:', err);
+        document.body.classList.remove('share-loading');
         showShareInvalid('验证分享链接时出错', err.message);
     }
 }
