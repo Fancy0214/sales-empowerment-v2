@@ -14,9 +14,37 @@
         if (new URLSearchParams(window.location.search).get('share')) {
             document.documentElement.classList.add('share-loading');
         }
+        // 同步检测登录状态：未登录且非分享模式，隐藏所有内容
+        var _isShare = !!new URLSearchParams(window.location.search).get('share');
+        var _isLoggedIn = !!sessionStorage.getItem('salesEmpowerment_loggedIn');
+        if (!_isLoggedIn && !_isShare) {
+            document.documentElement.classList.add('not-logged-in');
+        }
     </script>
 </head>
 <body>
+    <!-- 登录界面 -->
+    <div class="login-gate" id="loginGate">
+        <div class="login-card">
+            <div class="login-logo">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <h1 class="login-title">留学销售赋能平台</h1>
+            <p class="login-subtitle">请登录以访问平台内容</p>
+            <div class="login-form">
+                <div class="login-field">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="loginPassword" placeholder="请输入访问密码" 
+                           onkeydown="if(event.key==='Enter')doLogin()">
+                </div>
+                <button class="login-btn" onclick="doLogin()">
+                    <i class="fas fa-sign-in-alt"></i> 登录
+                </button>
+                <p class="login-error" id="loginError" style="display:none;">密码错误，请重试</p>
+            </div>
+        </div>
+    </div>
+
     <!-- 分享模式加载遮罩 -->
     <div class="share-loading-mask">
         <div class="spinner"></div>

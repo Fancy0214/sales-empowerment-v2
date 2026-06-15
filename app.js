@@ -2,11 +2,27 @@
 const SUPABASE_URL = 'https://hgtxozgpvccgsvslokud.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_9Sc9FFYAqKl2eJUdyP0HmA_w8RdAcKH';
 const ADMIN_PASSWORD = 'fancy2024'; // 管理密码，可在首次登录后修改
+const LOGIN_PASSWORD = 'fancy2024'; // 平台访问密码（登录门禁）
 
 let supabaseClient = null;
 let isAdminMode = false;
 let allSubmissions = []; // 管理后台用：所有提交数据
 let currentAdminFilter = 'pending';
+
+// ==================== 登录门禁 ====================
+function doLogin() {
+    const pwd = document.getElementById('loginPassword').value;
+    const errEl = document.getElementById('loginError');
+    if (pwd === LOGIN_PASSWORD) {
+        sessionStorage.setItem('salesEmpowerment_loggedIn', 'true');
+        document.documentElement.classList.remove('not-logged-in');
+        errEl.style.display = 'none';
+    } else {
+        errEl.style.display = 'block';
+        document.getElementById('loginPassword').value = '';
+        document.getElementById('loginPassword').focus();
+    }
+}
 
 // 初始化 Supabase 客户端
 try {
@@ -3801,6 +3817,7 @@ function checkShareMode() {
         // 竞品分享模式（旧版兼容）
         isShareMode = true;
         shareConfig = { sections: ['competitors'] };
+        document.documentElement.classList.remove('not-logged-in');
         document.getElementById('shareHeader').style.display = 'flex';
         document.getElementById('sidebar').style.display = 'none';
         document.getElementById('mainContent').classList.add('share-mode');
@@ -3809,6 +3826,7 @@ function checkShareMode() {
         // 九型测试分享模式（旧版兼容）
         isShareMode = true;
         shareConfig = { sections: ['enneagram'] };
+        document.documentElement.classList.remove('not-logged-in');
         document.getElementById('shareHeader').style.display = 'flex';
         document.getElementById('sidebar').style.display = 'none';
         document.getElementById('mainContent').classList.add('share-mode');
@@ -3865,8 +3883,9 @@ async function loadShareConfig(token) {
         
         applyShareMode(data);
         
-        // 验证完成，移除加载遮罩，显示内容
+        // 验证完成，移除加载遮罩和登录门禁，显示内容
         document.documentElement.classList.remove('share-loading');
+        document.documentElement.classList.remove('not-logged-in');
         
     } catch(err) {
         console.error('加载分享配置失败:', err);
