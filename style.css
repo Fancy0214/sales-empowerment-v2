@@ -2656,3 +2656,281 @@ html.share-loading .share-loading-mask {
         font-size: 1.25rem;
     }
 }
+
+/* ==================== 工具附件区域样式 (st- 前缀) ==================== */
+
+/* 附件外层容器 */
+.st-attachment-section {
+    margin-bottom: 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fff;
+}
+
+/* 附件头部（点击展开/收起） */
+.st-attachment-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    cursor: pointer;
+    user-select: none;
+    background: #f9fafb;
+    transition: background 0.2s;
+}
+.st-attachment-header:hover {
+    background: #f3f4f6;
+}
+.st-attachment-toggle {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.st-attachment-toggle i {
+    color: #4a7fc4;
+}
+.st-attachment-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #4a7fc4, #6b9ce0);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+.st-attachment-arrow {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    transition: transform 0.25s ease;
+}
+
+/* 附件面板（展开内容） */
+.st-attachment-panel {
+    padding: 12px 16px 16px;
+    border-top: 1px solid #f0f0f0;
+}
+
+/* 上传区域 */
+.st-attachment-upload {
+    border: 2px dashed #d1d5db;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    margin-bottom: 12px;
+    background: #fafbfc;
+}
+.st-attachment-upload:hover {
+    border-color: #4a7fc4;
+    background: #f0f5fc;
+}
+.st-attachment-upload.st-drag-over {
+    border-color: #4a7fc4;
+    background: #e8f0fe;
+    box-shadow: 0 0 0 3px rgba(74, 127, 196, 0.15);
+}
+.st-attachment-upload i {
+    font-size: 1.5rem;
+    color: #4a7fc4;
+    display: block;
+    margin-bottom: 8px;
+}
+.st-attachment-upload span {
+    display: block;
+    font-size: 0.875rem;
+    color: #374151;
+    font-weight: 500;
+}
+.st-upload-hint {
+    font-size: 0.75rem !important;
+    color: #94a3b8 !important;
+    font-weight: 400 !important;
+    margin-top: 4px;
+}
+
+/* 附件列表 */
+.st-attachment-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* 空状态 */
+.st-attachment-empty {
+    text-align: center;
+    padding: 20px 0;
+    color: #94a3b8;
+    font-size: 0.85rem;
+}
+.st-attachment-empty i {
+    display: block;
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+    opacity: 0.5;
+}
+
+/* 单个附件项 */
+.st-attachment-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: #f9fafb;
+    border-radius: 8px;
+    transition: background 0.2s;
+    gap: 10px;
+}
+.st-attachment-item:hover {
+    background: #f0f4fa;
+}
+.st-attachment-item.st-uploading {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.st-attachment-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+}
+
+/* 文件图标 */
+.st-attachment-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+    background: #eef4fb;
+    color: #4a7fc4;
+}
+.st-attachment-icon .fa-file-pdf {
+    color: #e74c3c;
+}
+.st-attachment-icon .fa-file-word {
+    color: #2b579a;
+}
+.st-attachment-icon .fa-file-excel {
+    color: #217346;
+}
+.st-attachment-icon .fa-file-powerpoint {
+    color: #d24726;
+}
+.st-attachment-icon .fa-file-image {
+    color: #e67e22;
+}
+.st-attachment-icon .fa-file-archive {
+    color: #8b5cf6;
+}
+
+/* 文件元信息 */
+.st-attachment-meta {
+    min-width: 0;
+    flex: 1;
+}
+.st-attachment-name {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #1f2937;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.st-attachment-detail {
+    display: block;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin-top: 2px;
+}
+
+/* 操作按钮 */
+.st-attachment-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+.st-attachment-btn {
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+}
+.st-btn-download {
+    background: rgba(74, 127, 196, 0.1);
+    color: #4a7fc4;
+}
+.st-btn-download:hover {
+    background: #4a7fc4;
+    color: #fff;
+}
+.st-btn-delete {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+.st-btn-delete:hover {
+    background: #ef4444;
+    color: #fff;
+}
+
+/* 上传进度条 */
+.st-upload-progress {
+    height: 4px;
+    background: #e5e7eb;
+    border-radius: 2px;
+    margin-top: 8px;
+    overflow: hidden;
+}
+.st-upload-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #4a7fc4, #6b9ce0);
+    border-radius: 2px;
+    animation: st-upload-progress-animation 2s ease-in-out infinite;
+    width: 60%;
+}
+@keyframes st-upload-progress-animation {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(200%); }
+}
+
+/* 分享模式下隐藏上传区域和删除按钮 */
+.main-content.share-mode .st-attachment-upload-btn,
+.main-content.share-mode .st-btn-delete {
+    display: none !important;
+}
+
+/* 响应式 */
+@media (max-width: 600px) {
+    .st-attachment-item {
+        padding: 8px 10px;
+    }
+    .st-attachment-icon {
+        width: 30px;
+        height: 30px;
+        font-size: 0.85rem;
+    }
+    .st-attachment-name {
+        font-size: 0.8rem;
+    }
+}

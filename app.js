@@ -3312,6 +3312,24 @@ function openTool(toolId) {
                 <i class="fas fa-copy"></i> 复制
             </button>
         </div>
+        <!-- 附件区域 -->
+        <div class="st-attachment-section" id="stAttachmentSection">
+            <div class="st-attachment-header" onclick="toggleAttachmentPanel()">
+                <span class="st-attachment-toggle"><i class="fas fa-paperclip"></i> 附件 <span id="stAttachmentCount" class="st-attachment-count">0</span></span>
+                <i class="fas fa-chevron-down st-attachment-arrow" id="stAttachmentArrow"></i>
+            </div>
+            <div class="st-attachment-panel" id="stAttachmentPanel" style="display:none;">
+                <div class="st-attachment-upload st-attachment-upload-btn" id="stUploadArea" onclick="document.getElementById('stFileInput').click()">
+                    <input type="file" id="stFileInput" style="display:none;" multiple accept=".jpg,.jpeg,.png,.gif,.bmp,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,.rar" onchange="handleToolFileUpload('${toolId}', this.files)">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <span>点击或拖拽文件上传</span>
+                    <span class="st-upload-hint">支持图片/PDF/Office等格式，单文件最大10MB</span>
+                </div>
+                <div class="st-attachment-list" id="stAttachmentList">
+                    <div class="st-attachment-empty"><i class="fas fa-inbox"></i> 暂无附件</div>
+                </div>
+            </div>
+        </div>
         <div id="toolContentArea" class="st-tool-container" data-tool-id="${toolId}">${currentContent}</div>
         <div id="toolEditArea" style="display:none;">
             <textarea id="toolEditTextarea" style="width:100%;min-height:400px;border:1px solid #e5e7eb;border-radius:8px;padding:16px;font-size:.875rem;line-height:1.6;font-family:inherit;resize:vertical;white-space:pre-wrap;">${currentRawText}</textarea>
@@ -3324,6 +3342,18 @@ function openTool(toolId) {
     `;
     
     modal.classList.add('active');
+    
+    // 加载附件列表
+    loadToolFiles(toolId);
+    
+    // 设置拖拽上传
+    setupDragUpload(toolId);
+    
+    // 分享模式下隐藏上传和删除
+    if (isShareMode) {
+        const uploadArea = document.getElementById('stUploadArea');
+        if (uploadArea) uploadArea.style.display = 'none';
+    }
 }
 
 // 切换编辑模式
@@ -4087,9 +4117,10 @@ function applyShareMode(config) {
         // 话术卡片中的编辑/删除按钮通过CSS隐藏
     }
     
-    // 销售工具箱：隐藏编辑和导出按钮
+    // 销售工具箱：隐藏编辑和导出按钮，隐藏附件上传/删除
     if (sections.includes('tools')) {
         // 工具详情弹窗中的编辑/导出按钮通过CSS隐藏
+        // 附件区域的上传/删除按钮在 openTool 中根据 isShareMode 动态处理
     }
     
     // 九型人格：隐藏测试保存功能
@@ -4136,6 +4167,9 @@ document.addEventListener('DOMContentLoaded', function() {
     renderRadarChart();
     renderScripts();
     renderEnneagramCards();
+    
+    // 初始化工具附件 Storage Bucket
+    initToolFilesBucket();
     
     // 检查分享模式
     checkShareMode();
@@ -4680,4 +4714,315 @@ function copyShareLink(token) {
     } else {
         prompt('请复制以下分享链接：', shareUrl);
     }
+}
+
+// ==================== 工具附件功能 ====================
+
+const TOOL_FILES_BUCKET = 'tool-files';
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt', '.csv', '.zip', '.rar'];
+
+// 初始化 Storage Bucket
+async function initToolFilesBucket() {
+    if (!supabaseClient) return;
+    try {
+        const { data, error } = await supabaseClient.storage.listBuckets();
+        if (error) throw error;
+        const exists = data && data.some(b => b.name === TOOL_FILES_BUCKET);
+        if (!exists) {
+            const { error: createError } = await supabaseClient.storage.createBucket(TOOL_FILES_BUCKET, {
+                public: true,
+                fileSizeLimit: MAX_FILE_SIZE
+            });
+            if (createError) {
+                console.warn('创建 Storage Bucket 失败（可能已存在）:', createError.message);
+            } else {
+                console.log('Storage Bucket 创建成功:', TOOL_FILES_BUCKET);
+            }
+        }
+    } catch (e) {
+        console.warn('初始化 Storage Bucket 失败:', e.message);
+    }
+}
+
+// 确保数据库表存在
+async function ensureToolFilesTable() {
+    // 表的创建需要在 Supabase Dashboard 执行 SQL，这里只做检测
+    if (!supabaseClient) return false;
+    try {
+        const { data, error } = await supabaseClient
+            .from('tool_files')
+            .select('id')
+            .limit(1);
+        if (error) {
+            console.warn('tool_files 表可能不存在，需要在 Supabase Dashboard 建表');
+            return false;
+        }
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
+// 切换附件面板展开/收起
+function toggleAttachmentPanel() {
+    const panel = document.getElementById('stAttachmentPanel');
+    const arrow = document.getElementById('stAttachmentArrow');
+    if (!panel) return;
+    if (panel.style.display === 'none') {
+        panel.style.display = 'block';
+        if (arrow) arrow.style.transform = 'rotate(180deg)';
+    } else {
+        panel.style.display = 'none';
+        if (arrow) arrow.style.transform = 'rotate(0deg)';
+    }
+}
+
+// 加载工具附件列表
+async function loadToolFiles(toolId) {
+    const listEl = document.getElementById('stAttachmentList');
+    const countEl = document.getElementById('stAttachmentCount');
+    if (!listEl || !supabaseClient) {
+        if (listEl) listEl.innerHTML = '<div class="st-attachment-empty"><i class="fas fa-inbox"></i> 暂无附件</div>';
+        if (countEl) countEl.textContent = '0';
+        return;
+    }
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('tool_files')
+            .select('*')
+            .eq('tool_id', toolId)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const files = data || [];
+        if (countEl) countEl.textContent = files.length;
+
+        if (files.length === 0) {
+            listEl.innerHTML = '<div class="st-attachment-empty"><i class="fas fa-inbox"></i> 暂无附件</div>';
+            return;
+        }
+
+        listEl.innerHTML = files.map(file => {
+            const fileIcon = getFileIcon(file.file_type || file.file_name);
+            const fileSize = formatFileSize(file.file_size);
+            const dateStr = file.created_at ? new Date(file.created_at).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+            const downloadUrl = `${SUPABASE_URL}/storage/v1/object/public/${TOOL_FILES_BUCKET}/${file.file_path}`;
+            const isShare = isShareMode;
+            // 转义特殊字符，防止 HTML/JS 注入
+            const escName = (file.file_name || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+            const escPath = (file.file_path || '').replace(/'/g, "\\'");
+            const escDownloadUrl = downloadUrl.replace(/'/g, "\\'");
+            return `
+                <div class="st-attachment-item" data-file-id="${file.id}">
+                    <div class="st-attachment-info">
+                        <span class="st-attachment-icon"><i class="fas ${fileIcon}"></i></span>
+                        <div class="st-attachment-meta">
+                            <span class="st-attachment-name" title="${escName}">${escName}</span>
+                            <span class="st-attachment-detail">${fileSize} · ${dateStr}</span>
+                        </div>
+                    </div>
+                    <div class="st-attachment-actions">
+                        <button class="st-attachment-btn st-btn-download" onclick="downloadToolFile('${escDownloadUrl}', '${escName}')" title="下载">
+                            <i class="fas fa-download"></i>
+                        </button>
+                        ${!isShare ? `<button class="st-attachment-btn st-btn-delete" onclick="deleteToolFile('${file.id}', '${escPath}', '${toolId}')" title="删除">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>` : ''}
+                    </div>
+                </div>`;
+        }).join('');
+    } catch (err) {
+        console.error('加载附件列表失败:', err);
+        if (err.message && err.message.includes('does not exist')) {
+            listEl.innerHTML = '<div class="st-attachment-empty"><i class="fas fa-info-circle" style="color:#F59E0B"></i> 附件功能尚未初始化，请联系管理员执行建表SQL</div>';
+        } else {
+            listEl.innerHTML = '<div class="st-attachment-empty"><i class="fas fa-exclamation-circle" style="color:#EF4444"></i> 加载失败</div>';
+        }
+    }
+}
+
+// 处理文件上传
+async function handleToolFileUpload(toolId, files) {
+    if (!supabaseClient || !files || files.length === 0) return;
+
+    for (const file of files) {
+        // 检查文件大小
+        if (file.size > MAX_FILE_SIZE) {
+            alert(`文件 "${file.name}" 超过10MB限制，请压缩后重试`);
+            continue;
+        }
+
+        // 检查文件格式
+        const ext = '.' + file.name.split('.').pop().toLowerCase();
+        if (!ALLOWED_EXTENSIONS.includes(ext)) {
+            alert(`文件 "${file.name}" 格式不支持，请上传常见文档/图片格式`);
+            continue;
+        }
+
+        // 显示上传中状态
+        const listEl = document.getElementById('stAttachmentList');
+        const emptyEl = listEl.querySelector('.st-attachment-empty');
+        if (emptyEl) emptyEl.remove();
+
+        const uploadingItem = document.createElement('div');
+        uploadingItem.className = 'st-attachment-item st-uploading';
+        uploadingItem.innerHTML = `
+            <div class="st-attachment-info">
+                <span class="st-attachment-icon"><i class="fas fa-spinner fa-spin"></i></span>
+                <div class="st-attachment-meta">
+                    <span class="st-attachment-name">${file.name}</span>
+                    <span class="st-attachment-detail">上传中...</span>
+                </div>
+            </div>
+            <div class="st-upload-progress"><div class="st-upload-progress-bar"></div></div>`;
+        listEl.insertBefore(uploadingItem, listEl.firstChild);
+
+        try {
+            // 生成文件路径
+            const timestamp = Date.now();
+            const safeName = file.name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5._-]/g, '_');
+            const filePath = `${toolId}/${timestamp}_${safeName}`;
+
+            // 上传到 Storage
+            const { data: uploadData, error: uploadError } = await supabaseClient.storage
+                .from(TOOL_FILES_BUCKET)
+                .upload(filePath, file, { cacheControl: '3600', upsert: false });
+
+            if (uploadError) throw uploadError;
+
+            // 写入数据库元数据
+            const { error: dbError } = await supabaseClient
+                .from('tool_files')
+                .insert([{
+                    tool_id: toolId,
+                    file_name: file.name,
+                    file_path: filePath,
+                    file_size: file.size,
+                    file_type: file.type || ext
+                }]);
+
+            if (dbError) {
+                // 数据库写入失败，尝试删除已上传的文件
+                try { await supabaseClient.storage.from(TOOL_FILES_BUCKET).remove([filePath]); } catch(e) {}
+                throw dbError;
+            }
+
+            // 上传成功，移除上传中项并刷新列表
+            uploadingItem.remove();
+            await loadToolFiles(toolId);
+        } catch (err) {
+            console.error('文件上传失败:', err);
+            const errMsg = (err.message && err.message.includes('does not exist')) 
+                ? '附件功能未初始化，请联系管理员' 
+                : (err.message || '未知错误');
+            uploadingItem.innerHTML = `
+                <div class="st-attachment-info">
+                    <span class="st-attachment-icon"><i class="fas fa-exclamation-circle" style="color:#EF4444"></i></span>
+                    <div class="st-attachment-meta">
+                        <span class="st-attachment-name">${file.name}</span>
+                        <span class="st-attachment-detail" style="color:#EF4444">上传失败: ${errMsg}</span>
+                    </div>
+                </div>`;
+            setTimeout(() => uploadingItem.remove(), 4000);
+        }
+    }
+
+    // 重置 file input 以便重复选择同一文件
+    const fileInput = document.getElementById('stFileInput');
+    if (fileInput) fileInput.value = '';
+}
+
+// 设置拖拽上传
+function setupDragUpload(toolId) {
+    const uploadArea = document.getElementById('stUploadArea');
+    if (!uploadArea) return;
+
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        uploadArea.classList.add('st-drag-over');
+    });
+
+    uploadArea.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        uploadArea.classList.remove('st-drag-over');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        uploadArea.classList.remove('st-drag-over');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleToolFileUpload(toolId, files);
+        }
+    });
+}
+
+// 下载文件
+function downloadToolFile(url, fileName) {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+// 删除文件
+async function deleteToolFile(fileId, filePath, toolId) {
+    if (!confirm('确定要删除此附件吗？删除后不可恢复。')) return;
+    if (!supabaseClient) return;
+
+    try {
+        // 从 Storage 删除文件
+        const { error: storageError } = await supabaseClient.storage
+            .from(TOOL_FILES_BUCKET)
+            .remove([filePath]);
+
+        // 即使 Storage 删除失败也继续删除数据库记录
+        if (storageError) {
+            console.warn('Storage 文件删除失败:', storageError.message);
+        }
+
+        // 从数据库删除元数据
+        const { error: dbError } = await supabaseClient
+            .from('tool_files')
+            .delete()
+            .eq('id', fileId);
+
+        if (dbError) throw dbError;
+
+        // 刷新附件列表
+        await loadToolFiles(toolId);
+    } catch (err) {
+        console.error('删除附件失败:', err);
+        alert('删除失败: ' + (err.message || '未知错误'));
+    }
+}
+
+// 获取文件图标
+function getFileIcon(fileNameOrType) {
+    const name = (fileNameOrType || '').toLowerCase();
+    if (name.includes('pdf')) return 'fa-file-pdf';
+    if (name.includes('word') || name.includes('doc')) return 'fa-file-word';
+    if (name.includes('excel') || name.includes('sheet') || name.includes('xls') || name.includes('csv')) return 'fa-file-excel';
+    if (name.includes('powerpoint') || name.includes('presentation') || name.includes('ppt')) return 'fa-file-powerpoint';
+    if (name.includes('image') || name.includes('jpg') || name.includes('jpeg') || name.includes('png') || name.includes('gif') || name.includes('bmp') || name.includes('webp')) return 'fa-file-image';
+    if (name.includes('zip') || name.includes('rar') || name.includes('7z') || name.includes('compressed')) return 'fa-file-archive';
+    if (name.includes('text') || name.includes('txt')) return 'fa-file-alt';
+    return 'fa-file';
+}
+
+// 格式化文件大小
+function formatFileSize(bytes) {
+    if (!bytes || bytes === 0) return '0 B';
+    const units = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return (bytes / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 1) + ' ' + units[i];
 }
