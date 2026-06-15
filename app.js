@@ -4881,10 +4881,13 @@ async function handleToolFileUpload(toolId, files) {
         listEl.insertBefore(uploadingItem, listEl.firstChild);
 
         try {
-            // 生成文件路径
+            // 生成文件路径（Storage路径只允许ASCII字符，中文会被编码）
             const timestamp = Date.now();
-            const safeName = file.name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5._-]/g, '_');
-            const filePath = `${toolId}/${timestamp}_${safeName}`;
+            const ext = file.name.includes('.') ? '.' + file.name.split('.').pop().toLowerCase() : '';
+            const baseName = file.name.includes('.') ? file.name.substring(0, file.name.lastIndexOf('.')) : file.name;
+            // 用时间戳作为路径中的文件名主体，避免中文路径导致Storage报错
+            const storageName = timestamp + '_' + Math.random().toString(36).substring(2, 8) + ext;
+            const filePath = `${toolId}/${storageName}`;
 
             // 上传到 Storage
             const { data: uploadData, error: uploadError } = await supabaseClient.storage
