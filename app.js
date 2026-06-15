@@ -3,6 +3,7 @@ const SUPABASE_URL = 'https://hgtxozgpvccgsvslokud.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_9Sc9FFYAqKl2eJUdyP0HmA_w8RdAcKH';
 const ADMIN_PASSWORD = 'fancy2024'; // 管理密码，可在首次登录后修改
 const LOGIN_PASSWORD = 'fancy2024'; // 平台访问密码（登录门禁）
+const SHARE_PASSWORD = 'sales2026'; // 分享链接查看密码
 
 let supabaseClient = null;
 let isAdminMode = false;
@@ -21,6 +22,33 @@ function doLogin() {
         errEl.style.display = 'block';
         document.getElementById('loginPassword').value = '';
         document.getElementById('loginPassword').focus();
+    }
+}
+
+// ==================== 分享链接密码验证 ====================
+let _pendingShareConfig = null; // 等待密码验证的分享配置
+let _pendingShowEnnea = false; // 密码验证后是否需要切换到九型测试
+
+function doSharePasswordVerify() {
+    const pwd = document.getElementById('sharePasswordInput').value;
+    const errEl = document.getElementById('sharePasswordError');
+    if (pwd === SHARE_PASSWORD) {
+        sessionStorage.setItem('salesEmpowerment_shareVerified', 'true');
+        document.getElementById('sharePasswordGate').style.display = 'none';
+        errEl.style.display = 'none';
+        // 继续执行分享模式
+        if (_pendingShareConfig) {
+            activateShareMode(_pendingShareConfig);
+            if (_pendingShowEnnea) {
+                showEnneaTab('test');
+                _pendingShowEnnea = false;
+            }
+            _pendingShareConfig = null;
+        }
+    } else {
+        errEl.style.display = 'block';
+        document.getElementById('sharePasswordInput').value = '';
+        document.getElementById('sharePasswordInput').focus();
     }
 }
 
@@ -3959,21 +3987,28 @@ function checkShareMode() {
         // 竞品分享模式（旧版兼容）
         isShareMode = true;
         shareConfig = { sections: ['competitors'] };
-        document.documentElement.classList.remove('not-logged-in');
-        document.getElementById('shareHeader').style.display = 'flex';
-        document.getElementById('sidebar').style.display = 'none';
-        document.getElementById('mainContent').classList.add('share-mode');
-        applyShareMode(shareConfig);
+        if (sessionStorage.getItem('salesEmpowerment_shareVerified') === 'true') {
+            activateShareMode(shareConfig);
+        } else {
+            document.documentElement.classList.remove('not-logged-in');
+            _pendingShareConfig = shareConfig;
+            document.getElementById('sharePasswordGate').style.display = 'flex';
+            document.getElementById('sharePasswordInput').focus();
+        }
     } else if (hash === '#share-enneagram-test') {
         // 九型测试分享模式（旧版兼容）
         isShareMode = true;
         shareConfig = { sections: ['enneagram'] };
-        document.documentElement.classList.remove('not-logged-in');
-        document.getElementById('shareHeader').style.display = 'flex';
-        document.getElementById('sidebar').style.display = 'none';
-        document.getElementById('mainContent').classList.add('share-mode');
-        applyShareMode(shareConfig);
-        showEnneaTab('test');
+        if (sessionStorage.getItem('salesEmpowerment_shareVerified') === 'true') {
+            activateShareMode(shareConfig);
+            showEnneaTab('test');
+        } else {
+            document.documentElement.classList.remove('not-logged-in');
+            _pendingShareConfig = shareConfig;
+            _pendingShowEnnea = true;
+            document.getElementById('sharePasswordGate').style.display = 'flex';
+            document.getElementById('sharePasswordInput').focus();
+        }
     } else if (hash === '#admin') {
         // 管理后台模式
         enableAdminMode();
@@ -4015,25 +4050,40 @@ async function loadShareConfig(token) {
             return;
         }
         
-        // 有效链接，进入分享模式
+        // 有效链接，检查分享密码
         isShareMode = true;
         shareConfig = data;
         
-        document.getElementById('shareHeader').style.display = 'flex';
-        document.getElementById('sidebar').style.display = 'none';
-        document.getElementById('mainContent').classList.add('share-mode');
-        
-        applyShareMode(data);
-        
-        // 验证完成，移除加载遮罩和登录门禁，显示内容
-        document.documentElement.classList.remove('share-loading');
-        document.documentElement.classList.remove('not-logged-in');
+        // 检查是否已通过分享密码验证
+        if (sessionStorage.getItem('salesEmpowerment_shareVerified') === 'true') {
+            activateShareMode(data);
+        } else {
+            // 需要输入密码，先移除加载遮罩，显示密码界面
+            document.documentElement.classList.remove('share-loading');
+            document.documentElement.classList.remove('not-logged-in');
+            _pendingShareConfig = data;
+            document.getElementById('sharePasswordGate').style.display = 'flex';
+            document.getElementById('sharePasswordInput').focus();
+        }
         
     } catch(err) {
         console.error('加载分享配置失败:', err);
         document.documentElement.classList.remove('share-loading');
         showShareInvalid('验证分享链接时出错', err.message);
     }
+}
+
+// 激活分享模式（密码验证通过后调用）
+function activateShareMode(data) {
+    document.getElementById('shareHeader').style.display = 'flex';
+    document.getElementById('sidebar').style.display = 'none';
+    document.getElementById('mainContent').classList.add('share-mode');
+    
+    applyShareMode(data);
+    
+    // 验证完成，移除加载遮罩和登录门禁，显示内容
+    document.documentElement.classList.remove('share-loading');
+    document.documentElement.classList.remove('not-logged-in');
 }
 
 // 显示分享无效提示

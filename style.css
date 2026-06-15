@@ -159,6 +159,109 @@ html.not-logged-in .login-gate {
     75% { transform: translateX(6px); }
 }
 
+/* ==================== 分享密码验证界面 ==================== */
+.share-password-gate {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+    z-index: 10001;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.share-password-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 48px 40px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+    text-align: center;
+    max-width: 380px;
+    width: 90%;
+}
+.share-password-icon {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 24px;
+    font-size: 1.5rem;
+    color: #fff;
+}
+.share-password-title {
+    font-size: 1.25rem;
+    color: #1e293b;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+.share-password-subtitle {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin-bottom: 28px;
+}
+.share-password-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.share-password-field {
+    display: flex;
+    align-items: center;
+    background: #f1f5f9;
+    border-radius: 10px;
+    padding: 0 14px;
+    border: 2px solid transparent;
+    transition: border-color 0.2s, background 0.2s;
+}
+.share-password-field:focus-within {
+    border-color: #667eea;
+    background: #fff;
+}
+.share-password-field i {
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+.share-password-field input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 12px 10px;
+    font-size: 0.95rem;
+    outline: none;
+    color: #1e293b;
+}
+.share-password-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    transition: opacity 0.2s;
+}
+.share-password-btn:hover {
+    opacity: 0.9;
+}
+.share-password-error {
+    color: #EF4444;
+    font-size: 13px;
+    margin: 0;
+    animation: shake 0.4s;
+}
+html.not-logged-in .share-password-gate {
+    display: none !important;
+}
+html.share-loading .share-password-gate {
+    display: none !important;
+}
+
 /* ==================== 基础重置 ==================== */
 * {
     margin: 0;
