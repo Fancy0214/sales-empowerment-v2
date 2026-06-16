@@ -2087,6 +2087,110 @@ Step1：恭喜你！完成了第一步。
 Step2：确认是否能匹配该offer条件——均分是否能满足？语言是否能满足（直入or可配语言班）？
 Step3：确认一切OK后，接offer并支付押金留位（如有）。如需配语言班，请即刻联系相应老师申请语言班。
 Step4：关注此前院校是否支付过押金？如有，请查看退费政策以及退费DDL，若符合请及时在DDL前申请退费，最大限度减少损失。`
+    },
+    'writing_service': {
+        title: '文书外售服务清单及报价',
+        icon: 'fa-file-invoice-dollar',
+        tag: '2026-2027 · 限时外售',
+        content: `<div class="st-tool-container">
+  <div class="st-tool-header">
+    <div class="st-tool-header-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+    <h1>文书外售服务清单及报价</h1>
+    <span class="st-tag">2026-2027 · 限时外售</span>
+  </div>
+
+  <div class="st-hint-bar st-warn"><span class="st-hint-icon">⚠️</span><span>服务对象：仅面向计划2026和2027年度入学的客户<br>销售期限：2026年3月24日至2026年7月31日，逾期将恢复内部专用服务</span></div>
+
+  <div class="st-card">
+    <div class="st-card-header"><span class="st-card-num">01</span><span class="st-card-title">套餐文书</span></div>
+    <div class="st-card-body">
+
+      <div class="st-card" style="margin-bottom:12px;">
+        <div class="st-card-header" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);"><span class="st-card-title" style="color:#fff;">尊享文书</span><span class="st-tag" style="background:rgba(255,255,255,0.2);color:#fff;margin-left:8px;">牛津剑桥</span></div>
+        <div class="st-card-body">
+          <div class="st-info-grid">
+            <div class="st-info-grid-item"><div class="st-igi-label">价格</div><div class="st-igi-value">5,000元</div></div>
+            <div class="st-info-grid-item"><div class="st-igi-label">内容</div><div class="st-igi-value">PS + 2RL</div></div>
+            <div class="st-info-grid-item"><div class="st-igi-label">增值服务</div><div class="st-igi-value" style="font-size:0.9rem;">含头脑风暴1次</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="st-card" style="margin-bottom:12px;">
+        <div class="st-card-header" style="background:linear-gradient(135deg,#2563eb,#1d4ed8);"><span class="st-card-title" style="color:#fff;">U享文书</span><span class="st-tag" style="background:rgba(255,255,255,0.2);color:#fff;margin-left:8px;">G5/王曼爱华/港前三</span></div>
+        <div class="st-card-body">
+          <div class="st-info-grid">
+            <div class="st-info-grid-item"><div class="st-igi-label">价格</div><div class="st-igi-value">3,000元</div></div>
+            <div class="st-info-grid-item"><div class="st-igi-label">内容</div><div class="st-igi-value">PS + 2RL</div></div>
+            <div class="st-info-grid-item"><div class="st-igi-label">增值服务</div><div class="st-igi-value" style="font-size:0.9rem;">含素材指导服务1次</div></div>
+          </div>
+          <div class="st-hint-bar st-info" style="margin-top:8px;"><span class="st-hint-icon">💡</span><span>每校PS加写1,000元</span></div>
+        </div>
+      </div>
+
+      <div class="st-card" style="margin-bottom:0;">
+        <div class="st-card-header" style="background:linear-gradient(135deg,#059669,#047857);"><span class="st-card-title" style="color:#fff;">标准文书</span><span class="st-tag" style="background:rgba(255,255,255,0.2);color:#fff;margin-left:8px;">其他院校</span></div>
+        <div class="st-card-body">
+          <div class="st-info-grid">
+            <div class="st-info-grid-item"><div class="st-igi-label">价格</div><div class="st-igi-value">1,500元</div></div>
+            <div class="st-info-grid-item"><div class="st-igi-label">内容</div><div class="st-igi-value">PS + 2RL</div></div>
+            <div class="st-info-grid-item"><div class="st-igi-label">增值服务</div><div class="st-igi-value" style="font-size:0.85rem;">不提供素材指导，非质量问题不予修改</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="st-card">
+    <div class="st-card-header"><span class="st-card-num">02</span><span class="st-card-title">散件文书</span></div>
+    <div class="st-card-body">
+      <div class="st-info-grid">
+        <div class="st-info-grid-item"><div class="st-igi-label">单独PS</div><div class="st-igi-value">按对应等级全套价格的80%</div><div class="st-igi-sub">尊享4,000元 / U享2,400元 / 标准1,200元</div></div>
+        <div class="st-info-grid-item"><div class="st-igi-label">单独RL</div><div class="st-igi-value">500元/篇</div></div>
+        <div class="st-info-grid-item"><div class="st-igi-label">单独CV</div><div class="st-igi-value">500元</div></div>
+        <div class="st-info-grid-item"><div class="st-igi-label">Essay等额外材料直译</div><div class="st-igi-value">300元/1000字</div><div class="st-igi-sub">不足按1000字计</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="st-hint-bar st-info"><span class="st-hint-icon">💡</span><span>返件时间均与文书中心每阶段公布的返件时间一致</span></div>
+
+  <div class="st-tool-footer">以上信息仅供参考，具体请以最新公告为准</div>
+</div>`,
+        rawText: `【文书外售服务清单及报价】
+2026-2027年度 · 限时外售
+
+⚠️ 服务对象：仅面向计划2026和2027年度入学的客户
+⚠️ 销售期限：2026年3月24日至2026年7月31日，逾期将恢复内部专用服务
+
+▎01 套餐文书
+
+尊享文书 | 牛津剑桥
+• 价格：5,000元
+• 内容：PS + 2RL
+• 增值服务：含头脑风暴1次
+
+U享文书 | G5/王曼爱华/港前三
+• 价格：3,000元
+• 内容：PS + 2RL
+• 增值服务：含素材指导服务1次
+💡 每校PS加写1,000元
+
+标准文书 | 其他院校
+• 价格：1,500元
+• 内容：PS + 2RL
+• 增值服务：不提供素材指导，非质量问题不予修改
+
+▎02 散件文书
+• 单独PS：按对应等级全套价格的80%（尊享4,000元 / U享2,400元 / 标准1,200元）
+• 单独RL：500元/篇
+• 单独CV：500元
+• Essay等额外材料直译：300元/1000字（不足按1000字计）
+
+💡 返件时间均与文书中心每阶段公布的返件时间一致
+
+以上信息仅供参考，具体请以最新公告为准`
     }
 };
 
