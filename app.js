@@ -1198,22 +1198,6 @@ A：可以，建议由亲友微信/支付宝代付
     </div>
   </div>
 
-  <div class="st-card">
-    <div class="st-card-header"><span class="st-card-num">06</span><span class="st-card-title">六、英国 vs 爱尔兰行前差异对照</span></div>
-    <div class="st-card-body">
-      <table class="st-compare-table">
-        <thead><tr><th>对比项</th><th>🇬🇧 英国</th><th>🇮🇪 爱尔兰</th></tr></thead>
-        <tbody>
-          <tr><td>货币</td><td>英镑 (£)</td><td class="st-highlight">欧元 (€)</td></tr>
-          <tr><td>居留卡</td><td>eVisa</td><td class="st-highlight">IRP卡（需入境90天内预约办理）</td></tr>
-          <tr><td>插头</td><td colspan="2" style="text-align:center;">均为英标，通用</td></tr>
-          <tr><td>海牙认证</td><td>一般不需要</td><td class="st-highlight">入学需出生证海牙认证</td></tr>
-          <tr><td>现金建议</td><td>带英镑</td><td class="st-highlight">带欧元（均建议3000-4000等值）</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
   <div class="st-tool-footer">以上信息仅供参考，具体请以官方信息为准</div>
 </div>`,
         rawText: `【爱尔兰留学行前指南——从出发到落地全流程】
@@ -1312,14 +1296,6 @@ A：可以，建议由亲友微信/支付宝代付
 • 外交部全球领保应急呼叫中心：+86-10-65612308
 • 领事直通车微信公众号：ls12308
 • 爱尔兰警察官网：garda.ie
-
-━━ 六、英国 vs 爱尔兰行前差异对照 ━━
-
-• 货币：英国英镑(£) vs 爱尔兰欧元(€)
-• 居留卡：英国eVisa vs 爱尔兰IRP卡（需入境90天内预约办理）
-• 插头：均为英标，通用
-• 海牙认证：爱尔兰入学需出生证海牙认证，英国一般不需要
-• 现金建议：英国带英镑 vs 爱尔兰带欧元（均建议3000-4000等值）
 `
     },
     'ucas': {
