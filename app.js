@@ -2696,6 +2696,370 @@ g.不接受电子印章和电子签名
 🔴 以上院校特殊要求基于2026学年信息整理，具体请以英国大学官方最新要求为准。办理材料前建议先确认目标院校的最新政策。
 
 以上信息仅供参考，具体请以校方最新要求为准`
+    },
+    'deposit_refund': {
+        title: '英国热门大学留位费退费政策汇总',
+        icon: 'fa-sterling-sign',
+        tag: '申请',
+        content: `<div class="st-tool-container">
+  <div class="st-tool-header">
+    <div class="st-tool-header-icon"><i class="fas fa-sterling-sign"></i></div>
+    <h1>英国热门大学留位费退费政策汇总</h1>
+    <span class="st-tag">申请</span>
+  </div>
+
+  <div class="st-hint-bar st-hint-info" style="margin-bottom:16px;"><span class="st-hint-icon">ℹ️</span><span>留位费即定金（Deposit），缴纳后锁定入学名额，入学后抵扣学费。各校退费政策不同，以下汇总13所英国热门大学的退费规则，供销售顾问快速查阅。具体以校方最新政策为准。</span></div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+
+    <div class="st-card">
+      <div class="st-card-body" style="padding:16px 18px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;">01</div>
+          <div style="font-size:15px;font-weight:700;color:#1e293b;">帝国理工学院 IC</div>
+        </div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">冷静期：无明确14天冷静期｜支付时间：接受offer后30天内</div>
+        <ul style="list-style:none;padding:0;margin:0;font-size:13px;line-height:1.8;">
+          <li><span style="color:#16a34a;">✅</span> 未能满足录取条件，并已尽力提供证据</li>
+          <li><span style="color:#16a34a;">✅</span> 签证被拒（非欺诈性申请或先前入境障碍），需提供UKVI拒签信</li>
+          <li><span style="color:#16a34a;">✅</span> 学校不再开设所申请专业</li>
+          <li><span style="color:#ea580c;">⚠️</span> 其他极端或特殊情况需个案审核</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="st-card">
+      <div class="st-card-body" style="padding:16px 18px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;">02</div>
+          <div style="font-size:15px;font-weight:700;color:#1e293b;">牛津大学</div>
+        </div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">冷静期：接受offer后14天内</div>
+        <ul style="list-style:none;padding:0;margin:0;font-size:13px;line-height:1.8;">
+          <li><span style="color:#16a34a;">✅</span> 接受offer后14天内撤回</li>
+          <li><span style="color:#16a34a;">✅</span> 未满足学术条件，需提供考试成绩证明</li>
+          <li><span style="color:#16a34a;">✅</span> 未达到英语语言要求，需提供尝试但未通过的证据</li>
+          <li><span style="color:#16a34a;">✅</span> 签证被拒，需提供拒签证据</li>
+          <li><span style="color:#16a34a;">✅</span> 因不可预见情况无法学习，需提供证据</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="st-card">
+      <div class="st-card-body" style="padding:16px 18px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;">03</div>
+          <div style="font-size:15px;font-weight:700;color:#1e293b;">伦敦大学学院 UCL</div>
+        </div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">冷静期：接受offer并支付押金后14天内</div>
+        <ul style="list-style:none;padding:0;margin:0;font-size:13px;line-height:1.8;">
+          <li><span style="color:#16a34a;">✅</span> 未满足学术条件（不含语言能力条件）</li>
+          <li><span style="color:#16a34a;">✅</span> 签证被拒绝</li>
+          <li><span style="color:#16a34a;">✅</span> UCL无法提供录取（原学习计划不可用）</li>
+          <li><span style="color:#16a34a;">✅</span> 接受offer后14天内改变主意（需在14天内支付押金且14天内终止）</li>
+          <li><span style="color:#16a34a;">✅</span> 入学前获得全额资助并提供证明</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="st-card">
+      <div class="st-card-body" style="padding:16px 18px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;">04</div>
+          <div style="font-size:15px;font-weight:700;color:#1e293b;">爱丁堡大学</div>
+        </div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">冷静期：缴纳后14天内</div>
+        <ul style="list-style:none;padding:0;margin:0;font-size:13px;line-height:1.8;">
+          <li><span style="color:#16a34a;">✅</span> 缴纳后14天内要求退还</li>
+          <li><span style="color:#16a34a;">✅</span> 课程被取消且不接受调剂</li>
+          <li><span style="color:#16a34a;">✅</span> 未满足offer条件（含语言），需提供证据</li>
+          <li><span style="color:#16a34a;">✅</span> 学生签证或ATAS被拒（不含欺诈/资金不足/错误文件）</li>
+          <li><span style="color:#ea580c;">⚠️</span> 特殊情况由院校个案判定</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="st-card">
+      <div class="st-card-body" style="padding:16px 18px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;">05</div>
+          <div style="font-size:15px;font-weight:700;color:#1e293b;">伦敦国王学院 KCL</div>
+        </div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">冷静期：14天犹豫期</div>
+        <ul style="list-style:none;padding:0;margin:0;font-size:13px;line-height:1.8;">
+          <li><span style="color:#16a34a;">✅</span> 14天犹豫期内拒绝offer</li>
+          <li><span style="color:#16a34a;">✅</span> 无法满足入学条件</li>
+          <li><span style="color:#16a34a;">✅</span> 非学生过错导致签证被拒</li>
+          <li><span style="color:#16a34a;">✅</span> 大学取消课程且学生无法调剂</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="st-card">
+      <div class="st-card-body" style="padding:16px 18px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;">06</div>
+          <div style="font-size:15px;font-weight:700;color:#1e293b;">曼彻斯特大学</div>
+        </div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">冷静期：接受offer后14天内</div>
+        <ul style="list-style:none;padding:0;margin:0;font-size:13px;line-height:1.8;">
+          <li><span style="color:#16a34a;">✅</span> 接受offer 14天内要求退还</li>
+          <li><span style="color:#16a34a;">✅</span> 签证被拒绝</li>
+          <li><span style="color:#16a34a;">✅</span> 不符合学术入学要求，需提供正式成绩单/文件</li>
+          <li><span style="color:#16a34a;">✅</span> 不符合英语语言要求，需提供缴费后参加的语言测试官方证书</li>
+          <li><span style="color:#16a34a;">✅</span> 因政府旅行限制无法前往</li>
+          <li><span style="color:#ea580c;">⚠️</span> 自身特殊原因需相关证明</li>
+          <li><span style="color:#16a34a;">✅</span> 学校取消课程，调剂专业不接受</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="st-card">
+      <div class="st-card-body" style="padding:16px 18px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;">07</div>
+          <div style="font-size:15px;font-weight:700;color:#1e293b;">布里斯托大学</div>
+        </div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">冷静期：缴纳后14天内</div>
+        <ul style="list-style:none;padding:0;margin:0;font-size:13px;line-height:1.8;">
+          <li><span style="color:#16a34a;">✅</span> 缴纳后14天内申请取消</li>
+          <li><span style="color:#16a34a;">✅</span> 非申请人错误的签证被拒</li>
+          <li><span style="color:#16a34a;">✅</span> 大学取消课程</li>
+          <li><span style="color:#2563eb;">💰</span> 退费扣除£200管理费</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="st-card">
+      <div class="st-card-body" style="padding:16px 18px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;">08</div>
+          <div style="font-size:15px;font-weight:700;color:#1e293b;">华威大学</div>
+        </div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">冷静期：支付后14天内</div>
+        <ul style="list-style:none;padding:0;margin:0;font-size:13px;line-height:1.8;">
+          <li><span style="color:#16a34a;">✅</span> 支付后14天内书面通知招生团队</li>
+          <li><span style="color:#16a34a;">✅</span> 未满足学术或语言条件（提供成绩证明）</li>
+          <li><span style="color:#16a34a;">✅</span> 签证被拒（提供UKVI拒签信）</li>
+          <li><span style="color:#2563eb;">💰</span> 2026年正课押金£1,500，原则上不可退还</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="st-card">
+      <div class="st-card-body" style="padding:16px 18px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;">09</div>
+          <div style="font-size:15px;font-weight:700;color:#1e293b;">伯明翰大学</div>
+        </div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">冷静期：接受offer后14天内</div>
+        <ul style="list-style:none;padding:0;margin:0;font-size:13px;line-height:1.8;">
+          <li><span style="color:#16a34a;">✅</span> 接受offer后14天内取消</li>
+          <li><span style="color:#16a34a;">✅</span> 签证被拒（非欺诈性申请）</li>
+          <li><span style="color:#16a34a;">✅</span> 大学取消课程</li>
+          <li><span style="color:#16a34a;">✅</span> 未满足录取条件（含语言成绩）</li>
+          <li><span style="color:#ea580c;">⚠️</span> 未达到英国但通知大学希望推迟入学，押金可结转一年</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="st-card">
+      <div class="st-card-body" style="padding:16px 18px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;">10</div>
+          <div style="font-size:15px;font-weight:700;color:#1e293b;">格拉斯哥大学</div>
+        </div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">冷静期：学校收到定金后14天内</div>
+        <ul style="list-style:none;padding:0;margin:0;font-size:13px;line-height:1.8;">
+          <li><span style="color:#16a34a;">✅</span> 学校无法提供入学名额</li>
+          <li><span style="color:#16a34a;">✅</span> 本人或家属健康原因（如疾病、丧亲），需提供证明</li>
+          <li><span style="color:#16a34a;">✅</span> 签证被拒或ATAS被拒</li>
+          <li><span style="color:#16a34a;">✅</span> 未满足录取条件（学术或语言），语言退费需提供缴费后参加的考试成绩</li>
+          <li><span style="color:#16a34a;">✅</span> 学校收到定金后14天内申请退款</li>
+          <li><span style="color:#2563eb;">💰</span> 退费扣除25%手续费</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="st-card">
+      <div class="st-card-body" style="padding:16px 18px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;">11</div>
+          <div style="font-size:15px;font-weight:700;color:#1e293b;">利兹大学</div>
+        </div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">冷静期：学校收到付款后14天内</div>
+        <ul style="list-style:none;padding:0;margin:0;font-size:13px;line-height:1.8;">
+          <li><span style="color:#16a34a;">✅</span> 学校收到付款后14天内要求退款</li>
+          <li><span style="color:#16a34a;">✅</span> 获得全额资助且资助人全额支付学费（提供证明）</li>
+          <li><span style="color:#ea580c;">⚠️</span> PSE课程押金：若不符合硕士offer条件且未开始PSE学习，大学可能考虑退款</li>
+          <li><span style="color:#ea580c;">⚠️</span> 不接受任何其他理由的退款请求</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="st-card">
+      <div class="st-card-body" style="padding:16px 18px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;">12</div>
+          <div style="font-size:15px;font-weight:700;color:#1e293b;">南安普顿大学</div>
+        </div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">冷静期：接受offer后14天内｜退费申请截止：同年9月30日前</div>
+        <ul style="list-style:none;padding:0;margin:0;font-size:13px;line-height:1.8;">
+          <li><span style="color:#16a34a;">✅</span> 接受offer后14天内取消（已注册不适用）</li>
+          <li><span style="color:#16a34a;">✅</span> 因大学错误导致签证被UKVI拒绝</li>
+          <li><span style="color:#16a34a;">✅</span> 大学取消课程</li>
+          <li><span style="color:#16a34a;">✅</span> 未满足录取条件（学术/语言）</li>
+          <li><span style="color:#ea580c;">⚠️</span> 因不可抗力（疫情、自然灾害）无法入学</li>
+          <li><span style="color:#ea580c;">⚠️</span> 无法获得ATAS认证</li>
+          <li style="color:#6b7280;font-size:12px;">退费流程：学校21天内回复，28天内打款</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="st-card">
+      <div class="st-card-body" style="padding:16px 18px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;">13</div>
+          <div style="font-size:15px;font-weight:700;color:#1e293b;">诺丁汉大学</div>
+        </div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">冷静期：缴纳后14天内</div>
+        <ul style="list-style:none;padding:0;margin:0;font-size:13px;line-height:1.8;">
+          <li><span style="color:#16a34a;">✅</span> 缴纳后14天内无理由全额退款</li>
+          <li><span style="color:#16a34a;">✅</span> 签证被拒（非假材料原因），需提供拒签信</li>
+          <li><span style="color:#16a34a;">✅</span> 未满足offer条件（语言或学术成绩未达标）</li>
+          <li><span style="color:#16a34a;">✅</span> 课程被取消</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="st-hint-bar st-hint-danger" style="margin-top:16px;">
+    <span class="st-hint-icon">⚠️</span>
+    <span>重要提醒：① 各校退费政策可能随时调整，具体以校方最新官方通知为准；② 退费申请通常需提供：拒签信、成绩单/语言成绩单、医疗证明等材料；③ 冷静期从学校收到付款之日起算，跨境汇款可能有1-3天延迟；④ 多数学校不接受「单纯后悔」「拿到更好offer」等主观理由退费。</span>
+  </div>
+
+  <div class="st-tool-footer">以上信息仅供参考，具体以校方最新政策为准</div>
+</div>`,
+        rawText: `【英国热门大学留位费退费政策汇总】
+申请
+
+ℹ️ 留位费即定金（Deposit），缴纳后锁定入学名额，入学后抵扣学费。各校退费政策不同，以下汇总13所英国热门大学的退费规则，供销售顾问快速查阅。具体以校方最新政策为准。
+
+━━━━━━━━━━━━━━━━━━━━
+
+01 帝国理工学院 IC
+冷静期：无明确14天冷静期｜支付时间：接受offer后30天内
+✅ 未能满足录取条件，并已尽力提供证据
+✅ 签证被拒（非欺诈性申请或先前入境障碍），需提供UKVI拒签信
+✅ 学校不再开设所申请专业
+⚠️ 其他极端或特殊情况需个案审核
+
+02 牛津大学
+冷静期：接受offer后14天内
+✅ 接受offer后14天内撤回
+✅ 未满足学术条件，需提供考试成绩证明
+✅ 未达到英语语言要求，需提供尝试但未通过的证据
+✅ 签证被拒，需提供拒签证据
+✅ 因不可预见情况无法学习，需提供证据
+
+03 伦敦大学学院 UCL
+冷静期：接受offer并支付押金后14天内
+✅ 未满足学术条件（不含语言能力条件）
+✅ 签证被拒绝
+✅ UCL无法提供录取（原学习计划不可用）
+✅ 接受offer后14天内改变主意（需在14天内支付押金且14天内终止）
+✅ 入学前获得全额资助并提供证明
+
+04 爱丁堡大学
+冷静期：缴纳后14天内
+✅ 缴纳后14天内要求退还
+✅ 课程被取消且不接受调剂
+✅ 未满足offer条件（含语言），需提供证据
+✅ 学生签证或ATAS被拒（不含欺诈/资金不足/错误文件）
+⚠️ 特殊情况由院校个案判定
+
+05 伦敦国王学院 KCL
+冷静期：14天犹豫期
+✅ 14天犹豫期内拒绝offer
+✅ 无法满足入学条件
+✅ 非学生过错导致签证被拒
+✅ 大学取消课程且学生无法调剂
+
+06 曼彻斯特大学
+冷静期：接受offer后14天内
+✅ 接受offer 14天内要求退还
+✅ 签证被拒绝
+✅ 不符合学术入学要求，需提供正式成绩单/文件
+✅ 不符合英语语言要求，需提供缴费后参加的语言测试官方证书
+✅ 因政府旅行限制无法前往
+⚠️ 自身特殊原因需相关证明
+✅ 学校取消课程，调剂专业不接受
+
+07 布里斯托大学
+冷静期：缴纳后14天内
+✅ 缴纳后14天内申请取消
+✅ 非申请人错误的签证被拒
+✅ 大学取消课程
+💰 退费扣除£200管理费
+
+08 华威大学
+冷静期：支付后14天内
+✅ 支付后14天内书面通知招生团队
+✅ 未满足学术或语言条件（提供成绩证明）
+✅ 签证被拒（提供UKVI拒签信）
+💰 2026年正课押金£1,500，原则上不可退还
+
+09 伯明翰大学
+冷静期：接受offer后14天内
+✅ 接受offer后14天内取消
+✅ 签证被拒（非欺诈性申请）
+✅ 大学取消课程
+✅ 未满足录取条件（含语言成绩）
+⚠️ 未达到英国但通知大学希望推迟入学，押金可结转一年
+
+10 格拉斯哥大学
+冷静期：学校收到定金后14天内
+✅ 学校无法提供入学名额
+✅ 本人或家属健康原因（如疾病、丧亲），需提供证明
+✅ 签证被拒或ATAS被拒
+✅ 未满足录取条件（学术或语言），语言退费需提供缴费后参加的考试成绩
+✅ 学校收到定金后14天内申请退款
+💰 退费扣除25%手续费
+
+11 利兹大学
+冷静期：学校收到付款后14天内
+✅ 学校收到付款后14天内要求退款
+✅ 获得全额资助且资助人全额支付学费（提供证明）
+⚠️ PSE课程押金：若不符合硕士offer条件且未开始PSE学习，大学可能考虑退款
+⚠️ 不接受任何其他理由的退款请求
+
+12 南安普顿大学
+冷静期：接受offer后14天内｜退费申请截止：同年9月30日前
+✅ 接受offer后14天内取消（已注册不适用）
+✅ 因大学错误导致签证被UKVI拒绝
+✅ 大学取消课程
+✅ 未满足录取条件（学术/语言）
+⚠️ 因不可抗力（疫情、自然灾害）无法入学
+⚠️ 无法获得ATAS认证
+退费流程：学校21天内回复，28天内打款
+
+13 诺丁汉大学
+冷静期：缴纳后14天内
+✅ 缴纳后14天内无理由全额退款
+✅ 签证被拒（非假材料原因），需提供拒签信
+✅ 未满足offer条件（语言或学术成绩未达标）
+✅ 课程被取消
+
+━━━━━━━━━━━━━━━━━━━━
+
+⚠️ 重要提醒：
+① 各校退费政策可能随时调整，具体以校方最新官方通知为准
+② 退费申请通常需提供：拒签信、成绩单/语言成绩单、医疗证明等材料
+③ 冷静期从学校收到付款之日起算，跨境汇款可能有1-3天延迟
+④ 多数学校不接受「单纯后悔」「拿到更好offer」等主观理由退费
+
+以上信息仅供参考，具体以校方最新政策为准`
     }
 };
 
