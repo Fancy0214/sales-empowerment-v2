@@ -2208,6 +2208,223 @@ U享文书 | G5/王曼爱华/港前三
 💡 返件时间均与文书中心每阶段公布的返件时间一致
 
 以上信息仅供参考，具体请以最新公告为准`
+    },
+    'uk_materials': {
+        title: '英国申请材料清单',
+        icon: 'fa-clipboard-list',
+        tag: '申请 · 材料 · 清单',
+        content: `<div class="st-tool-container">
+  <div class="st-tool-header">
+    <div class="st-tool-header-icon"><i class="fas fa-clipboard-list"></i></div>
+    <h1>英国申请材料清单</h1>
+    <span class="st-tag">申请 · 材料 · 清单</span>
+  </div>
+
+  <div class="st-card">
+    <div class="st-card-header"><span class="st-card-num">01</span><span class="st-card-title">申请填写</span></div>
+    <div class="st-card-body">
+      <div class="st-section-title">Application Form 申请表</div>
+      <ul class="st-bullet-list">
+        <li><strong>Email邮件申请时：</strong>需填写申请表格、签字扫描</li>
+        <li><strong>Online网申申请时：</strong>在线填写申请表</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="st-card">
+    <div class="st-card-header"><span class="st-card-num">02</span><span class="st-card-title">学术材料 <span class="st-tag" style="font-size:0.7rem;background:#fef6e6;color:#92610a;">标*为必须</span></span></div>
+    <div class="st-card-body">
+      <div class="st-section-title">*Study Certificate 在读证明</div>
+      <ul class="st-bullet-list">
+        <li>若申请时还未毕业请开具在读证明</li>
+        <li>请注意信息准确，中英文版都需要逐页加盖申请人就读学校的公章；接受盖章件原件的扫描件（通常不接受复印件的扫描件）；不接受系统下载的、截图的此类非正式学术材料</li>
+        <li>优先接受申请人毕业学校加盖公章的翻译件；除非学校不同意在翻译件上盖章，才会考虑接受其他形式的翻译章</li>
+      </ul>
+      <div class="st-section-title">*Graduation Certificate and Bachelor's Degree Certificate 毕业证和学位证</div>
+      <ul class="st-bullet-list">
+        <li>请注意信息准确，中英文版都需要逐页加盖申请人毕业学校的公章；接受盖章件原件的扫描件</li>
+        <li>优先接受申请人毕业学校加盖公章的翻译件</li>
+        <li>若有多个院校的学习经历，请按证书+成绩单的组合方式、按学历由高到低的顺序依次排列</li>
+      </ul>
+      <div class="st-section-title">*Transcript 学术成绩单</div>
+      <ul class="st-bullet-list">
+        <li>请注意信息准确，中英文版都需要逐页加盖申请人就读学校的公章</li>
+        <li>优先接受申请人毕业学校加盖公章的翻译件</li>
+        <li>成绩单若未体现准确的平均分，请再单独开一份学校盖章的均分证明</li>
+        <li>如果计算平均分时，个别科目的核算方式并未在成绩单里说明，可单独开一份学校盖章的成绩单补充说明</li>
+        <li>如果由于情况特殊，多次提供了成绩单，每份成绩单有不一致或需更正的信息，也请单独开一份学校盖章的成绩单补充说明</li>
+      </ul>
+      <div class="st-hint-bar st-warn"><span class="st-hint-icon">⚠️</span><span>成绩单是评估录取、获取CAS等环节的重要核心材料之一，请务必真实且跟学籍系统保持一致</span></div>
+    </div>
+  </div>
+
+  <div class="st-card">
+    <div class="st-card-header"><span class="st-card-num">03</span><span class="st-card-title">语言材料 <span class="st-tag" style="font-size:0.7rem;background:#fef6e6;color:#92610a;">标*为必须</span></span></div>
+    <div class="st-card-body">
+      <div class="st-section-title">*Language Test 语言成绩单</div>
+      <ul class="st-bullet-list">
+        <li>语言成绩单可包含英国校方认可的多种形式，例如最常见的：雅思成绩单（优先推荐UKVI IELTS，建议申请递交时已有符合或接近录取要求的雅思成绩，如没有语言成绩，请提供预计考试的时间和预估分数）</li>
+        <li>部分课程在申请时必须提供雅思成绩，比如Manchester曼彻斯特大学商学院要求在申请时需提供总分6.5（单项不低于6.0）的雅思成绩</li>
+        <li>请提供真实且在有效期内的语言成绩单，若预计在开课前语言成绩单要过期，请提前指导学生重考！雅思成绩单的有效期为两年</li>
+        <li>原则上只接受原件成绩单的扫描件</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="st-card">
+    <div class="st-card-header"><span class="st-card-num">04</span><span class="st-card-title">文书材料 <span class="st-tag" style="font-size:0.7rem;background:#fef6e6;color:#92610a;">标*为必须</span></span></div>
+    <div class="st-card-body">
+      <div class="st-section-title">*Personal Statement 个人陈述</div>
+      <ul class="st-bullet-list">
+        <li>请提供真实、齐备、无误的终稿PS用于申请，PS务必要满足英国校方的要求</li>
+        <li>不能有较多明显的低级错误（例如姓名、性别、国家、院校名称、课程名称写错）；不能抄袭；不能超字数、篇幅限制；须点明申请原因、课程认识、就业规划、转专业原因（如涉及转专业）等要点</li>
+        <li>WMG, Kent, Essex的PS中要求必须点明院校全称、所申请的课程全称</li>
+        <li>请注意通用版PS与1对1 PS的区别，在文件命名时请加以区分</li>
+      </ul>
+      <div class="st-section-title">*References 推荐信</div>
+      <ul class="st-bullet-list">
+        <li>硕士课程一般需要2封推荐信</li>
+        <li>推荐人必须在推荐信上手写签字！推荐信必须用推荐人所在单位的抬头纸张打印，不接受白纸打印</li>
+        <li>推荐信必须包含的落款信息：推荐信日期（原则上此日期需距离开课1年以内）、推荐人姓名、性别、职位、工作单位、工作地址、工作邮箱（原则上只接受工作邮箱而非个人邮箱）、工作电话</li>
+        <li>若有外籍推荐信：我方在申请时默认不会上传外籍推荐信，只会提供外籍推荐人的联系方式注明请学校直接联系推荐人提供推荐信</li>
+      </ul>
+      <div class="st-section-title" style="color:#6b7280;">CV/Resume 简历（如有）</div>
+      <ul class="st-bullet-list" style="color:#6b7280;">
+        <li>如有工作经验建议提供CV（如有工作证明作为CV的配套材料更佳）</li>
+        <li>申请商科课程的学生建议都提供CV</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="st-card">
+    <div class="st-card-header"><span class="st-card-num">05</span><span class="st-card-title">其他材料</span></div>
+    <div class="st-card-body">
+      <div class="st-section-title" style="color:#6b7280;">Certificate of Honor 荣誉证书（如有）</div>
+      <ul class="st-bullet-list" style="color:#6b7280;">
+        <li>请挑选有代表性、价值较高的荣誉证书，按时间由近及远的顺序排列</li>
+      </ul>
+      <div class="st-section-title" style="color:#6b7280;">Passport 护照（如有）</div>
+      <ul class="st-bullet-list" style="color:#6b7280;">
+        <li>确保护照在有效期内、信息准确；如有英国学习经历请一并提供Visa Page(s)、BRP卡、UK学习经历的CAS；如有任何国家的拒签史请如实告知</li>
+      </ul>
+      <div class="st-section-title" style="color:#6b7280;">Portfolio 作品集（如有）</div>
+      <ul class="st-bullet-list" style="color:#6b7280;">
+        <li>通常建筑类、设计类、音乐类课程需提供；请注意格式、大小限制（一般在10M以内，爱丁堡大学在4M以内）</li>
+      </ul>
+      <div class="st-section-title" style="color:#6b7280;">Other Documents 其他材料（如有）</div>
+      <ul class="st-bullet-list" style="color:#6b7280;">
+        <li>英国校方指定要求提供的额外材料，如翻译试卷、大四课程列表、高考成绩、GMAT、GRE等</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="st-hint-bar st-warn" style="margin-top:16px;">
+    <span class="st-hint-icon">⚠️</span>
+    <span>1. 以上材料，标有*星号的一般为申请时必须提供的核心材料<br>2. 申请材料请务必真实、齐备、无误、清晰，逻辑清楚，不混淆、不重复<br>3. 如果只有非英文的材料，请一律提供正规的英文翻译件，若涉及从申请人就读学校开具的材料，优先接受就读学校的公章<br>4. 英国校方一般不接受公证件<br>5. 无论网申、邮申，请务必写全学生的准确联系方式<br>6. 一个学生只能有1个学生邮箱用于网申注册及邮申表填写，勿使用公司邮箱</span>
+  </div>
+
+  <div class="st-card" style="margin-top:16px;">
+    <div class="st-card-header"><span class="st-card-title">其他课程申请材料</span></div>
+    <div class="st-card-body">
+      <div class="st-info-grid" style="grid-template-columns:1fr;">
+        <div class="st-info-grid-item" style="text-align:left;">
+          <div class="st-igi-label" style="margin-bottom:8px;font-size:0.88rem;color:#2d3748;font-weight:700;">GCSE / Pre A-level / A-level</div>
+          <div style="font-size:0.84rem;color:#4a5568;line-height:1.7;">PS；在读证明（或毕业证）；成绩单；1封推荐信（如有）。此类课程可能有年龄限制，需注意核实年龄是否达标。A-level申请时请在申请表准确填写或勾选所学科目且勿轻易更换。</div>
+        </div>
+        <div class="st-info-grid-item" style="text-align:left;">
+          <div class="st-igi-label" style="margin-bottom:8px;font-size:0.88rem;color:#2d3748;font-weight:700;">Foundation / Pre-master</div>
+          <div style="font-size:0.84rem;color:#4a5568;line-height:1.7;">PS；在读证明（或毕业证）；成绩单；其他材料（如有）。需准确填写开学日期、预科方向、预科课程长度、所在校区、所要衔接的正课课程全称等要点。大学直授的预科通常需按照申请本科或硕士的标准提供PS、推荐信；教育集团的预科除特殊要求外通常无需提供PS、推荐信。</div>
+        </div>
+        <div class="st-info-grid-item" style="text-align:left;">
+          <div class="st-igi-label" style="margin-bottom:8px;font-size:0.88rem;color:#2d3748;font-weight:700;">First Year Diploma 大一文凭课程</div>
+          <div style="font-size:0.84rem;color:#4a5568;line-height:1.7;">大学在读证明；高中毕业证；高中成绩单；大一成绩单；雅思；护照；其他材料（如有）。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="st-tool-footer">以上信息仅供参考，具体请以校方最新要求为准</div>
+</div>`,
+        rawText: `【英国申请材料清单】
+申请 · 材料 · 清单
+
+▎01 申请填写
+Application Form 申请表
+• Email邮件申请时：需填写申请表格、签字扫描
+• Online网申申请时：在线填写申请表
+
+▎02 学术材料（标*为必须）
+*Study Certificate 在读证明
+• 若申请时还未毕业请开具在读证明
+• 请注意信息准确，中英文版都需要逐页加盖申请人就读学校的公章；接受盖章件原件的扫描件（通常不接受复印件的扫描件）；不接受系统下载的、截图的此类非正式学术材料
+• 优先接受申请人毕业学校加盖公章的翻译件；除非学校不同意在翻译件上盖章，才会考虑接受其他形式的翻译章
+
+*Graduation Certificate and Bachelor's Degree Certificate 毕业证和学位证
+• 请注意信息准确，中英文版都需要逐页加盖申请人毕业学校的公章；接受盖章件原件的扫描件
+• 优先接受申请人毕业学校加盖公章的翻译件
+• 若有多个院校的学习经历，请按证书+成绩单的组合方式、按学历由高到低的顺序依次排列
+
+*Transcript 学术成绩单
+• 请注意信息准确，中英文版都需要逐页加盖申请人就读学校的公章
+• 优先接受申请人毕业学校加盖公章的翻译件
+• 成绩单若未体现准确的平均分，请再单独开一份学校盖章的均分证明
+• 如果计算平均分时，个别科目的核算方式并未在成绩单里说明，可单独开一份学校盖章的成绩单补充说明
+• 如果由于情况特殊，多次提供了成绩单，每份成绩单有不一致或需更正的信息，也请单独开一份学校盖章的成绩单补充说明
+⚠️ 成绩单是评估录取、获取CAS等环节的重要核心材料之一，请务必真实且跟学籍系统保持一致
+
+▎03 语言材料（标*为必须）
+*Language Test 语言成绩单
+• 语言成绩单可包含英国校方认可的多种形式，例如最常见的：雅思成绩单（优先推荐UKVI IELTS，建议申请递交时已有符合或接近录取要求的雅思成绩，如没有语言成绩，请提供预计考试的时间和预估分数）
+• 部分课程在申请时必须提供雅思成绩，比如Manchester曼彻斯特大学商学院要求在申请时需提供总分6.5（单项不低于6.0）的雅思成绩
+• 请提供真实且在有效期内的语言成绩单，若预计在开课前语言成绩单要过期，请提前指导学生重考！雅思成绩单的有效期为两年
+• 原则上只接受原件成绩单的扫描件
+
+▎04 文书材料（标*为必须）
+*Personal Statement 个人陈述
+• 请提供真实、齐备、无误的终稿PS用于申请，PS务必要满足英国校方的要求
+• 不能有较多明显的低级错误（例如姓名、性别、国家、院校名称、课程名称写错）；不能抄袭；不能超字数、篇幅限制；须点明申请原因、课程认识、就业规划、转专业原因（如涉及转专业）等要点
+• WMG, Kent, Essex的PS中要求必须点明院校全称、所申请的课程全称
+• 请注意通用版PS与1对1 PS的区别，在文件命名时请加以区分
+
+*References 推荐信
+• 硕士课程一般需要2封推荐信
+• 推荐人必须在推荐信上手写签字！推荐信必须用推荐人所在单位的抬头纸张打印，不接受白纸打印
+• 推荐信必须包含的落款信息：推荐信日期（原则上此日期需距离开课1年以内）、推荐人姓名、性别、职位、工作单位、工作地址、工作邮箱（原则上只接受工作邮箱而非个人邮箱）、工作电话
+• 若有外籍推荐信：我方在申请时默认不会上传外籍推荐信，只会提供外籍推荐人的联系方式注明请学校直接联系推荐人提供推荐信
+
+CV/Resume 简历（如有）
+• 如有工作经验建议提供CV（如有工作证明作为CV的配套材料更佳）
+• 申请商科课程的学生建议都提供CV
+
+▎05 其他材料
+Certificate of Honor 荣誉证书（如有）
+• 请挑选有代表性、价值较高的荣誉证书，按时间由近及远的顺序排列
+
+Passport 护照（如有）
+• 确保护照在有效期内、信息准确；如有英国学习经历请一并提供Visa Page(s)、BRP卡、UK学习经历的CAS；如有任何国家的拒签史请如实告知
+
+Portfolio 作品集（如有）
+• 通常建筑类、设计类、音乐类课程需提供；请注意格式、大小限制（一般在10M以内，爱丁堡大学在4M以内）
+
+Other Documents 其他材料（如有）
+• 英国校方指定要求提供的额外材料，如翻译试卷、大四课程列表、高考成绩、GMAT、GRE等
+
+⚠️ 重要提示：
+1. 以上材料，标有*星号的一般为申请时必须提供的核心材料
+2. 申请材料请务必真实、齐备、无误、清晰，逻辑清楚，不混淆、不重复
+3. 如果只有非英文的材料，请一律提供正规的英文翻译件，若涉及从申请人就读学校开具的材料，优先接受就读学校的公章
+4. 英国校方一般不接受公证件
+5. 无论网申、邮申，请务必写全学生的准确联系方式
+6. 一个学生只能有1个学生邮箱用于网申注册及邮申表填写，勿使用公司邮箱
+
+▎其他课程申请材料
+GCSE / Pre A-level / A-level：PS；在读证明（或毕业证）；成绩单；1封推荐信（如有）。此类课程可能有年龄限制，需注意核实年龄是否达标。A-level申请时请在申请表准确填写或勾选所学科目且勿轻易更换。
+
+Foundation / Pre-master：PS；在读证明（或毕业证）；成绩单；其他材料（如有）。需准确填写开学日期、预科方向、预科课程长度、所在校区、所要衔接的正课课程全称等要点。大学直授的预科通常需按照申请本科或硕士的标准提供PS、推荐信；教育集团的预科除特殊要求外通常无需提供PS、推荐信。
+
+First Year Diploma 大一文凭课程：大学在读证明；高中毕业证；高中成绩单；大一成绩单；雅思；护照；其他材料（如有）。
+
+以上信息仅供参考，具体请以校方最新要求为准`
     }
 };
 
