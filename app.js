@@ -5638,15 +5638,25 @@ function setupDragUpload(toolId) {
     });
 }
 
-// 下载文件
-function downloadToolFile(url, fileName) {
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    a.target = '_blank';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+// 下载文件（通过blob保持原始文件名，避免跨域导致download属性失效）
+async function downloadToolFile(url, fileName) {
+    try {
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error('下载失败');
+        const blob = await resp.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl);
+    } catch (e) {
+        // fetch失败时回退到直接打开
+        console.warn('Blob下载失败，回退直接打开:', e);
+        window.open(url, '_blank');
+    }
 }
 
 // 删除文件
