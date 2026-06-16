@@ -125,14 +125,15 @@ const competitors = [
     }
 ];
 
-// 竞品动态时间线
-const competitorTimeline = [
+// 竞品动态时间线（本地兜底数据，优先从 Supabase 加载）
+const competitorTimelineFallback = [
     { date: "今天", tag: "价格调整", content: "新东方前途出国下调英澳留学服务费用，最高优惠15%", source: "新东方前途出国官网", link: "https://liuxue.xdf.cn" },
     { date: "昨天", tag: "新品发布", content: "启德教育推出「名校保录计划」，承诺申请失败全额退款", source: "启德教育官网", link: "https://www.eic.org.cn" },
     { date: "3天前", tag: "战略合作", content: "IDP诺思与剑桥大学建立官方招生合作通道", source: "IDP教育集团官网", link: "https://www.idp.com" },
     { date: "上周", tag: "营销活动", content: "澳际教育启动「暑期留学嘉年华」，签约即送iPad", source: "澳际教育公众号", link: "https://www.aoji.cn" },
     { date: "上周", tag: "服务升级", content: "啄木鸟教育上线AI智能选校系统，提升选校精准度", source: "啄木鸟教育官网", link: "https://www.zhuomuniao.com" }
 ];
+let competitorTimeline = [...competitorTimelineFallback];
 
 // 话术库（B2B留学行业实战话术——面向机构老板/销售老师/外联/后期负责人）
 const scripts = [
@@ -3262,11 +3263,18 @@ function renderRadarChart() {
     `;
 }
 
-function renderTimeline() {
+function renderTimeline(data) {
     const container = document.getElementById('competitorTimeline');
+    if (!container) return;
     container.innerHTML = '';
     
-    competitorTimeline.forEach(item => {
+    const items = data || competitorTimeline;
+    if (!items || items.length === 0) {
+        container.innerHTML = '<div style="text-align:center;color:#9ca3af;padding:32px;">暂无竞品动态</div>';
+        return;
+    }
+    
+    items.forEach(item => {
         const div = document.createElement('div');
         div.className = 'timeline-item';
         const sourceHtml = item.source ? `<a class="timeline-source" href="${item.link}" target="_blank" rel="noopener noreferrer"><i class="fas fa-external-link-alt"></i> ${item.source}</a>` : '';
@@ -3280,6 +3288,50 @@ function renderTimeline() {
         `;
         container.appendChild(div);
     });
+}
+
+// 从 Supabase 加载竞品动态，失败则用本地兜底数据
+async function loadCompetitorNews() {
+    if (!supabaseClient) {
+        renderTimeline(competitorTimelineFallback);
+        return;
+    }
+    try {
+        const { data, error } = await supabaseClient
+            .from('competitor_news')
+            .select('*')
+            .order('date', { ascending: false })
+            .limit(20);
+        if (error) throw error;
+        if (data && data.length > 0) {
+            const now = new Date();
+            const items = data.map(row => {
+                const rowDate = new Date(row.date);
+                const diffDays = Math.floor((now - rowDate) / (1000 * 60 * 60 * 24));
+                let dateLabel;
+                if (diffDays === 0) dateLabel = '今天';
+                else if (diffDays === 1) dateLabel = '昨天';
+                else if (diffDays <= 3) dateLabel = `${diffDays}天前`;
+                else if (diffDays <= 7) dateLabel = '本周';
+                else if (diffDays <= 14) dateLabel = '上周';
+                else dateLabel = row.date;
+                return {
+                    date: dateLabel,
+                    tag: row.tag || '动态',
+                    content: row.content,
+                    source: row.source,
+                    link: row.link || '#'
+                };
+            });
+            competitorTimeline = items;
+            renderTimeline(items);
+        } else {
+            renderTimeline(competitorTimelineFallback);
+        }
+    } catch (e) {
+        console.warn('加载竞品动态失败，使用本地数据:', e);
+        renderTimeline(competitorTimelineFallback);
+    }
 }
 
 // 分享链接生成（旧版兼容，仍支持 hash 方式）
@@ -4835,7 +4887,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 初始化数据
     loadScriptsLocal();
     loadCompetitorsFromSupabase();
-    renderTimeline();
+    loadCompetitorNews();
     renderRadarChart();
     renderScripts();
     renderEnneagramCards();
