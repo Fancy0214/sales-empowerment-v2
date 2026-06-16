@@ -1936,22 +1936,22 @@ A：如收到抽查通知，按要求在线提交存款证明等材料即可，�
   <div class="st-card">
     <div class="st-card-header"><span class="st-card-num">01</span><span class="st-card-title">选校维度</span></div>
     <div class="st-card-body">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <div style="background:#fff;border:1px solid rgba(139,164,184,0.18);border-radius:10px;padding:16px 18px;display:flex;align-items:flex-start;gap:12px;border-left:3px solid #8BA4B8;">
-          <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#A8C8C8,#8BA4B8);color:#fff;font-size:13px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div>
-          <div><div style="font-size:14px;font-weight:600;color:#3D5A6E;margin-bottom:3px;">申请简单</div><div style="font-size:12px;color:#8E9EAB;line-height:1.5;">无需文书（PS或推荐信）</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div style="background:#fff;border:1px solid rgba(139,164,184,0.18);border-radius:12px;padding:18px 20px;display:flex;align-items:flex-start;gap:14px;">
+          <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#A8C8C8,#8BA4B8);color:#fff;font-size:14px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div>
+          <div><div style="font-size:14px;font-weight:500;color:#3D5A6E;margin-bottom:3px;">申请简单</div><div style="font-size:12px;color:#8E9EAB;line-height:1.5;">无需文书（PS或推荐信）</div></div>
         </div>
-        <div style="background:#fff;border:1px solid rgba(139,164,184,0.18);border-radius:10px;padding:16px 18px;display:flex;align-items:flex-start;gap:12px;border-left:3px solid #8BA4B8;">
-          <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#A8C8C8,#8BA4B8);color:#fff;font-size:13px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div>
-          <div><div style="font-size:14px;font-weight:600;color:#3D5A6E;margin-bottom:3px;">出结果快</div><div style="font-size:12px;color:#8E9EAB;line-height:1.5;">通常1周左右出结果</div></div>
+        <div style="background:#fff;border:1px solid rgba(139,164,184,0.18);border-radius:12px;padding:18px 20px;display:flex;align-items:flex-start;gap:14px;">
+          <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#A8C8C8,#8BA4B8);color:#fff;font-size:14px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div>
+          <div><div style="font-size:14px;font-weight:500;color:#3D5A6E;margin-bottom:3px;">出结果快</div><div style="font-size:12px;color:#8E9EAB;line-height:1.5;">通常1周左右出结果</div></div>
         </div>
-        <div style="background:#f8fafb;border:1px solid rgba(139,164,184,0.12);border-radius:10px;padding:16px 18px;display:flex;align-items:flex-start;gap:12px;border-left:3px solid #C9D6DE;">
-          <div style="width:28px;height:28px;border-radius:50%;background:#C9D6DE;color:#fff;font-size:13px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</div>
-          <div><div style="font-size:14px;font-weight:500;color:#5A6B7A;margin-bottom:3px;">课程覆盖全面</div><div style="font-size:12px;color:#A0ADB8;line-height:1.5;">常见热门课程均覆盖</div></div>
+        <div style="background:#fff;border:1px solid rgba(139,164,184,0.18);border-radius:12px;padding:18px 20px;display:flex;align-items:flex-start;gap:14px;">
+          <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#A8C8C8,#8BA4B8);color:#fff;font-size:14px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</div>
+          <div><div style="font-size:14px;font-weight:500;color:#3D5A6E;margin-bottom:3px;">课程覆盖全面</div><div style="font-size:12px;color:#8E9EAB;line-height:1.5;">常见热门课程均覆盖</div></div>
         </div>
-        <div style="background:#f8fafb;border:1px solid rgba(139,164,184,0.12);border-radius:10px;padding:16px 18px;display:flex;align-items:flex-start;gap:12px;border-left:3px solid #C9D6DE;">
-          <div style="width:28px;height:28px;border-radius:50%;background:#C9D6DE;color:#fff;font-size:13px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;">4</div>
-          <div><div style="font-size:14px;font-weight:500;color:#5A6B7A;margin-bottom:3px;">要求灵活</div><div style="font-size:12px;color:#A0ADB8;line-height:1.5;">不卡list，只要均分够都可以考虑</div></div>
+        <div style="background:#fff;border:1px solid rgba(139,164,184,0.18);border-radius:12px;padding:18px 20px;display:flex;align-items:flex-start;gap:14px;">
+          <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#A8C8C8,#8BA4B8);color:#fff;font-size:14px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;">4</div>
+          <div><div style="font-size:14px;font-weight:500;color:#3D5A6E;margin-bottom:3px;">要求灵活</div><div style="font-size:12px;color:#8E9EAB;line-height:1.5;">不卡list，只要均分够都可以考虑</div></div>
         </div>
       </div>
     </div>
