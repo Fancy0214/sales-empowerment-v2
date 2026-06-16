@@ -1288,15 +1288,135 @@ body {
     gap: 24px;
 }
 
+/* ==================== 工具筛选栏 ==================== */
+.tools-filter-bar {
+    margin-bottom: 24px;
+}
+
+.tools-search {
+    position: relative;
+    margin-bottom: 14px;
+}
+
+.tools-search i.fa-search {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.tools-search input {
+    width: 100%;
+    padding: 12px 40px 12px 42px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    background: var(--bg-white);
+    transition: var(--transition);
+    outline: none;
+}
+
+.tools-search input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.12);
+}
+
+.tools-search input::placeholder {
+    color: #A0ADB8;
+}
+
+.tools-search-clear {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--border);
+    color: var(--text-secondary);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.7rem;
+    transition: var(--transition);
+}
+
+.tools-search-clear:hover {
+    background: var(--danger);
+    color: #fff;
+}
+
+.tools-search-clear.visible {
+    display: flex;
+}
+
+.tools-tags-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.tools-tag-filter {
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    background: var(--bg-white);
+    border: 1.5px solid var(--border);
+    cursor: pointer;
+    transition: var(--transition);
+    user-select: none;
+}
+
+.tools-tag-filter:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.tools-tag-filter.active {
+    background: linear-gradient(135deg, var(--primary-mid) 0%, var(--accent) 100%);
+    color: #fff;
+    border-color: transparent;
+}
+
+/* 搜索无结果提示 */
+.tools-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--text-secondary);
+}
+
+.tools-empty i {
+    font-size: 2.5rem;
+    color: var(--border);
+    margin-bottom: 12px;
+    display: block;
+}
+
+.tools-empty p {
+    font-size: 0.95rem;
+}
+
+/* 工具卡片隐藏/显示动画 */
 .tool-card {
     background: var(--bg-white);
     border-radius: var(--radius);
     padding: 28px;
     box-shadow: var(--shadow);
     cursor: pointer;
-    transition: var(--transition);
+    transition: all 0.3s ease, opacity 0.25s ease, transform 0.25s ease;
     text-align: center;
     border: 2px solid transparent;
+}
+
+.tool-card.hidden-filter {
+    display: none;
 }
 
 .tool-card:hover {

@@ -3392,6 +3392,70 @@ function filterScripts() {
 
 // ==================== 销售工具箱功能 ====================
 
+// 工具筛选状态
+let currentTagFilter = 'all';
+let currentSearchQuery = '';
+
+function filterTools() {
+    const input = document.getElementById('toolSearchInput');
+    const clearBtn = document.getElementById('toolSearchClear');
+    currentSearchQuery = input.value.trim().toLowerCase();
+    clearBtn.classList.toggle('visible', currentSearchQuery.length > 0);
+    applyFilters();
+}
+
+function clearToolSearch() {
+    const input = document.getElementById('toolSearchInput');
+    input.value = '';
+    currentSearchQuery = '';
+    document.getElementById('toolSearchClear').classList.remove('visible');
+    applyFilters();
+}
+
+function filterByTag(el) {
+    document.querySelectorAll('.tools-tag-filter').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    currentTagFilter = el.dataset.filter;
+    applyFilters();
+}
+
+function applyFilters() {
+    const cards = document.querySelectorAll('#toolsGrid .tool-card');
+    let visibleCount = 0;
+    
+    cards.forEach(card => {
+        const tag = card.dataset.tag || '';
+        const keywords = (card.dataset.keywords || '').toLowerCase();
+        const title = (card.querySelector('h4')?.textContent || '').toLowerCase();
+        const desc = (card.querySelector('p')?.textContent || '').toLowerCase();
+        const fullText = title + ' ' + desc + ' ' + keywords;
+        
+        const tagMatch = currentTagFilter === 'all' || tag === currentTagFilter;
+        const searchMatch = !currentSearchQuery || fullText.includes(currentSearchQuery);
+        
+        if (tagMatch && searchMatch) {
+            card.classList.remove('hidden-filter');
+            visibleCount++;
+        } else {
+            card.classList.add('hidden-filter');
+        }
+    });
+
+    // 无结果提示
+    const grid = document.getElementById('toolsGrid');
+    let emptyTip = grid.querySelector('.tools-empty');
+    if (visibleCount === 0) {
+        if (!emptyTip) {
+            emptyTip = document.createElement('div');
+            emptyTip.className = 'tools-empty';
+            emptyTip.innerHTML = '<i class="fas fa-search"></i><p>没有找到匹配的工具，试试其他关键词</p>';
+            grid.appendChild(emptyTip);
+        }
+    } else if (emptyTip) {
+        emptyTip.remove();
+    }
+}
+
 function openTool(toolId) {
     const modal = document.getElementById('toolModal');
     const body = document.getElementById('toolModalBody');
