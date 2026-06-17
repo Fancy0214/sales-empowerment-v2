@@ -3300,9 +3300,12 @@ async function streamCozeResponse(config, userMessage, outputArea) {
     const decoder = new TextDecoder();
     let fullText = '';
     let buffer = '';
+    let firstChunk = true;  // 跟踪是否收到第一个内容片段
     
-    outputArea.innerHTML = '<div class="studio-stream-output" id="studioStreamOutput"></div>';
+    // 显示加载动画（持续到收到第一个字符）
+    outputArea.innerHTML = '<div class="studio-loading" id="studioLoadingIndicator"><div class="studio-dots"><span></span><span></span><span></span></div><p>AI正在思考话术方案，通常需要5-10秒...</p></div><div class="studio-stream-output" id="studioStreamOutput" style="display:none"></div>';
     const streamEl = document.getElementById('studioStreamOutput');
+    const loadingEl = document.getElementById('studioLoadingIndicator');
     
     while (true) {
         const { done, value } = await reader.read();
@@ -3331,6 +3334,12 @@ async function streamCozeResponse(config, userMessage, outputArea) {
                     // Coze返回的delta消息，type=answer的是主回复
                     if (json.type === 'answer' && json.content) {
                         fullText += json.content;
+                        // 收到第一个字符时隐藏loading，显示流式输出
+                        if (firstChunk) {
+                            if (loadingEl) loadingEl.style.display = 'none';
+                            streamEl.style.display = '';
+                            firstChunk = false;
+                        }
                         renderStudioStream(fullText, streamEl);
                     }
                 } catch(e) {
