@@ -972,10 +972,22 @@
                             <input type="checkbox" name="shareSection" value="competitors">
                             <span class="share-section-label"><i class="fas fa-chart-bar"></i> 竞品情报站</span>
                         </label>
-                        <label class="share-section-checkbox">
-                            <input type="checkbox" name="shareSection" value="ai-studio">
-                            <span class="share-section-label"><i class="fas fa-robot"></i> AI话术工坊</span>
-                        </label>
+                        <div class="share-section-checkbox-group">
+                            <label class="share-section-checkbox">
+                                <input type="checkbox" name="shareSection" value="ai-studio" onchange="toggleStudioSubOptions()">
+                                <span class="share-section-label"><i class="fas fa-robot"></i> AI话术工坊</span>
+                            </label>
+                            <div class="studio-sub-options" id="studioSubOptions" style="display:none;">
+                                <label class="share-section-checkbox share-sub-checkbox">
+                                    <input type="checkbox" name="shareSubStudio" value="craft" checked>
+                                    <span class="share-section-label"><i class="fas fa-magic"></i> AI话术工坊（生成功能）</span>
+                                </label>
+                                <label class="share-section-checkbox share-sub-checkbox">
+                                    <input type="checkbox" name="shareSubStudio" value="library" checked>
+                                    <span class="share-section-label"><i class="fas fa-book"></i> 话术库（只读话术库）</span>
+                                </label>
+                            </div>
+                        </div>
                         <label class="share-section-checkbox">
                             <input type="checkbox" name="shareSection" value="tools">
                             <span class="share-section-label"><i class="fas fa-tools"></i> 销售工具箱</span>

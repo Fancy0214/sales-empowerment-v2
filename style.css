@@ -2301,6 +2301,32 @@ body {
     background: rgba(74, 144, 217, 0.06);
 }
 
+/* AI话术工坊子板块选项 */
+.share-section-checkbox-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.studio-sub-options {
+    margin-top: 8px;
+    margin-left: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px 0 4px 12px;
+    border-left: 2px solid var(--accent);
+}
+
+.share-sub-checkbox {
+    padding: 8px 12px !important;
+    background: rgba(74, 144, 217, 0.03) !important;
+    border-width: 1px !important;
+}
+
+.share-sub-checkbox .share-section-label {
+    font-size: 0.85rem !important;
+}
+
 /* ==================== 分享加载中遮罩 ==================== */
 html.share-loading .sidebar,
 html.share-loading .main-content,

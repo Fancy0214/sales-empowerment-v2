@@ -5717,6 +5717,25 @@ function showShareInvalid(title, msg) {
 function applyShareMode(config) {
     const sections = config.sections || [];
     
+    // 判断AI话术工坊的子板块可见性
+    const hasFullStudio = sections.includes('ai-studio');
+    const hasStudioCraft = sections.includes('ai-studio:craft');
+    const hasStudioLibrary = sections.includes('ai-studio:library');
+    const showStudioTab = hasFullStudio || hasStudioCraft;    // 显示AI话术工坊tab
+    const showLibraryTab = hasFullStudio || hasStudioLibrary;  // 显示话术库tab
+    const hasAnyStudio = hasFullStudio || hasStudioCraft || hasStudioLibrary;
+    
+    // 构建导航可见板块列表（将子板块映射回父板块用于导航）
+    const navSections = [];
+    const seen = new Set();
+    for (const s of sections) {
+        const navPage = s.startsWith('ai-studio') ? 'ai-studio' : s;
+        if (!seen.has(navPage)) {
+            navSections.push(navPage);
+            seen.add(navPage);
+        }
+    }
+    
     // 隐藏后台管理入口
     const adminNavItem = document.getElementById('adminNavItem');
     if (adminNavItem) adminNavItem.style.display = 'none';
@@ -5736,7 +5755,7 @@ function applyShareMode(config) {
         const page = item.dataset.page;
         if (page === 'admin') {
             item.style.display = 'none';
-        } else if (sections.includes(page)) {
+        } else if (navSections.includes(page)) {
             item.style.display = 'flex';
         } else {
             item.style.display = 'none';
@@ -5744,13 +5763,32 @@ function applyShareMode(config) {
     });
     
     // 如果有多个板块，显示侧边栏；如果只有一个板块，隐藏侧边栏
-    if (sections.length > 1) {
+    if (navSections.length > 1) {
         document.getElementById('sidebar').style.display = 'block';
     }
     
     // 切换到第一个允许的板块
-    if (sections.length > 0) {
-        switchPage(sections[0]);
+    if (navSections.length > 0) {
+        switchPage(navSections[0]);
+    }
+    
+    // ===== AI话术工坊子板块Tab控制 =====
+    if (hasAnyStudio) {
+        const studioTabBtn = document.querySelector('.module-tabs .tab-btn[onclick*="showStudioTab(\'studio\')"]');
+        const libraryTabBtn = document.querySelector('.module-tabs .tab-btn[onclick*="showStudioTab(\'library\')"]');
+        
+        if (studioTabBtn) studioTabBtn.style.display = showStudioTab ? '' : 'none';
+        if (libraryTabBtn) libraryTabBtn.style.display = showLibraryTab ? '' : 'none';
+        
+        // 如果话术工坊tab不可见但话术库可见，自动切换到话术库tab
+        if (!showStudioTab && showLibraryTab) {
+            const studioTabContent = document.getElementById('studio-tab');
+            const libraryTabContent = document.getElementById('library-tab');
+            if (studioTabBtn) studioTabBtn.classList.remove('active');
+            if (libraryTabBtn) libraryTabBtn.classList.add('active');
+            if (studioTabContent) studioTabContent.classList.remove('active');
+            if (libraryTabContent) libraryTabContent.classList.add('active');
+        }
     }
     
     // ===== 各板块的特殊处理 =====
@@ -5773,7 +5811,7 @@ function applyShareMode(config) {
     }
     
     // AI话术工坊：隐藏自定义话术功能（新增话术按钮、编辑/删除按钮）
-    if (sections.includes('ai-studio')) {
+    if (hasAnyStudio) {
         // 隐藏新增话术按钮
         const addScriptBtn = document.querySelector('#page-ai-studio .filters-bar .btn-primary');
         if (addScriptBtn) addScriptBtn.style.display = 'none';
@@ -6164,9 +6202,63 @@ function switchAdminSection(sectionName) {
 const SECTION_NAMES = {
     'competitors': '竞品情报站',
     'ai-studio': 'AI话术工坊',
+    'ai-studio:craft': 'AI话术工坊-生成',
+    'ai-studio:library': 'AI话术工坊-话术库',
     'tools': '销售工具箱',
     'enneagram': '九型人格'
 };
+
+// 获取板块标签显示名（合并子板块显示）
+function getSectionDisplayName(section) {
+    if (section === 'ai-studio') return 'AI话术工坊（全部）';
+    if (section === 'ai-studio:craft') return 'AI话术工坊-生成';
+    if (section === 'ai-studio:library') return 'AI话术工坊-话术库';
+    return SECTION_NAMES[section] || section;
+}
+
+// 获取板块标签列表（处理子板块合并显示）
+function getSectionDisplayTags(sections) {
+    const tags = [];
+    const hasCraft = sections.includes('ai-studio:craft');
+    const hasLibrary = sections.includes('ai-studio:library');
+    const hasFullStudio = sections.includes('ai-studio');
+    
+    for (const s of sections) {
+        if (s === 'ai-studio:craft' || s === 'ai-studio:library') continue; // 跳过，后面统一处理
+        if (s === 'ai-studio') {
+            tags.push({ key: s, name: 'AI话术工坊（全部）' });
+        } else {
+            tags.push({ key: s, name: getSectionDisplayName(s) });
+        }
+    }
+    // 处理子板块合并
+    if (!hasFullStudio) {
+        if (hasCraft && hasLibrary) {
+            tags.push({ key: 'ai-studio:craft+library', name: 'AI话术工坊（全部）' });
+        } else if (hasCraft) {
+            tags.push({ key: 'ai-studio:craft', name: 'AI话术工坊-生成' });
+        } else if (hasLibrary) {
+            tags.push({ key: 'ai-studio:library', name: 'AI话术工坊-话术库' });
+        }
+    }
+    return tags;
+}
+
+// 当前编辑的分享链接ID（null表示创建模式）
+let _editingShareLinkId = null;
+
+// AI话术工坊子板块展开/折叠
+function toggleStudioSubOptions() {
+    const aiStudioChecked = document.querySelector('input[name="shareSection"][value="ai-studio"]').checked;
+    const subOptions = document.getElementById('studioSubOptions');
+    if (aiStudioChecked) {
+        subOptions.style.display = 'block';
+        // 默认两个都勾选
+        document.querySelectorAll('input[name="shareSubStudio"]').forEach(cb => cb.checked = true);
+    } else {
+        subOptions.style.display = 'none';
+    }
+}
 
 // 生成8位随机 token
 function generateToken() {
@@ -6216,10 +6308,9 @@ function renderShareLinks(links) {
     }
     
     container.innerHTML = links.map(link => {
-        const sectionTags = (link.sections || []).map(s => {
-            const name = SECTION_NAMES[s] || s;
-            return `<span class="share-section-tag">${name}</span>`;
-        }).join('');
+        const sectionTags = getSectionDisplayTags(link.sections || []).map(t =>
+            `<span class="share-section-tag">${t.name}</span>`
+        ).join('');
         
         const statusBadge = link.is_active
             ? '<span class="admin-status approved"><i class="fas fa-check-circle"></i> 启用中</span>'
@@ -6255,6 +6346,9 @@ function renderShareLinks(links) {
                     </div>
                 </div>
                 <div class="share-link-card-actions">
+                    <button class="btn btn-sm btn-outline" onclick="openEditShareLink('${link.id}')">
+                        <i class="fas fa-edit"></i> 编辑
+                    </button>
                     <button class="btn btn-sm ${link.is_active ? 'btn-outline' : ''}" style="${link.is_active ? '' : 'background:#10B981;color:white;'}" onclick="toggleShareLink('${link.id}', ${!link.is_active})">
                         <i class="fas fa-${link.is_active ? 'ban' : 'check'}"></i> ${link.is_active ? '禁用' : '启用'}
                     </button>
@@ -6269,13 +6363,72 @@ function renderShareLinks(links) {
 
 // 打开创建分享链接弹窗
 function openCreateShareLink() {
+    _editingShareLinkId = null;
     document.getElementById('shareLinkTitle').value = '';
     document.getElementById('shareLinkExpires').value = '';
     document.querySelectorAll('input[name="shareSection"]').forEach(cb => cb.checked = false);
+    document.querySelectorAll('input[name="shareSubStudio"]').forEach(cb => cb.checked = false);
+    document.getElementById('studioSubOptions').style.display = 'none';
+    // 更新弹窗标题和按钮
+    document.querySelector('#createShareLinkModal h2').innerHTML = '<i class="fas fa-share-alt"></i> 创建分享链接';
+    document.querySelector('#createShareLinkModal .btn-primary').innerHTML = '<i class="fas fa-link"></i> 创建链接';
     document.getElementById('createShareLinkModal').classList.add('active');
 }
 
-// 创建分享链接
+// 打开编辑分享链接弹窗
+function openEditShareLink(id) {
+    if (!supabaseClient) return;
+    
+    // 从当前加载的链接列表中找到对应链接
+    const linkCards = document.querySelectorAll('.share-link-card');
+    // 通过 Supabase 重新查询单条记录
+    supabaseClient
+        .from('share_links')
+        .select('*')
+        .eq('id', id)
+        .single()
+        .then(({ data, error }) => {
+            if (error || !data) {
+                alert('获取分享链接信息失败');
+                return;
+            }
+            
+            _editingShareLinkId = id;
+            document.getElementById('shareLinkTitle').value = data.title || '';
+            document.getElementById('shareLinkExpires').value = data.expires_at ? data.expires_at.slice(0, 16) : '';
+            
+            // 处理板块勾选
+            const sections = data.sections || [];
+            document.querySelectorAll('input[name="shareSection"]').forEach(cb => {
+                cb.checked = sections.includes(cb.value);
+            });
+            
+            // 处理AI话术工坊子板块
+            const hasFullStudio = sections.includes('ai-studio');
+            const hasCraft = sections.includes('ai-studio:craft');
+            const hasLibrary = sections.includes('ai-studio:library');
+            
+            const subOptions = document.getElementById('studioSubOptions');
+            const aiStudioCheckbox = document.querySelector('input[name="shareSection"][value="ai-studio"]');
+            
+            if (hasFullStudio || hasCraft || hasLibrary) {
+                aiStudioCheckbox.checked = true;
+                subOptions.style.display = 'block';
+                document.querySelector('input[name="shareSubStudio"][value="craft"]').checked = hasFullStudio || hasCraft;
+                document.querySelector('input[name="shareSubStudio"][value="library"]').checked = hasFullStudio || hasLibrary;
+            } else {
+                subOptions.style.display = 'none';
+                document.querySelectorAll('input[name="shareSubStudio"]').forEach(cb => cb.checked = false);
+            }
+            
+            // 更新弹窗标题和按钮
+            document.querySelector('#createShareLinkModal h2').innerHTML = '<i class="fas fa-edit"></i> 编辑分享链接';
+            document.querySelector('#createShareLinkModal .btn-primary').innerHTML = '<i class="fas fa-save"></i> 保存修改';
+            document.getElementById('createShareLinkModal').classList.add('active');
+        });
+}
+
+// 创建/编辑分享链接
 async function createShareLink(event) {
     event.preventDefault();
     
@@ -6286,9 +6439,34 @@ async function createShareLink(event) {
     
     const title = document.getElementById('shareLinkTitle').value.trim();
     const sections = [];
+    const aiStudioChecked = document.querySelector('input[name="shareSection"][value="ai-studio"]').checked;
+    
+    // 收集非AI话术工坊的板块
     document.querySelectorAll('input[name="shareSection"]:checked').forEach(cb => {
-        sections.push(cb.value);
+        if (cb.value !== 'ai-studio') {
+            sections.push(cb.value);
+        }
     });
+    
+    // 处理AI话术工坊子板块
+    if (aiStudioChecked) {
+        const subCraft = document.querySelector('input[name="shareSubStudio"][value="craft"]').checked;
+        const subLibrary = document.querySelector('input[name="shareSubStudio"][value="library"]').checked;
+        
+        if (!subCraft && !subLibrary) {
+            alert('AI话术工坊至少需要选择一个子板块');
+            return;
+        }
+        
+        if (subCraft && subLibrary) {
+            // 两个都选，存为 ai-studio
+            sections.push('ai-studio');
+        } else if (subCraft) {
+            sections.push('ai-studio:craft');
+        } else {
+            sections.push('ai-studio:library');
+        }
+    }
     
     if (sections.length === 0) {
         alert('请至少选择一个要分享的板块');
@@ -6297,6 +6475,32 @@ async function createShareLink(event) {
     
     const expiresAt = document.getElementById('shareLinkExpires').value || null;
     
+    // 编辑模式
+    if (_editingShareLinkId) {
+        try {
+            const { error } = await supabaseClient
+                .from('share_links')
+                .update({
+                    title: title || '未命名分享',
+                    sections: sections,
+                    expires_at: expiresAt
+                })
+                .eq('id', _editingShareLinkId);
+            
+            if (error) throw error;
+            
+            _editingShareLinkId = null;
+            closeModal('createShareLinkModal');
+            await loadShareLinks();
+            alert('分享链接已更新！');
+        } catch(err) {
+            console.error('更新分享链接失败:', err);
+            alert('更新失败: ' + err.message);
+        }
+        return;
+    }
+    
+    // 创建模式
     // 生成唯一 token
     const token = generateToken();
     
