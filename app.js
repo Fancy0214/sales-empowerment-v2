@@ -5696,6 +5696,18 @@ function activateShareMode(data) {
     document.getElementById('sidebar').style.display = 'none';
     document.getElementById('mainContent').classList.add('share-mode');
     
+    // 如果分享链接包含AI话术工坊且有Coze配置，自动注入
+    if (data.studio_bot_id && data.studio_coze_token) {
+        const currentConfig = getStudioConfig();
+        // 仅在本地没有配置时使用分享链接的配置（避免覆盖管理员自己的）
+        if (!currentConfig.cozeToken || !currentConfig.botId) {
+            localStorage.setItem('studio_api_config', JSON.stringify({
+                cozeToken: data.studio_coze_token,
+                botId: data.studio_bot_id
+            }));
+        }
+    }
+    
     applyShareMode(data);
     
     // 验证完成，移除加载遮罩和登录门禁，显示内容
@@ -6478,13 +6490,22 @@ async function createShareLink(event) {
     // 编辑模式
     if (_editingShareLinkId) {
         try {
+            const updateData = {
+                title: title || '未命名分享',
+                sections: sections,
+                expires_at: expiresAt
+            };
+            // 如果包含AI话术工坊，存入当前Coze配置
+            const hasAnyStudio = sections.some(s => s.startsWith('ai-studio'));
+            if (hasAnyStudio) {
+                const studioConfig = getStudioConfig();
+                if (studioConfig.botId) updateData.studio_bot_id = studioConfig.botId;
+                if (studioConfig.cozeToken) updateData.studio_coze_token = studioConfig.cozeToken;
+            }
+            
             const { error } = await supabaseClient
                 .from('share_links')
-                .update({
-                    title: title || '未命名分享',
-                    sections: sections,
-                    expires_at: expiresAt
-                })
+                .update(updateData)
                 .eq('id', _editingShareLinkId);
             
             if (error) throw error;
@@ -6505,15 +6526,24 @@ async function createShareLink(event) {
     const token = generateToken();
     
     try {
+        // 如果包含AI话术工坊，存入当前Coze配置
+        const insertData = {
+            token: token,
+            title: title || '未命名分享',
+            sections: sections,
+            is_active: true,
+            expires_at: expiresAt
+        };
+        const hasAnyStudio = sections.some(s => s.startsWith('ai-studio'));
+        if (hasAnyStudio) {
+            const studioConfig = getStudioConfig();
+            if (studioConfig.botId) insertData.studio_bot_id = studioConfig.botId;
+            if (studioConfig.cozeToken) insertData.studio_coze_token = studioConfig.cozeToken;
+        }
+        
         const { data, error } = await supabaseClient
             .from('share_links')
-            .insert([{
-                token: token,
-                title: title || '未命名分享',
-                sections: sections,
-                is_active: true,
-                expires_at: expiresAt
-            }])
+            .insert([insertData])
             .select();
         
         if (error) throw error;
