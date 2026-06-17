@@ -4585,8 +4585,10 @@ function copyGeneratedScript() {
 }
 
 function favoriteScript() {
-    const content = document.getElementById('generatedContent').textContent;
-    if (!content || content.trim().length < 10) {
+    const outputArea = document.getElementById('generatedContent');
+    const content = outputArea.innerHTML;  // 存HTML保留结构
+    const textContent = outputArea.textContent;
+    if (!textContent || textContent.trim().length < 10) {
         alert('没有可收藏的话术内容');
         return;
     }
@@ -4613,6 +4615,7 @@ function favoriteScript() {
         title: title,
         scene: scene,
         content: content.trim(),
+        contentText: textContent.trim(),
         category: 'ai_generated',
         createdAt: new Date().toLocaleString('zh-CN')
     };
@@ -4722,7 +4725,7 @@ function renderScripts(category = 'all') {
                     ${deleteAction}
                 </div>
             </div>
-            <div class="script-card-content">${script.content.replace(/\n/g, '<br>')}</div>
+            <div class="script-card-content">${isFav ? script.content : script.content.replace(/\n/g, '<br>')}</div>
             <div class="script-card-footer">
                 <span class="script-type-tag">${tagLabel}</span>
                 <div class="script-card-footer-actions">
@@ -4736,9 +4739,17 @@ function renderScripts(category = 'all') {
 }
 
 function copyScriptContent(id) {
-    const script = scripts.find(s => s.id === id);
-    if (script) {
-        navigator.clipboard.writeText(script.content).then(() => {
+    // 先在内置话术中找，再在收藏中找
+    let script = scripts.find(s => s.id === id);
+    let copyText = script ? script.content : '';
+    
+    if (!script) {
+        const fav = getStudioFavorites().find(f => f.id === id);
+        if (fav) copyText = fav.contentText || fav.content;
+    }
+    
+    if (copyText) {
+        navigator.clipboard.writeText(copyText).then(() => {
             const btn = document.querySelector(`#script-${id} .script-card-footer-actions button`);
             if (btn) {
                 const original = btn.innerHTML;
