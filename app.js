@@ -3447,6 +3447,21 @@ function renderStudioFinal(text, outputArea) {
     html += '<div class="sc-principle-item"><span class="sc-check">✅</span> 不诋毁同行，用实力和结果赢得信任</div>';
     html += '</div></div>';
     
+    // 兜底：如果fullText有内容但解析不到emoji标记段落，直接原文展示
+    if (!painText && !frameText && !scriptText && text.trim()) {
+        html = '<div class="sc-block sc-scripts-block">'
+             + '<div class="sc-block-title"><span class="sc-emoji">💬</span> 话术方案</div>'
+             + '<div class="sc-script-step"><div class="sc-step-content">' 
+             + escapeHtml(text).replace(/\n/g, '<br>') 
+             + '</div></div></div>'
+             + html;
+    }
+    
+    // 空内容提示
+    if (!text.trim() && !painText && !frameText && !scriptText) {
+        html = '<div class="studio-error"><i class="fas fa-exclamation-circle"></i> 生成内容为空，请检查：1) Coze Token和Bot ID是否正确 2) Bot是否已发布 3) Bot是否配了系统Prompt</div>';
+    }
+    
     outputArea.innerHTML = html;
 }
 
@@ -4339,9 +4354,9 @@ async function generateScript() {
     const outputArea = document.getElementById('generatedContent');
     const actionsArea = document.getElementById('scriptActions');
     
-    // 构建用户消息（Coze Bot的System Prompt已在Bot端配置，这里只发用户输入）
+    // 构建用户消息（将系统Prompt拼入，确保Bot端无论是否配Prompt都能输出正确格式）
     const { text: fileText, images: fileImages } = buildStudioMessage();
-    let userContent = `我方角色：${myRole}\n`;
+    let userContent = `[系统指令]\n${STUDIO_SYSTEM_PROMPT}\n\n[用户输入]\n我方角色：${myRole}\n`;
     if (companyInfo) userContent += `我司情况：${companyInfo}\n`;
     if (clientLevel) userContent += `客户层级：${clientLevel}\n`;
     if (clientIdentity) userContent += `客户身份：${clientIdentity}\n`;
