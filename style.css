@@ -3358,3 +3358,337 @@ html.share-loading .share-loading-mask {
         padding: 12px;
     }
 }
+
+/* ==================== 方案生成页面样式 ==================== */
+
+/* 方案生成Tab内容 */
+.plan-content {
+    display: none;
+}
+.plan-content.active {
+    display: block;
+}
+
+/* 方案生成左右布局 */
+.plan-layout {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+/* 左侧表单面板 */
+.plan-form-panel {
+    position: sticky;
+    top: 20px;
+}
+.plan-form-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    border: 1px solid var(--border);
+}
+.plan-form-card h3 {
+    margin: 0 0 20px;
+    font-size: 1.1rem;
+    color: var(--primary-dark);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.plan-form-card h3 i {
+    color: var(--accent);
+}
+
+/* 多选下拉 */
+.plan-multi-select {
+    position: relative;
+}
+.plan-multi-select-display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    background: white;
+    transition: var(--transition);
+}
+.plan-multi-select-display:hover {
+    border-color: var(--primary-mid);
+}
+.plan-multi-select-display i {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    transition: transform 0.2s;
+}
+.plan-multi-select-text {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+.plan-multi-select-text.has-value {
+    color: var(--text-primary);
+}
+.plan-multi-select-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    z-index: 100;
+    padding: 8px 0;
+    margin-top: 4px;
+}
+.plan-multi-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.15s;
+}
+.plan-multi-option:hover {
+    background: var(--bg-secondary);
+}
+.plan-multi-option input[type="checkbox"] {
+    accent-color: var(--primary-mid);
+}
+
+/* 全宽按钮 */
+.btn-block {
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+}
+
+/* 右侧结果面板 */
+.plan-result-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    border: 1px solid var(--border);
+    min-height: 400px;
+}
+
+/* 空状态 */
+.plan-empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--text-secondary);
+}
+.plan-empty-state i {
+    font-size: 3rem;
+    color: var(--primary-light);
+    margin-bottom: 16px;
+    display: block;
+}
+.plan-empty-state h3 {
+    margin: 0 0 8px;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+}
+.plan-empty-state p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* 错误状态 */
+.plan-error-state {
+    text-align: center;
+    padding: 60px 20px;
+}
+.plan-error-state i {
+    font-size: 3rem;
+    color: var(--warning);
+    margin-bottom: 16px;
+    display: block;
+}
+.plan-error-state h3 {
+    margin: 0 0 8px;
+    color: var(--text-primary);
+}
+.plan-error-state p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* 结果内容 */
+.plan-result-content {
+    width: 100%;
+}
+.plan-result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+}
+.plan-result-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--primary-dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.plan-result-header h3 i {
+    color: var(--accent);
+}
+.plan-result-body {
+    line-height: 1.7;
+}
+
+/* 推荐结果表格 */
+.plan-table-wrap {
+    overflow-x: auto;
+    margin: 16px 0;
+}
+.plan-result-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+}
+.plan-result-table th {
+    background: var(--bg-secondary);
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-secondary);
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+}
+.plan-result-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+}
+.plan-result-table tr:hover td {
+    background: rgba(59, 89, 152, 0.03);
+}
+.plan-result-table a {
+    color: var(--primary-mid);
+    text-decoration: none;
+}
+.plan-result-table a:hover {
+    text-decoration: underline;
+}
+
+/* 文本块 */
+.plan-text-block {
+    padding: 12px 0;
+    font-size: 0.92rem;
+    color: var(--text-primary);
+}
+
+/* ===== 院校数据库样式 ===== */
+.plan-db-container {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    border: 1px solid var(--border);
+}
+.plan-db-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+.plan-db-filters {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.plan-db-filters select,
+.plan-db-filters input {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 0.88rem;
+    min-width: 140px;
+}
+.plan-db-filters input {
+    min-width: 200px;
+}
+.plan-db-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* 数据表格 */
+.plan-db-table-wrap {
+    overflow-x: auto;
+}
+.plan-db-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.86rem;
+}
+.plan-db-table th {
+    background: var(--bg-secondary);
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-secondary);
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+}
+.plan-db-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+}
+.plan-db-table tr:hover td {
+    background: rgba(59, 89, 152, 0.03);
+}
+
+/* 分页 */
+.plan-db-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 0 0;
+}
+.pagination-info {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+}
+
+/* 分享模式隐藏操作列 */
+.share-mode .plan-db-table .action-cell {
+    display: none;
+}
+
+/* 响应式 */
+@media (max-width: 900px) {
+    .plan-layout {
+        grid-template-columns: 1fr;
+    }
+    .plan-form-panel {
+        position: static;
+    }
+    .plan-db-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .plan-db-filters {
+        flex-direction: column;
+    }
+    .plan-db-filters select,
+    .plan-db-filters input {
+        min-width: 100%;
+    }
+}

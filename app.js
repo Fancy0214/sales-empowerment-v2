@@ -5843,6 +5843,15 @@ function applyShareMode(config) {
     if (sections.includes('enneagram')) {
         // 测试保存按钮通过CSS隐藏
     }
+    
+    // 方案生成：分享模式下只读，隐藏院校数据库的添加/导入/编辑/删除
+    if (sections.includes('plan-generator')) {
+        const dbAddBtn = document.getElementById('planDbAddBtn');
+        const dbImportBtn = document.getElementById('planDbImportBtn');
+        if (dbAddBtn) dbAddBtn.style.display = 'none';
+        if (dbImportBtn) dbImportBtn.style.display = 'none';
+        // 数据库Tab中的操作列和编辑/删除按钮通过CSS隐藏
+    }
 }
 
 function exitShareMode() {
@@ -6217,7 +6226,8 @@ const SECTION_NAMES = {
     'ai-studio:craft': 'AI话术工坊-生成',
     'ai-studio:library': 'AI话术工坊-话术库',
     'tools': '销售工具箱',
-    'enneagram': '九型人格'
+    'enneagram': '九型人格',
+    'plan-generator': '方案生成'
 };
 
 // 获取板块标签显示名（合并子板块显示）
@@ -6945,4 +6955,770 @@ function formatFileSize(bytes) {
     const units = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
     return (bytes / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 1) + ' ' + units[i];
+}
+
+// ==================== 方案生成功能 ====================
+
+// Plan Generator System Prompt
+const PLAN_SYSTEM_PROMPT = `你是一位资深留学方案规划专家，擅长根据学生背景精准推荐院校方案。
+
+核心原则：
+1. 按QS排名从高到低优先推荐，找学生够得到的最好的院校
+2. 均分是硬门槛，严格按学生院校层次匹配对应要求
+3. 如果排名很好的院校学生均分符合但意向专业无合适选项，找1个可申专业并备注"⚠️ 非意向专业，但背景符合可考虑"
+4. 务实推荐，不推荐明显达不到的院校浪费学生精力
+5. 每个推荐附上推荐理由（1句话）
+
+输出格式（严格遵循，每个院校一行）：
+📊 推荐方案
+
+| QS排名 | 院校名称 | 均分要求+备注 | 专业 | 链接 |
+|--------|---------|-------------|------|------|
+| XX | XXX大学 | XXX | XXX | 链接 |
+
+💡 推荐说明
+（整体推荐策略说明，2-3句话）`;
+
+// 院校数据库分页
+let planDbPage = 1;
+const PLAN_DB_PAGE_SIZE = 20;
+let planDbAllData = [];
+
+// ===== Tab切换 =====
+function showPlanTab(tab) {
+    document.querySelectorAll('#page-plan-generator .tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('#page-plan-generator .plan-content').forEach(el => el.classList.remove('active'));
+    
+    if (tab === 'generate') {
+        document.querySelector('#page-plan-generator .tab-btn[onclick*="generate"]').classList.add('active');
+        document.getElementById('plan-generate').classList.add('active');
+    } else {
+        document.querySelector('#page-plan-generator .tab-btn[onclick*="database"]').classList.add('active');
+        document.getElementById('plan-database').classList.add('active');
+        loadUniversityData();
+    }
+}
+
+// ===== 多选下拉 =====
+function toggleMultiSelect(selectId) {
+    const dropdown = document.querySelector(`#${selectId} .plan-multi-select-dropdown`);
+    const isOpen = dropdown.style.display === 'block';
+    // 先关闭所有
+    document.querySelectorAll('.plan-multi-select-dropdown').forEach(d => d.style.display = 'none');
+    if (!isOpen) dropdown.style.display = 'block';
+}
+
+function updateMultiSelectText(selectId, textId) {
+    const checkboxes = document.querySelectorAll(`#${selectId} .plan-multi-option input[type="checkbox"]`);
+    const selected = [];
+    checkboxes.forEach(cb => { if (cb.checked) selected.push(cb.value); });
+    const textEl = document.getElementById(textId);
+    if (selected.length === 0) {
+        textEl.textContent = '请选择国家';
+        textEl.classList.remove('has-value');
+    } else {
+        textEl.textContent = selected.join('、');
+        textEl.classList.add('has-value');
+    }
+}
+
+// 点击外部关闭多选下拉
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.plan-multi-select')) {
+        document.querySelectorAll('.plan-multi-select-dropdown').forEach(d => d.style.display = 'none');
+    }
+});
+
+// ===== 方案生成 =====
+async function generatePlan() {
+    // 收集表单数据
+    const countryCheckboxes = document.querySelectorAll('#planCountrySelect .plan-multi-option input:checked');
+    const countries = Array.from(countryCheckboxes).map(cb => cb.value);
+    const degree = document.getElementById('planDegree').value;
+    const major = document.getElementById('planMajor').value;
+    const uniLevel = document.getElementById('planUniLevel').value;
+    const gpa = document.getElementById('planGPA').value;
+    const ielts = document.getElementById('planIELTS').value;
+    const extra = document.getElementById('planExtra').value.trim();
+    
+    // 验证必填
+    if (countries.length === 0) { alert('请选择意向国家'); return; }
+    if (!degree) { alert('请选择学位层次'); return; }
+    if (!major) { alert('请选择专业方向'); return; }
+    if (!uniLevel) { alert('请选择本科院校层次'); return; }
+    
+    // 检查Coze配置
+    const config = getStudioConfig();
+    if (!config.cozeToken || !config.botId) {
+        document.getElementById('planResultArea').innerHTML = `
+            <div class="plan-error-state">
+                <i class="fas fa-exclamation-circle"></i>
+                <h3>未配置AI接口</h3>
+                <p>请先在「AI话术工坊」中配置Coze Bot API，或联系管理员获取配置。</p>
+            </div>`;
+        return;
+    }
+    
+    // 显示Loading
+    const resultArea = document.getElementById('planResultArea');
+    const btn = document.getElementById('planGenerateBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 生成中...';
+    
+    resultArea.innerHTML = '<div class="studio-loading"><div class="studio-dots"><span></span><span></span><span></span></div><p>AI正在根据院校数据库生成方案，通常需要10-20秒...</p></div><div class="studio-stream-output" id="planStreamOutput" style="display:none"></div>';
+    
+    try {
+        // 从Supabase查询匹配院校数据
+        let query = supabaseClient
+            .from('university_requirements')
+            .select('*')
+            .eq('is_active', true)
+            .in('country', countries)
+            .eq('degree_level', degree)
+            .eq('major_direction', major);
+        
+        const { data: uniData, error } = await query;
+        
+        if (error) {
+            console.warn('Supabase查询失败，尝试不带专业方向查询:', error);
+            // 降级：不带专业方向查询
+            const { data: fallbackData, error: err2 } = await supabaseClient
+                .from('university_requirements')
+                .select('*')
+                .eq('is_active', true)
+                .in('country', countries)
+                .eq('degree_level', degree);
+            if (err2) throw err2;
+            var matchedUnis = fallbackData || [];
+        } else {
+            var matchedUnis = uniData || [];
+        }
+        
+        // 如果没查到数据，扩大范围查询
+        if (matchedUnis.length === 0) {
+            const { data: broadData } = await supabaseClient
+                .from('university_requirements')
+                .select('*')
+                .eq('is_active', true)
+                .in('country', countries);
+            matchedUnis = broadData || [];
+        }
+        
+        // 按QS排名排序
+        matchedUnis.sort((a, b) => (a.qs_rank || 9999) - (b.qs_rank || 9999));
+        
+        // 构建用户消息
+        let userMsg = `学生背景信息：
+- 意向国家：${countries.join('、')}
+- 学位层次：${degree}
+- 专业方向：${major}
+- 本科院校层次：${uniLevel}
+- 均分/GPA：${gpa || '未提供'}
+- 雅思总分：${ielts || '未提供'}`;
+        if (extra) userMsg += `\n- 补充信息：${extra}`;
+        
+        if (matchedUnis.length > 0) {
+            userMsg += `\n\n以下是从院校数据库中筛选出的匹配院校数据（共${matchedUnis.length}条），请结合这些数据和学生背景进行推荐：\n`;
+            userMsg += '| QS排名 | 院校名称 | 国家 | 专业方向 | 专业名称 | 学位 | 均分要求 | 语言要求 | 备注 | 链接 |\n';
+            userMsg += '|--------|---------|------|---------|---------|------|---------|---------|------|------|\n';
+            matchedUnis.forEach(u => {
+                userMsg += `| ${u.qs_rank || '-'} | ${u.university} | ${u.country} | ${u.major_direction || '-'} | ${u.major_name || '-'} | ${u.degree_level} | ${u.gpa_requirement || '-'} | ${u.language_requirement || '-'} | ${u.notes || '-'} | ${u.link || '-'} |\n`;
+            });
+        } else {
+            userMsg += '\n\n注意：院校数据库中暂无完全匹配的数据，请根据你的专业知识推荐。';
+        }
+        
+        // 调用Coze API（使用system prompt方式）
+        await streamPlanCozeResponse(config, PLAN_SYSTEM_PROMPT, userMsg, resultArea);
+        
+    } catch (err) {
+        console.error('方案生成失败:', err);
+        resultArea.innerHTML = `
+            <div class="studio-error">
+                <i class="fas fa-exclamation-triangle"></i> 方案生成失败：${err.message || '未知错误'}
+                ${err.message && err.message.includes('does not exist') ? '<br><small>提示：院校数据表可能尚未创建，请在Supabase中执行建表SQL。</small>' : ''}
+            </div>`;
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-magic"></i> 生成方案';
+    }
+}
+
+// 方案生成专用流式响应（带system prompt）
+async function streamPlanCozeResponse(config, systemPrompt, userMessage, outputArea) {
+    const response = await fetch('https://api.coze.cn/v3/chat', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + config.cozeToken
+        },
+        body: JSON.stringify({
+            bot_id: config.botId,
+            user_id: 'plan_user_' + Math.random().toString(36).substring(2, 8),
+            stream: true,
+            auto_save_history: false,
+            additional_messages: [
+                {
+                    role: 'system',
+                    content: systemPrompt,
+                    content_type: 'text'
+                },
+                {
+                    role: 'user',
+                    content: userMessage,
+                    content_type: 'text'
+                }
+            ]
+        })
+    });
+    
+    if (!response.ok) {
+        const errText = await response.text();
+        throw new Error('Coze API返回错误 (' + response.status + '): ' + errText.substring(0, 300));
+    }
+    
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let fullText = '';
+    let buffer = '';
+    let firstChunk = true;
+    
+    outputArea.innerHTML = '<div class="studio-loading" id="planLoadingIndicator"><div class="studio-dots"><span></span><span></span><span></span></div><p>AI正在生成院校推荐方案...</p></div><div class="studio-stream-output" id="planStreamOutput" style="display:none"></div>';
+    const streamEl = document.getElementById('planStreamOutput');
+    const loadingEl = document.getElementById('planLoadingIndicator');
+    
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+        
+        let currentEvent = '';
+        for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed) continue;
+            
+            if (trimmed.startsWith('event:')) {
+                currentEvent = trimmed.slice(6).trim();
+                continue;
+            }
+            
+            if (trimmed.startsWith('data:') && currentEvent === 'conversation.message.delta') {
+                const data = trimmed.slice(5).trim();
+                try {
+                    const json = JSON.parse(data);
+                    if (json.type === 'answer' && json.content) {
+                        fullText += json.content;
+                        if (firstChunk) {
+                            if (loadingEl) loadingEl.style.display = 'none';
+                            streamEl.style.display = '';
+                            firstChunk = false;
+                        }
+                        // 实时渲染
+                        const html = fullText
+                            .replace(/&/g, '&amp;')
+                            .replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;')
+                            .replace(/\n/g, '<br>')
+                            .replace(/📊/g, '<span class="sc-emoji">📊</span>')
+                            .replace(/💡/g, '<span class="sc-emoji">💡</span>')
+                            .replace(/⚠️/g, '<span class="sc-emoji">⚠️</span>');
+                        streamEl.innerHTML = html + '<span class="studio-stream-cursor">▊</span>';
+                    }
+                } catch(e) {}
+            }
+        }
+    }
+    
+    // 最终渲染
+    renderPlanFinal(fullText, outputArea);
+}
+
+// 方案最终渲染（带复制按钮）
+function renderPlanFinal(text, outputArea) {
+    // 将markdown表格转换为HTML
+    let html = text;
+    
+    // 处理表格
+    const tableRegex = /\|(.+)\|\n\|[\s\-:|]+\|\n((?:\|.+\|\n?)*)/g;
+    html = html.replace(tableRegex, function(match, headerRow, bodyRows) {
+        const headers = headerRow.split('|').map(h => h.trim()).filter(h => h);
+        let tableHtml = '<table class="plan-result-table"><thead><tr>';
+        headers.forEach(h => { tableHtml += `<th>${h}</th>`; });
+        tableHtml += '</tr></thead><tbody>';
+        
+        const rows = bodyRows.trim().split('\n');
+        rows.forEach(row => {
+            const cells = row.split('|').map(c => c.trim()).filter(c => c);
+            if (cells.length > 0) {
+                tableHtml += '<tr>';
+                cells.forEach(c => {
+                    // 将链接转为可点击
+                    const linkMatch = c.match(/https?:\/\/[^\s)]+/);
+                    if (linkMatch) {
+                        c = c.replace(linkMatch[0], `<a href="${linkMatch[0]}" target="_blank" rel="noopener">查看</a>`);
+                    }
+                    tableHtml += `<td>${c}</td>`;
+                });
+                tableHtml += '</tr>';
+            }
+        });
+        tableHtml += '</tbody></table>';
+        return tableHtml;
+    });
+    
+    // 处理非表格文本
+    html = html
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\n/g, '<br>')
+        .replace(/📊/g, '<span class="sc-emoji">📊</span>')
+        .replace(/💡/g, '<span class="sc-emoji">💡</span>')
+        .replace(/⚠️/g, '<span class="sc-emoji">⚠️</span>');
+    
+    // 修复表格HTML中的转义（表格已单独处理）
+    // 重新解析：先提取表格，再处理其他文本
+    
+    // 简化方案：整体渲染后再添加复制按钮
+    outputArea.innerHTML = `
+        <div class="plan-result-content">
+            <div class="plan-result-header">
+                <h3><i class="fas fa-chart-line"></i> 推荐方案</h3>
+                <button class="btn btn-outline btn-sm" onclick="copyPlanResult()"><i class="fas fa-copy"></i> 复制方案</button>
+            </div>
+            <div class="plan-result-body" id="planResultBody"></div>
+        </div>`;
+    
+    // 重新处理完整文本渲染
+    renderPlanContent(text, document.getElementById('planResultBody'));
+}
+
+function renderPlanContent(text, container) {
+    // 分段处理：表格部分和非表格部分
+    const parts = [];
+    const lines = text.split('\n');
+    let inTable = false;
+    let tableLines = [];
+    let textLines = [];
+    
+    for (const line of lines) {
+        const isTableLine = line.trim().startsWith('|') && line.trim().endsWith('|');
+        const isSeparator = /^\|[\s\-:|]+\|$/.test(line.trim());
+        
+        if (isTableLine) {
+            if (!inTable) {
+                // 保存之前的文本
+                if (textLines.length > 0) {
+                    parts.push({ type: 'text', content: textLines.join('\n') });
+                    textLines = [];
+                }
+                inTable = true;
+            }
+            if (!isSeparator) {
+                tableLines.push(line);
+            }
+        } else {
+            if (inTable) {
+                // 保存表格
+                parts.push({ type: 'table', content: tableLines.join('\n') });
+                tableLines = [];
+                inTable = false;
+            }
+            textLines.push(line);
+        }
+    }
+    
+    // 处理剩余
+    if (inTable && tableLines.length > 0) {
+        parts.push({ type: 'table', content: tableLines.join('\n') });
+    }
+    if (textLines.length > 0) {
+        parts.push({ type: 'text', content: textLines.join('\n') });
+    }
+    
+    // 渲染
+    let html = '';
+    for (const part of parts) {
+        if (part.type === 'table') {
+            html += renderPlanTable(part.content);
+        } else {
+            html += renderPlanText(part.content);
+        }
+    }
+    container.innerHTML = html;
+}
+
+function renderPlanTable(text) {
+    const lines = text.trim().split('\n');
+    if (lines.length === 0) return '';
+    
+    const headers = lines[0].split('|').map(h => h.trim()).filter(h => h);
+    let html = '<div class="plan-table-wrap"><table class="plan-result-table"><thead><tr>';
+    headers.forEach(h => { html += `<th>${escapeHtml(h)}</th>`; });
+    html += '</tr></thead><tbody>';
+    
+    for (let i = 1; i < lines.length; i++) {
+        const cells = lines[i].split('|').map(c => c.trim()).filter(c => c);
+        if (cells.length === 0) continue;
+        html += '<tr>';
+        cells.forEach(c => {
+            const linkMatch = c.match(/https?:\/\/[^\s)]+/);
+            if (linkMatch) {
+                c = c.replace(linkMatch[0], `<a href="${escapeHtml(linkMatch[0])}" target="_blank" rel="noopener">🔗查看</a>`);
+            }
+            html += `<td>${c}</td>`;
+        });
+        html += '</tr>';
+    }
+    html += '</tbody></table></div>';
+    return html;
+}
+
+function renderPlanText(text) {
+    let html = escapeHtml(text)
+        .replace(/\n/g, '<br>')
+        .replace(/📊/g, '📊')
+        .replace(/💡/g, '💡')
+        .replace(/⚠️/g, '⚠️');
+    return `<div class="plan-text-block">${html}</div>`;
+}
+
+function escapeHtml(str) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// 复制方案为纯文本
+function copyPlanResult() {
+    const resultBody = document.getElementById('planResultBody');
+    if (!resultBody) return;
+    
+    // 从结果区域提取纯文本
+    let text = resultBody.innerText || resultBody.textContent;
+    
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector('#page-plan-generator .plan-result-header .btn');
+        if (btn) {
+            const orig = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i> 已复制';
+            setTimeout(() => { btn.innerHTML = orig; }, 2000);
+        }
+    }).catch(() => {
+        // Fallback
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        alert('方案已复制到剪贴板');
+    });
+}
+
+// ===== 院校数据库CRUD =====
+async function loadUniversityData() {
+    if (!supabaseClient) return;
+    
+    const country = document.getElementById('planDbCountry').value;
+    const major = document.getElementById('planDbMajor').value;
+    const search = document.getElementById('planDbSearch').value.trim().toLowerCase();
+    
+    let query = supabaseClient
+        .from('university_requirements')
+        .select('*', { count: 'exact' })
+        .eq('is_active', true);
+    
+    if (country) query = query.eq('country', country);
+    if (major) query = query.eq('major_direction', major);
+    
+    try {
+        const { data, error, count } = await query
+            .order('qs_rank', { nulls_first: false, ascending: true })
+            .range((planDbPage - 1) * PLAN_DB_PAGE_SIZE, planDbPage * PLAN_DB_PAGE_SIZE - 1);
+        
+        if (error) throw error;
+        
+        let filtered = data || [];
+        
+        // 客户端搜索过滤
+        if (search) {
+            filtered = filtered.filter(u => 
+                (u.university || '').toLowerCase().includes(search) ||
+                (u.major_name || '').toLowerCase().includes(search) ||
+                (u.major_direction || '').toLowerCase().includes(search)
+            );
+        }
+        
+        planDbAllData = filtered;
+        renderUniversityTable(filtered);
+        renderDbPagination(count || filtered.length);
+    } catch (err) {
+        console.error('加载院校数据失败:', err);
+        document.getElementById('planDbBody').innerHTML = `
+            <tr><td colspan="10" style="text-align:center;color:#999;padding:40px;">
+                <i class="fas fa-exclamation-circle"></i> 加载失败：${err.message || '未知错误'}
+                ${err.message && err.message.includes('does not exist') ? '<br><small>提示：请先在Supabase中创建 university_requirements 表</small>' : ''}
+            </td></tr>`;
+    }
+}
+
+function renderUniversityTable(data) {
+    const tbody = document.getElementById('planDbBody');
+    const isShare = isShareMode;
+    
+    if (!data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#999;padding:40px;"><i class="fas fa-inbox"></i> 暂无数据</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = data.map(u => `
+        <tr>
+            <td>${u.country || '-'}</td>
+            <td>${u.qs_rank || '-'}</td>
+            <td><strong>${u.university || '-'}</strong></td>
+            <td>${u.major_direction || '-'}</td>
+            <td>${u.major_name || '-'}</td>
+            <td>${u.degree_level || '-'}</td>
+            <td>${u.gpa_requirement || '-'}</td>
+            <td>${u.language_requirement || '-'}</td>
+            <td>${u.notes || '-'}</td>
+            <td class="action-cell" ${isShare ? 'style="display:none"' : ''}>
+                <button class="btn-icon btn-edit" title="编辑" onclick="openUniversityEditModal('${u.id}')"><i class="fas fa-pen"></i></button>
+                <button class="btn-icon btn-delete" title="删除" onclick="deleteUniversity('${u.id}')"><i class="fas fa-trash-alt"></i></button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function renderDbPagination(totalCount) {
+    const totalPages = Math.ceil(totalCount / PLAN_DB_PAGE_SIZE);
+    const container = document.getElementById('planDbPagination');
+    
+    if (totalPages <= 1) {
+        container.innerHTML = '';
+        return;
+    }
+    
+    let html = '<div class="pagination">';
+    if (planDbPage > 1) {
+        html += `<button class="btn btn-outline btn-sm" onclick="planDbGoPage(${planDbPage - 1})"><i class="fas fa-chevron-left"></i></button>`;
+    }
+    html += `<span class="pagination-info">第 ${planDbPage} / ${totalPages} 页</span>`;
+    if (planDbPage < totalPages) {
+        html += `<button class="btn btn-outline btn-sm" onclick="planDbGoPage(${planDbPage + 1})"><i class="fas fa-chevron-right"></i></button>`;
+    }
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+function planDbGoPage(page) {
+    planDbPage = page;
+    loadUniversityData();
+}
+
+// 打开院校编辑弹窗
+async function openUniversityEditModal(id) {
+    if (isShareMode) return;
+    
+    const modal = document.getElementById('universityEditModal');
+    const form = document.getElementById('universityEditForm');
+    form.reset();
+    document.getElementById('uniEditId').value = '';
+    
+    if (id) {
+        // 编辑模式
+        document.getElementById('universityEditTitle').innerHTML = '<i class="fas fa-university"></i> 编辑院校';
+        try {
+            const { data, error } = await supabaseClient
+                .from('university_requirements')
+                .select('*')
+                .eq('id', id)
+                .single();
+            if (error) throw error;
+            if (data) {
+                document.getElementById('uniEditId').value = data.id;
+                document.getElementById('uniEditCountry').value = data.country || '';
+                document.getElementById('uniEditQsRank').value = data.qs_rank || '';
+                document.getElementById('uniEditUniversity').value = data.university || '';
+                document.getElementById('uniEditMajorDir').value = data.major_direction || '';
+                document.getElementById('uniEditMajorName').value = data.major_name || '';
+                document.getElementById('uniEditDegree').value = data.degree_level || '';
+                document.getElementById('uniEditGPA').value = data.gpa_requirement || '';
+                document.getElementById('uniEditLang').value = data.language_requirement || '';
+                document.getElementById('uniEditNotes').value = data.notes || '';
+                document.getElementById('uniEditLink').value = data.link || '';
+            }
+        } catch (err) {
+            alert('加载院校数据失败: ' + err.message);
+            return;
+        }
+    } else {
+        document.getElementById('universityEditTitle').innerHTML = '<i class="fas fa-university"></i> 添加院校';
+    }
+    
+    modal.style.display = 'flex';
+}
+
+// 保存院校
+async function saveUniversity(event) {
+    event.preventDefault();
+    if (isShareMode) return;
+    
+    const id = document.getElementById('uniEditId').value;
+    const record = {
+        country: document.getElementById('uniEditCountry').value,
+        qs_rank: parseInt(document.getElementById('uniEditQsRank').value) || null,
+        university: document.getElementById('uniEditUniversity').value,
+        major_direction: document.getElementById('uniEditMajorDir').value,
+        major_name: document.getElementById('uniEditMajorName').value || null,
+        degree_level: document.getElementById('uniEditDegree').value,
+        gpa_requirement: document.getElementById('uniEditGPA').value || null,
+        language_requirement: document.getElementById('uniEditLang').value || null,
+        notes: document.getElementById('uniEditNotes').value || null,
+        link: document.getElementById('uniEditLink').value || null,
+        source: '手动录入'
+    };
+    
+    try {
+        if (id) {
+            // 更新
+            const { error } = await supabaseClient
+                .from('university_requirements')
+                .update(record)
+                .eq('id', id);
+            if (error) throw error;
+        } else {
+            // 新增
+            const { error } = await supabaseClient
+                .from('university_requirements')
+                .insert([record]);
+            if (error) throw error;
+        }
+        
+        closeModal('universityEditModal');
+        loadUniversityData();
+    } catch (err) {
+        alert('保存失败: ' + err.message);
+    }
+}
+
+// 删除院校
+async function deleteUniversity(id) {
+    if (isShareMode) return;
+    if (!confirm('确定删除该院校数据？')) return;
+    
+    try {
+        const { error } = await supabaseClient
+            .from('university_requirements')
+            .delete()
+            .eq('id', id);
+        if (error) throw error;
+        loadUniversityData();
+    } catch (err) {
+        alert('删除失败: ' + err.message);
+    }
+}
+
+// ===== 批量导入 =====
+function openImportModal() {
+    if (isShareMode) return;
+    document.getElementById('importCsvFile').value = '';
+    document.getElementById('importCsvText').value = '';
+    document.getElementById('importModal').style.display = 'flex';
+}
+
+async function importCsvData() {
+    if (isShareMode) return;
+    
+    let csvText = document.getElementById('importCsvText').value.trim();
+    const fileInput = document.getElementById('importCsvFile');
+    
+    // 如果有上传文件，读取文件内容
+    if (fileInput.files && fileInput.files.length > 0) {
+        csvText = await fileInput.files[0].text();
+    }
+    
+    if (!csvText) {
+        alert('请上传CSV文件或粘贴CSV内容');
+        return;
+    }
+    
+    const lines = csvText.split('\n').filter(l => l.trim());
+    if (lines.length === 0) {
+        alert('无有效数据');
+        return;
+    }
+    
+    // 跳过表头（如果第一行看起来像表头）
+    let startIdx = 0;
+    const firstLine = lines[0].toLowerCase();
+    if (firstLine.includes('国家') || firstLine.includes('country') || firstLine.includes('qs')) {
+        startIdx = 1;
+    }
+    
+    const records = [];
+    for (let i = startIdx; i < lines.length; i++) {
+        const cols = parseCSVLine(lines[i]);
+        if (cols.length < 6) continue; // 至少需要6个字段
+        
+        records.push({
+            country: cols[0] || '',
+            qs_rank: parseInt(cols[1]) || null,
+            university: cols[2] || '',
+            major_direction: cols[3] || '',
+            major_name: cols[4] || null,
+            degree_level: cols[5] || '',
+            gpa_requirement: cols[6] || null,
+            language_requirement: cols[7] || null,
+            notes: cols[8] || null,
+            link: cols[9] || null,
+            source: '手动录入',
+            is_active: true
+        });
+    }
+    
+    if (records.length === 0) {
+        alert('未解析到有效数据');
+        return;
+    }
+    
+    try {
+        // 批量插入（每次最多50条）
+        for (let i = 0; i < records.length; i += 50) {
+            const batch = records.slice(i, i + 50);
+            const { error } = await supabaseClient
+                .from('university_requirements')
+                .insert(batch);
+            if (error) throw error;
+        }
+        
+        closeModal('importModal');
+        loadUniversityData();
+        alert(`成功导入 ${records.length} 条数据`);
+    } catch (err) {
+        alert('导入失败: ' + err.message);
+    }
+}
+
+// 简易CSV行解析（处理引号内的逗号）
+function parseCSVLine(line) {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        if (char === '"') {
+            inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+            result.push(current.trim());
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+    result.push(current.trim());
+    return result;
 }
