@@ -3665,11 +3665,20 @@ async function loadCompetitorNews() {
             .from('competitor_news')
             .select('*')
             .order('date', { ascending: false })
-            .limit(20);
+            .limit(30);
         if (error) throw error;
         if (data && data.length > 0) {
             const now = new Date();
-            const items = data.map(row => {
+            // 只展示14天内的动态
+            const recentItems = data.filter(row => {
+                const diffMs = now - new Date(row.date);
+                return diffMs <= 14 * 24 * 60 * 60 * 1000;
+            });
+            if (recentItems.length === 0) {
+                renderTimeline(competitorTimelineFallback);
+                return;
+            }
+            const items = recentItems.map(row => {
                 const rowDate = new Date(row.date);
                 const diffDays = Math.floor((now - rowDate) / (1000 * 60 * 60 * 24));
                 let dateLabel;
