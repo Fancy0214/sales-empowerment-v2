@@ -418,7 +418,12 @@
                 <div class="studio-layout">
                     <!-- 输入区 -->
                     <div class="card input-card script-input-card">
-                        <h3><i class="fas fa-edit"></i> 话术生成配置</h3>
+                        <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <h3 style="margin:0;"><i class="fas fa-edit"></i> 话术生成配置</h3>
+                            <button class="btn btn-outline btn-sm" onclick="openStudioSettings()" title="API设置" style="display:flex;align-items:center;gap:4px;">
+                                <i class="fas fa-gear"></i> 设置
+                            </button>
+                        </div>
                         
                         <!-- 我方角色 -->
                         <div class="form-group">
@@ -492,6 +497,18 @@
                             <textarea id="clientNeeds" rows="3" placeholder="请描述客户的核心需求或痛点..."></textarea>
                         </div>
 
+                        <!-- 文件上传区域 -->
+                        <div class="form-group">
+                            <label>上传文件（聊天截图/对话记录等）</label>
+                            <div class="sc-upload-zone" id="scUploadZone">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>点击或拖拽上传</p>
+                                <span>支持图片、Word、PDF、文本</span>
+                                <input type="file" id="scFileInput" style="display:none;" multiple accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.txt" onchange="handleStudioUpload(this.files)">
+                            </div>
+                            <div id="scFileList"></div>
+                        </div>
+
                         <button class="btn btn-primary btn-lg btn-generate" id="generateScript" onclick="generateScript()">
                             <i class="fas fa-magic"></i> 一键生成话术
                         </button>
@@ -548,6 +565,27 @@
                 <div class="script-cards" id="scriptCards">
                 </div>
             </div>
+
+            <!-- API设置弹窗 -->
+            <div class="modal" id="studioSettingsModal" style="display:none;">
+                <div class="modal-content" style="max-width:460px;">
+                    <span class="modal-close" onclick="closeStudioSettings()">&times;</span>
+                    <h3 style="margin-bottom:16px;"><i class="fas fa-gear"></i> LLM API 设置</h3>
+                    <div class="form-group">
+                        <label>API 地址</label>
+                        <input type="text" id="studioApiUrl" placeholder="https://api.openai.com/v1/chat/completions">
+                    </div>
+                    <div class="form-group">
+                        <label>API Key</label>
+                        <input type="password" id="studioApiKey" placeholder="sk-...">
+                    </div>
+                    <div class="form-group">
+                        <label>模型</label>
+                        <input type="text" id="studioApiModel" placeholder="gpt-4o" value="gpt-4o">
+                    </div>
+                    <button class="btn btn-primary" onclick="saveStudioSettings()" style="width:100%;">保存设置</button>
+                </div>
+            </div>
         </div>
 
         <!-- ==================== 销售工具箱 ==================== -->
@@ -570,7 +608,6 @@
                     <span class="tools-tag-filter" data-filter="签证" onclick="filterByTag(this)">签证</span>
                     <span class="tools-tag-filter" data-filter="换校" onclick="filterByTag(this)">换校</span>
                     <span class="tools-tag-filter" data-filter="报价" onclick="filterByTag(this)">报价</span>
-                    <span class="tools-tag-filter" data-filter="话术" onclick="filterByTag(this)">话术</span>
                 </div>
             </div>
 
@@ -640,12 +677,6 @@
                     <h4>留位费退费政策</h4>
                     <p>13所英国热门大学留位费退费规则汇总</p>
                     <span class="tool-tag">申请</span>
-                </div>
-                <div class="tool-card" data-keywords="话术 AI 触达 跟进 谈判 BD 销售 沟通" data-tag="话术" onclick="openTool('talk_craft')">
-                    <div class="tool-icon"><i class="fas fa-wand-magic-sparkles"></i></div>
-                    <h4>AI话术工坊</h4>
-                    <p>智能生成B2B触达/跟进/谈判话术方案</p>
-                    <span class="tool-tag">话术</span>
                 </div>
             </div>
 
