@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.js"></script>
     <script>
         // 同步检测分享参数，在body渲染前隐藏内容防止闪烁
         if (new URLSearchParams(window.location.search).get('share')) {
@@ -568,6 +570,7 @@
                     <span class="tools-tag-filter" data-filter="签证" onclick="filterByTag(this)">签证</span>
                     <span class="tools-tag-filter" data-filter="换校" onclick="filterByTag(this)">换校</span>
                     <span class="tools-tag-filter" data-filter="报价" onclick="filterByTag(this)">报价</span>
+                    <span class="tools-tag-filter" data-filter="话术" onclick="filterByTag(this)">话术</span>
                 </div>
             </div>
 
@@ -637,6 +640,12 @@
                     <h4>留位费退费政策</h4>
                     <p>13所英国热门大学留位费退费规则汇总</p>
                     <span class="tool-tag">申请</span>
+                </div>
+                <div class="tool-card" data-keywords="话术 AI 触达 跟进 谈判 BD 销售 沟通" data-tag="话术" onclick="openTool('talk_craft')">
+                    <div class="tool-icon"><i class="fas fa-wand-magic-sparkles"></i></div>
+                    <h4>AI话术工坊</h4>
+                    <p>智能生成B2B触达/跟进/谈判话术方案</p>
+                    <span class="tool-tag">话术</span>
                 </div>
             </div>
 

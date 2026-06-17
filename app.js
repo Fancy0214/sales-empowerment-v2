@@ -3060,8 +3060,564 @@ g.不接受电子印章和电子签名
 ④ 多数学校不接受「单纯后悔」「拿到更好offer」等主观理由退费
 
 以上信息仅供参考，具体以校方最新政策为准`
+    },
+    'talk_craft': {
+        title: 'AI话术工坊',
+        icon: 'fa-wand-magic-sparkles',
+        tag: '话术',
+        content: `<div class="st-tool-container st-talk-craft-container">
+  <div class="st-tool-header">
+    <div class="st-tool-header-icon"><i class="fas fa-wand-magic-sparkles"></i></div>
+    <h1>AI话术工坊</h1>
+    <span class="st-tag">话术</span>
+    <button class="tc-settings-btn" onclick="openTalkCraftSettings()" title="API设置"><i class="fas fa-gear"></i></button>
+  </div>
+
+  <div class="st-card tc-input-card">
+    <div class="st-card-header"><span class="st-card-num">01</span><span class="st-card-title">话术生成配置</span></div>
+    <div class="st-card-body">
+      <div class="tc-form-group">
+        <label class="tc-label">我的角色</label>
+        <div class="tc-pill-group" id="tcMyRole">
+          <span class="tc-pill active" data-value="一代留学BD/顾问">一代留学BD/顾问</span>
+          <span class="tc-pill" data-value="一代销售主管">一代销售主管</span>
+          <span class="tc-pill" data-value="一代后期顾问">一代后期顾问</span>
+        </div>
+      </div>
+      <div class="tc-form-group">
+        <label class="tc-label">对方身份</label>
+        <div class="tc-pill-group" id="tcPartnerRole">
+          <span class="tc-pill active" data-value="机构老板/负责人">机构老板/负责人</span>
+          <span class="tc-pill" data-value="工作室负责人">工作室负责人</span>
+          <span class="tc-pill" data-value="外联老师">外联老师</span>
+          <span class="tc-pill" data-value="销售顾问">销售顾问</span>
+          <span class="tc-pill" data-value="后期/文案主管">后期/文案主管</span>
+          <span class="tc-pill" data-value="其他">其他</span>
+        </div>
+      </div>
+      <div class="tc-form-group">
+        <label class="tc-label">沟通阶段</label>
+        <div class="tc-pill-group" id="tcStage">
+          <span class="tc-pill active" data-value="首次触达">首次触达</span>
+          <span class="tc-pill" data-value="二次跟进">二次跟进</span>
+          <span class="tc-pill" data-value="深度谈判">深度谈判</span>
+          <span class="tc-pill" data-value="逼单成交">逼单成交</span>
+        </div>
+      </div>
+      <div class="tc-form-group">
+        <label class="tc-label">背景信息/上下文</label>
+        <textarea class="tc-textarea" id="tcBackground" rows="5" placeholder="例：对方一年英国20-30人，有现有合作方，首次聊完佣金方案后已读不回2天..."></textarea>
+      </div>
+      <div class="tc-form-group">
+        <label class="tc-label">上传文件（可选）</label>
+        <div class="tc-upload-zone" id="tcUploadZone" onclick="document.getElementById('tcFileInput').click()">
+          <input type="file" id="tcFileInput" style="display:none;" multiple accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.txt" onchange="handleTalkCraftUpload(this.files)">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <span>点击或拖拽上传</span>
+          <span class="tc-upload-hint">支持图片/Word/PDF/文本</span>
+        </div>
+        <div class="tc-file-list" id="tcFileList"></div>
+      </div>
+      <button class="tc-generate-btn" id="tcGenerateBtn" onclick="generateTalkCraft()">
+        <i class="fas fa-wand-magic-sparkles"></i> 生成话术方案
+      </button>
+    </div>
+  </div>
+
+  <div class="tc-output-area" id="tcOutputArea" style="display:none;"></div>
+
+  <!-- API设置弹窗 -->
+  <div class="tc-settings-modal" id="tcSettingsModal" style="display:none;">
+    <div class="tc-settings-overlay" onclick="closeTalkCraftSettings()"></div>
+    <div class="tc-settings-panel">
+      <div class="tc-settings-header">
+        <h3><i class="fas fa-gear"></i> API设置</h3>
+        <span class="tc-settings-close" onclick="closeTalkCraftSettings()">&times;</span>
+      </div>
+      <div class="tc-settings-body">
+        <div class="tc-form-group">
+          <label class="tc-label">API地址</label>
+          <input class="tc-input" id="tcApiUrl" value="https://api.openai.com/v1/chat/completions" placeholder="API地址">
+        </div>
+        <div class="tc-form-group">
+          <label class="tc-label">API Key</label>
+          <input class="tc-input" id="tcApiKey" type="password" placeholder="sk-...">
+        </div>
+        <div class="tc-form-group">
+          <label class="tc-label">模型</label>
+          <input class="tc-input" id="tcModel" value="gpt-4o" placeholder="gpt-4o">
+        </div>
+        <button class="tc-generate-btn" style="width:100%;" onclick="saveTalkCraftSettings()">保存设置</button>
+      </div>
+    </div>
+  </div>
+</div>`,
+        rawText: 'AI话术工坊 - 智能生成B2B触达/跟进/谈判话术方案'
     }
 };
+
+// ==================== AI话术工坊功能 ====================
+
+// API配置管理
+function getTalkCraftConfig() {
+    try {
+        const saved = localStorage.getItem('talk_craft_api_config');
+        if (saved) return JSON.parse(saved);
+    } catch(e) {}
+    return { apiUrl: 'https://api.openai.com/v1/chat/completions', apiKey: '', model: 'gpt-4o' };
+}
+
+function saveTalkCraftSettings() {
+    const config = {
+        apiUrl: document.getElementById('tcApiUrl').value.trim(),
+        apiKey: document.getElementById('tcApiKey').value.trim(),
+        model: document.getElementById('tcModel').value.trim() || 'gpt-4o'
+    };
+    localStorage.setItem('talk_craft_api_config', JSON.stringify(config));
+    closeTalkCraftSettings();
+    alert('API设置已保存');
+}
+
+function openTalkCraftSettings() {
+    const config = getTalkCraftConfig();
+    const modal = document.getElementById('tcSettingsModal');
+    document.getElementById('tcApiUrl').value = config.apiUrl || 'https://api.openai.com/v1/chat/completions';
+    document.getElementById('tcApiKey').value = config.apiKey || '';
+    document.getElementById('tcModel').value = config.model || 'gpt-4o';
+    modal.style.display = 'flex';
+}
+
+function closeTalkCraftSettings() {
+    document.getElementById('tcSettingsModal').style.display = 'none';
+}
+
+// Pill选择交互（事件委托）
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('tc-pill')) {
+        const group = e.target.parentElement;
+        group.querySelectorAll('.tc-pill').forEach(p => p.classList.remove('active'));
+        e.target.classList.add('active');
+    }
+});
+
+// 获取选中的pill值
+function getSelectedPill(groupId) {
+    const el = document.getElementById(groupId);
+    if (!el) return '';
+    const active = el.querySelector('.tc-pill.active');
+    return active ? active.dataset.value : '';
+}
+
+// 上传文件处理
+let tcUploadedFiles = []; // {name, type, content (text/base64)}
+
+async function handleTalkCraftUpload(fileList) {
+    if (!fileList || fileList.length === 0) return;
+    
+    for (const file of fileList) {
+        try {
+            const result = await processUploadFile(file);
+            tcUploadedFiles.push(result);
+        } catch(err) {
+            console.error('文件处理失败:', file.name, err);
+        }
+    }
+    renderTalkCraftFileList();
+}
+
+function processUploadFile(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        const isImage = /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(file.name);
+        const isPdf = /\.pdf$/i.test(file.name);
+        const isDocx = /\.docx$/i.test(file.name);
+        const isDoc = /\.doc$/i.test(file.name);
+        const isTxt = /\.(txt|csv|md)$/i.test(file.name);
+
+        if (isImage) {
+            reader.onload = () => resolve({ name: file.name, type: 'image', content: reader.result });
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        } else if (isPdf && typeof pdfjsLib !== 'undefined') {
+            reader.onload = async () => {
+                try {
+                    const typedArray = new Uint8Array(reader.result);
+                    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.js';
+                    const pdf = await pdfjsLib.getDocument(typedArray).promise;
+                    let text = '';
+                    for (let i = 1; i <= Math.min(pdf.numPages, 20); i++) {
+                        const page = await pdf.getPage(i);
+                        const content = await page.getTextContent();
+                        text += content.items.map(item => item.str).join(' ') + '\n';
+                    }
+                    resolve({ name: file.name, type: 'text', content: text.trim() });
+                } catch(e) { reject(e); }
+            };
+            reader.onerror = reject;
+            reader.readAsArrayBuffer(file);
+        } else if (isDocx && typeof mammoth !== 'undefined') {
+            reader.onload = async () => {
+                try {
+                    const result = await mammoth.extractRawText({ arrayBuffer: reader.result });
+                    resolve({ name: file.name, type: 'text', content: result.value });
+                } catch(e) { reject(e); }
+            };
+            reader.onerror = reject;
+            reader.readAsArrayBuffer(file);
+        } else if (isTxt) {
+            reader.onload = () => resolve({ name: file.name, type: 'text', content: reader.result });
+            reader.onerror = reject;
+            reader.readAsText(file);
+        } else {
+            resolve({ name: file.name, type: 'unsupported', content: '' });
+        }
+    });
+}
+
+function renderTalkCraftFileList() {
+    const list = document.getElementById('tcFileList');
+    if (!list) return;
+    if (tcUploadedFiles.length === 0) {
+        list.innerHTML = '';
+        return;
+    }
+    list.innerHTML = tcUploadedFiles.map((f, i) => 
+        '<div class="tc-file-item">' +
+            '<i class="fas ' + (f.type === 'image' ? 'fa-image' : f.type === 'text' ? 'fa-file-alt' : 'fa-file') + '"></i>' +
+            '<span class="tc-file-name">' + f.name + '</span>' +
+            '<span class="tc-file-remove" onclick="removeTalkCraftFile(' + i + ')"><i class="fas fa-times"></i></span>' +
+        '</div>'
+    ).join('');
+}
+
+function removeTalkCraftFile(index) {
+    tcUploadedFiles.splice(index, 1);
+    renderTalkCraftFileList();
+}
+
+// 拖拽上传
+document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('dragover', function(e) { e.preventDefault(); });
+    document.addEventListener('drop', function(e) { e.preventDefault(); });
+});
+
+function setupTalkCraftDragUpload() {
+    const zone = document.getElementById('tcUploadZone');
+    if (!zone) return;
+    zone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        zone.classList.add('tc-upload-dragover');
+    });
+    zone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        zone.classList.remove('tc-upload-dragover');
+    });
+    zone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        zone.classList.remove('tc-upload-dragover');
+        if (e.dataTransfer.files.length > 0) {
+            handleTalkCraftUpload(e.dataTransfer.files);
+        }
+    });
+}
+
+// 构建System Prompt
+const TALK_CRAFT_SYSTEM_PROMPT = `你是一位B2B留学行业话术专家，帮助一代留学机构的BD/顾问生成专业的触达/跟进/谈判话术。
+
+核心原则（必须遵守）：
+1. 推新增不推替换：让对方多一个合作通道，不要求切换现有合作方，降低决策压力
+2. 不诋毁同行：只共情问题本身，不评判对方现有合作方，不预设对方有问题
+3. 角色边界：我方是一代BD/顾问，代表公司，共情用"我见过你们这种情况"，不说"我也这样过"
+4. 收尾方式："先体验再决定"，如"不用您立马决定切换合作方，可以考虑新增一个合作通道"
+5. 触达节奏：发完不追问，等1-2天，没回就换场景钩子再触
+
+输出格式（必须严格遵循）：
+
+📊 客户痛点分析
+（3-5条要点，每条1-2行）
+
+🧠 匹配沟通框架：[框架名称]
+（框架简述 + 适用原因，1-2行）
+
+💬 话术方案
+
+【第一步：XXX】
+（具体话术文本）
+
+【如果对方XXX】
+（具体话术文本）
+
+【如果对方XXX】
+（具体话术文本）
+
+⚠️ 话术原则提醒
+（固定展示5条原则）
+
+注意：话术要贴近微信聊天风格，短句、自然、像朋友说话。不要用大段书面语。`;
+
+// 构建用户消息
+function buildTalkCraftMessage() {
+    const myRole = getSelectedPill('tcMyRole');
+    const partnerRole = getSelectedPill('tcPartnerRole');
+    const stage = getSelectedPill('tcStage');
+    const background = document.getElementById('tcBackground')?.value.trim() || '';
+    
+    let msg = `我的角色：${myRole}\n对方身份：${partnerRole}\n沟通阶段：${stage}`;
+    if (background) msg += `\n背景信息：${background}`;
+    
+    // 添加文件内容
+    const textFiles = tcUploadedFiles.filter(f => f.type === 'text' && f.content);
+    const imageFiles = tcUploadedFiles.filter(f => f.type === 'image' && f.content);
+    
+    if (textFiles.length > 0) {
+        msg += '\n\n---附加文件内容---';
+        textFiles.forEach(f => {
+            const truncated = f.content.length > 3000 ? f.content.substring(0, 3000) + '...(内容过长已截断)' : f.content;
+            msg += `\n【${f.name}】\n${truncated}`;
+        });
+    }
+    
+    return { text: msg, images: imageFiles };
+}
+
+// 生成话术方案
+async function generateTalkCraft() {
+    const config = getTalkCraftConfig();
+    if (!config.apiKey) {
+        openTalkCraftSettings();
+        alert('请先配置API Key，点击右上角⚙️设置');
+        return;
+    }
+    
+    const myRole = getSelectedPill('tcMyRole');
+    const partnerRole = getSelectedPill('tcPartnerRole');
+    const stage = getSelectedPill('tcStage');
+    
+    if (!myRole || !partnerRole || !stage) {
+        alert('请完整选择角色、身份和沟通阶段');
+        return;
+    }
+    
+    const btn = document.getElementById('tcGenerateBtn');
+    const outputArea = document.getElementById('tcOutputArea');
+    
+    // 禁用按钮，显示加载
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 生成中...';
+    outputArea.style.display = 'block';
+    outputArea.innerHTML = '<div class="tc-loading"><div class="tc-loading-dots"><span></span><span></span><span></span></div><p>AI正在构思话术方案...</p></div>';
+    
+    try {
+        const { text, images } = buildTalkCraftMessage();
+        
+        // 构建消息
+        const userContent = [];
+        userContent.push({ type: 'text', text: text });
+        images.forEach(img => {
+            userContent.push({ type: 'image_url', image_url: { url: img.content, detail: 'high' } });
+        });
+        
+        const messages = [
+            { role: 'system', content: TALK_CRAFT_SYSTEM_PROMPT },
+            { role: 'user', content: userContent.length === 1 && userContent[0].type === 'text' ? userContent[0].text : userContent }
+        ];
+        
+        await streamLLMResponse(config, messages, outputArea);
+    } catch(err) {
+        outputArea.innerHTML = '<div class="tc-error"><i class="fas fa-exclamation-circle"></i> 生成失败：' + err.message + '</div>';
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> 生成话术方案';
+    }
+}
+
+// 流式调用LLM
+async function streamLLMResponse(config, messages, outputArea) {
+    const response = await fetch(config.apiUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + config.apiKey
+        },
+        body: JSON.stringify({
+            model: config.model,
+            messages: messages,
+            stream: true,
+            temperature: 0.7,
+            max_tokens: 3000
+        })
+    });
+    
+    if (!response.ok) {
+        const errText = await response.text();
+        throw new Error('API返回错误 (' + response.status + '): ' + errText.substring(0, 200));
+    }
+    
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let fullText = '';
+    let buffer = '';
+    
+    outputArea.innerHTML = '<div class="tc-stream-output" id="tcStreamOutput"></div>';
+    const streamEl = document.getElementById('tcStreamOutput');
+    
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+        
+        for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed || !trimmed.startsWith('data:')) continue;
+            const data = trimmed.slice(5).trim();
+            if (data === '[DONE]') break;
+            
+            try {
+                const json = JSON.parse(data);
+                const delta = json.choices?.[0]?.delta?.content;
+                if (delta) {
+                    fullText += delta;
+                    renderTalkCraftStream(fullText, streamEl);
+                }
+            } catch(e) {
+                // 忽略解析错误
+            }
+        }
+    }
+    
+    // 流式结束，最终渲染（带复制按钮）
+    renderTalkCraftFinal(fullText, outputArea);
+}
+
+// 流式渲染（简单文本+打字机效果）
+function renderTalkCraftStream(text, el) {
+    const html = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\n/g, '<br>')
+        .replace(/【([^】]+)】/g, '<strong class="tc-step-title">【$1】</strong>')
+        .replace(/📊/g, '<span class="tc-emoji">📊</span>')
+        .replace(/🧠/g, '<span class="tc-emoji">🧠</span>')
+        .replace(/💬/g, '<span class="tc-emoji">💬</span>')
+        .replace(/⚠️/g, '<span class="tc-emoji">⚠️</span>');
+    el.innerHTML = html + '<span class="tc-cursor">▊</span>';
+}
+
+// 最终渲染（结构化展示+复制按钮）
+function renderTalkCraftFinal(text, outputArea) {
+    // 将LLM输出分段
+    const sections = { painPoints: '', framework: '', scripts: [], principles: '' };
+    
+    // 提取各段
+    const painMatch = text.match(/📊[\s\S]*?(?=🧠|💬|$)/);
+    const frameworkMatch = text.match(/🧠[\s\S]*?(?=💬|⚠️|$)/);
+    const scriptMatch = text.match(/💬[\s\S]*?(?=⚠️|$)/);
+    const principleMatch = text.match(/⚠️[\s\S]*$/);
+    
+    const painText = painMatch ? painMatch[0] : '';
+    const frameText = frameworkMatch ? frameworkMatch[0] : '';
+    const scriptText = scriptMatch ? scriptMatch[0] : '';
+    const prinText = principleMatch ? principleMatch[0] : '';
+    
+    // 提取话术步骤
+    const stepRegex = /【([^】]+)】([\s\S]*?)(?=【|$)/g;
+    const steps = [];
+    let m;
+    while ((m = stepRegex.exec(scriptText)) !== null) {
+        steps.push({ title: m[1], content: m[2].trim() });
+    }
+    
+    // 构建HTML
+    let html = '';
+    
+    // 痛点分析
+    if (painText) {
+        const painItems = painText.replace(/📊\s*客户痛点分析\s*/, '').trim().split(/\n/).filter(l => l.trim());
+        html += '<div class="tc-section tc-pain-section">';
+        html += '<div class="tc-section-title"><span class="tc-emoji">📊</span> 客户痛点分析</div>';
+        html += '<ul class="tc-pain-list">';
+        painItems.forEach(item => {
+            const clean = item.replace(/^[-•*]\s*/, '').replace(/^\d+[.、]\s*/, '').trim();
+            if (clean) html += '<li>' + escapeHtml(clean) + '</li>';
+        });
+        html += '</ul></div>';
+    }
+    
+    // 沟通框架
+    if (frameText) {
+        const frameContent = frameText.replace(/🧠\s*匹配沟通框架[：:]\s*/, '').trim();
+        const frameName = frameContent.match(/[^\n]+/)?.[0] || '';
+        const frameDesc = frameContent.replace(frameName, '').trim();
+        html += '<div class="tc-section tc-framework-section">';
+        html += '<div class="tc-section-title"><span class="tc-emoji">🧠</span> 匹配沟通框架</div>';
+        html += '<div class="tc-framework-name">' + escapeHtml(frameName) + '</div>';
+        if (frameDesc) html += '<div class="tc-framework-desc">' + escapeHtml(frameDesc) + '</div>';
+        html += '</div>';
+    }
+    
+    // 话术方案
+    if (steps.length > 0) {
+        html += '<div class="tc-section tc-scripts-section">';
+        html += '<div class="tc-section-title"><span class="tc-emoji">💬</span> 话术方案</div>';
+        steps.forEach((step, idx) => {
+            const copyId = 'tc-copy-' + Date.now() + '-' + idx;
+            html += '<div class="tc-script-step">';
+            html += '<div class="tc-step-header">';
+            html += '<span class="tc-step-num">' + (idx + 1) + '</span>';
+            html += '<span class="tc-step-title">' + escapeHtml(step.title) + '</span>';
+            html += '<button class="tc-copy-btn" onclick="copyTalkCraftScript(\'' + copyId + '\', this)"><i class="fas fa-copy"></i> 复制</button>';
+            html += '</div>';
+            html += '<div class="tc-step-content" id="' + copyId + '">' + escapeHtml(step.content).replace(/\n/g, '<br>') + '</div>';
+            html += '</div>';
+        });
+        html += '</div>';
+    } else if (scriptText) {
+        // 没有分步但有话术内容，整体展示
+        html += '<div class="tc-section tc-scripts-section">';
+        html += '<div class="tc-section-title"><span class="tc-emoji">💬</span> 话术方案</div>';
+        const copyId = 'tc-copy-' + Date.now();
+        html += '<div class="tc-script-step">';
+        html += '<div class="tc-step-header">';
+        html += '<button class="tc-copy-btn" onclick="copyTalkCraftScript(\'' + copyId + '\', this)"><i class="fas fa-copy"></i> 复制</button>';
+        html += '</div>';
+        html += '<div class="tc-step-content" id="' + copyId + '">' + escapeHtml(scriptText.replace(/💬\s*话术方案\s*/, '').trim()).replace(/\n/g, '<br>') + '</div>';
+        html += '</div></div>';
+    }
+    
+    // 原则提醒
+    html += '<div class="tc-section tc-principles-section">';
+    html += '<div class="tc-section-title"><span class="tc-emoji">⚠️</span> 话术原则提醒</div>';
+    html += '<div class="tc-principles-list">';
+    html += '<div class="tc-principle-item"><span class="tc-check">✅</span> 推新增不推替换，降低决策压力</div>';
+    html += '<div class="tc-principle-item"><span class="tc-check">✅</span> 只共情问题，不评判对方现有合作方</div>';
+    html += '<div class="tc-principle-item"><span class="tc-check">✅</span> 先体验再决定，用服务说话</div>';
+    html += '<div class="tc-principle-item"><span class="tc-check">✅</span> 发完不追问，等1-2天再换场景钩子触达</div>';
+    html += '<div class="tc-principle-item"><span class="tc-check">✅</span> 不诋毁同行，用实力和结果赢得信任</div>';
+    html += '</div></div>';
+    
+    outputArea.innerHTML = html;
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function copyTalkCraftScript(id, btn) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    navigator.clipboard.writeText(el.innerText).then(() => {
+        btn.innerHTML = '<i class="fas fa-check"></i> 已复制';
+        setTimeout(() => { btn.innerHTML = '<i class="fas fa-copy"></i> 复制'; }, 1500);
+    });
+}
 
 // 话术分类映射
 const categoryNames = {
@@ -4373,6 +4929,18 @@ function openTool(toolId) {
     const body = document.getElementById('toolModalBody');
     
     const tool = toolContents[toolId];
+    
+    // 交互式工具（如AI话术工坊）不走常规渲染
+    if (toolId === 'talk_craft') {
+        // 重置上传文件列表
+        tcUploadedFiles = [];
+        body.innerHTML = tool.content;
+        modal.classList.add('active');
+        // 初始化拖拽上传
+        setupTalkCraftDragUpload();
+        return;
+    }
+    
     // 从localStorage读取自定义内容（如有）
     const savedContent = localStorage.getItem('tool_' + toolId);
     // 如果savedContent是旧纯文本（不以<开头），显示时用新的结构化HTML，编辑时用rawText
