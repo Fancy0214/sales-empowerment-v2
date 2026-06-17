@@ -5810,14 +5810,14 @@ function applyShareMode(config) {
         // 竞品表格中的操作列会在渲染时通过CSS隐藏
     }
     
-    // AI话术工坊：隐藏自定义话术功能（新增话术按钮、编辑/删除按钮）
+    // AI话术工坊：根据子板块权限控制生成按钮
     if (hasAnyStudio) {
         // 隐藏新增话术按钮
         const addScriptBtn = document.querySelector('#page-ai-studio .filters-bar .btn-primary');
         if (addScriptBtn) addScriptBtn.style.display = 'none';
-        // 隐藏AI话术工坊的生成按钮区域（只显示话术库）
+        // 有生成权限时显示生成按钮，无生成权限时隐藏
         const generateBtn = document.getElementById('generateScript');
-        if (generateBtn) generateBtn.style.display = 'none';
+        if (generateBtn) generateBtn.style.display = showStudioTab ? '' : 'none';
         // 话术卡片中的编辑/删除按钮通过CSS隐藏
     }
     
