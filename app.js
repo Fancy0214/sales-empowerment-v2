@@ -4597,7 +4597,80 @@ function copyGeneratedScript() {
 }
 
 function favoriteScript() {
-    alert('已收藏到个人话术库！');
+    const content = document.getElementById('generatedContent').textContent;
+    if (!content || content.trim().length < 10) {
+        alert('没有可收藏的话术内容');
+        return;
+    }
+    
+    // 从左侧配置区获取场景信息作为标题
+    const myRole = document.getElementById('myRole')?.value.trim() || '话术';
+    const clientLevel = document.getElementById('clientLevel')?.value || '';
+    const reachStage = document.getElementById('clientReachStage')?.value || '';
+    const clientBackground = document.getElementById('clientBackground')?.value.trim() || '';
+    
+    const title = `${myRole} → ${clientLevel}${reachStage ? '·' + reachStage : ''}`;
+    const scene = clientBackground ? clientBackground.substring(0, 50) : '';
+    
+    // 读取已有收藏
+    let favorites = [];
+    try {
+        const saved = localStorage.getItem('studio_favorites');
+        if (saved) favorites = JSON.parse(saved);
+    } catch(e) {}
+    
+    // 添加新收藏
+    const newFav = {
+        id: Date.now(),
+        title: title,
+        scene: scene,
+        content: content.trim(),
+        category: 'ai_generated',
+        createdAt: new Date().toLocaleString('zh-CN')
+    };
+    favorites.unshift(newFav);
+    
+    localStorage.setItem('studio_favorites', JSON.stringify(favorites));
+    
+    // 更新按钮状态
+    const btn = event.target.closest('button');
+    if (btn) {
+        const original = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i> 已收藏';
+        btn.disabled = true;
+        btn.style.color = '#10b981';
+        btn.style.borderColor = '#a7f3d0';
+        setTimeout(() => {
+            btn.innerHTML = original;
+            btn.disabled = false;
+            btn.style.color = '';
+            btn.style.borderColor = '';
+        }, 2000);
+    }
+}
+
+function clearGeneratedScript() {
+    const outputArea = document.getElementById('generatedContent');
+    const actionsArea = document.getElementById('scriptActions');
+    outputArea.innerHTML = '<div class="placeholder-text"><i class="fas fa-comment-dots"></i><p>填写客户信息，点击"一键生成话术"获取定制化话术</p></div>';
+    actionsArea.style.display = 'none';
+}
+
+// 获取收藏列表
+function getStudioFavorites() {
+    try {
+        const saved = localStorage.getItem('studio_favorites');
+        if (saved) return JSON.parse(saved);
+    } catch(e) {}
+    return [];
+}
+
+// 删除收藏
+function deleteFavorite(id) {
+    let favorites = getStudioFavorites();
+    favorites = favorites.filter(f => f.id !== id);
+    localStorage.setItem('studio_favorites', JSON.stringify(favorites));
+    renderScripts(); // 重新渲染话术库
 }
 
 // ==================== 话术库功能 ====================
@@ -4606,9 +4679,19 @@ function renderScripts(category = 'all') {
     const container = document.getElementById('scriptCards');
     container.innerHTML = '';
     
-    let filtered = scripts;
+    // 合并内置话术和AI生成收藏
+    const favorites = getStudioFavorites();
+    const favScripts = favorites.map(f => ({
+        ...f,
+        rating: 0,
+        type: 'AI生成',
+        isFavorite: true
+    }));
+    const allScripts = [...favScripts, ...scripts];
+    
+    let filtered = allScripts;
     if (category !== 'all') {
-        filtered = scripts.filter(s => s.category === category);
+        filtered = allScripts.filter(s => s.category === category);
     }
     
     const searchTerm = document.getElementById('scriptSearch')?.value.toLowerCase() || '';
@@ -4616,38 +4699,44 @@ function renderScripts(category = 'all') {
         filtered = filtered.filter(s => 
             s.title.toLowerCase().includes(searchTerm) ||
             s.content.toLowerCase().includes(searchTerm) ||
-            s.scene.toLowerCase().includes(searchTerm)
+            (s.scene || '').toLowerCase().includes(searchTerm)
         );
     }
     
     if (filtered.length === 0) {
-        container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-secondary);"><i class="fas fa-inbox" style="font-size:2rem;margin-bottom:12px;display:block;"></i>暂无话术，点击上方"新增话术"添加</div>';
+        container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-secondary);"><i class="fas fa-inbox" style="font-size:2rem;margin-bottom:12px;display:block;"></i>暂无话术</div>';
         return;
     }
     
     filtered.forEach(script => {
         const card = document.createElement('div');
-        card.className = 'script-card';
+        card.className = 'script-card' + (script.isFavorite ? ' script-card-ai' : '');
         card.id = `script-${script.id}`;
         
         let stars = '';
-        for (let i = 0; i < script.rating; i++) stars += '★';
+        for (let i = 0; i < (script.rating || 0); i++) stars += '★';
+        
+        const isFav = script.isFavorite;
+        const deleteAction = isFav 
+            ? `<button class="script-action-btn script-action-btn-danger" title="删除" onclick="deleteFavorite(${script.id})"><i class="fas fa-trash"></i></button>`
+            : `<button class="script-action-btn" title="编辑" onclick="openEditScript(${script.id})"><i class="fas fa-pen"></i></button><button class="script-action-btn script-action-btn-danger" title="删除" onclick="deleteScript(${script.id})"><i class="fas fa-trash"></i></button>`;
+        const tagLabel = isFav ? '🤖 AI生成' : (categoryNames[script.category] || script.category);
+        const timeLabel = isFav && script.createdAt ? `<span style="font-size:11px;color:#999;margin-left:8px;">${script.createdAt}</span>` : '';
         
         card.innerHTML = `
             <div class="script-card-header">
                 <div>
-                    <div class="script-card-title">${script.title}</div>
-                    <div class="script-card-scene">${script.scene}</div>
+                    <div class="script-card-title">${isFav ? '🤖 ' : ''}${script.title}${timeLabel}</div>
+                    <div class="script-card-scene">${script.scene || ''}</div>
                 </div>
                 <div class="script-card-actions-top">
                     <div class="script-rating">${stars}</div>
-                    <button class="script-action-btn" title="编辑" onclick="openEditScript(${script.id})"><i class="fas fa-pen"></i></button>
-                    <button class="script-action-btn script-action-btn-danger" title="删除" onclick="deleteScript(${script.id})"><i class="fas fa-trash"></i></button>
+                    ${deleteAction}
                 </div>
             </div>
             <div class="script-card-content">${script.content.replace(/\n/g, '<br>')}</div>
             <div class="script-card-footer">
-                <span class="script-type-tag">${categoryNames[script.category] || script.category}</span>
+                <span class="script-type-tag">${tagLabel}</span>
                 <div class="script-card-footer-actions">
                     <button class="btn btn-sm btn-outline" onclick="copyScriptContent(${script.id})"><i class="fas fa-copy"></i> 复制</button>
                 </div>

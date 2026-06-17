@@ -530,6 +530,9 @@
                             <button class="btn btn-outline" onclick="favoriteScript()">
                                 <i class="fas fa-heart"></i> 收藏
                             </button>
+                            <button class="btn btn-outline" onclick="clearGeneratedScript()" style="color:#ef4444;border-color:#fecaca;">
+                                <i class="fas fa-trash-alt"></i> 清除
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -551,6 +554,7 @@
                 <!-- 话术标签 -->
                 <div class="script-tags" id="scriptTags">
                     <span class="tag active" data-category="all">全部</span>
+                    <span class="tag" data-category="ai_generated">🤖 AI生成</span>
                     <span class="tag" data-category="cold_outreach">冷触达</span>
                     <span class="tag" data-category="warm_follow">跟进升温</span>
                     <span class="tag" data-category="objection">异议拆解</span>
