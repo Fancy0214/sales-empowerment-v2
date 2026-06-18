@@ -7582,6 +7582,7 @@ function copyPlanResult() {
 // ===== 院校数据库CRUD =====
 let _currentUniName = '';
 let _currentUniAllData = [];
+let _currentUniRawTable = null; // 原始表格结构（用于动态渲染）
 
 async function loadUniversityData() {
     if (!supabaseClient) return;
@@ -7697,6 +7698,18 @@ function showUniDetail(uniName) {
     
     _currentUniAllData = uni.records;
     
+    // 检查是否有raw_table_json（原始表格格式）
+    const rawRecord = uni.records.find(r => r.raw_table_json);
+    if (rawRecord && rawRecord.raw_table_json) {
+        try {
+            _currentUniRawTable = JSON.parse(rawRecord.raw_table_json);
+        } catch(e) {
+            _currentUniRawTable = null;
+        }
+    } else {
+        _currentUniRawTable = null;
+    }
+    
     document.getElementById('uniDetailInfo').innerHTML = `
         <div class="uni-detail-name">${uni.university}</div>
         <div class="uni-detail-en">${uni.english_name || ''}</div>
@@ -7720,7 +7733,60 @@ function renderUniDetailTable() {
     const majorFilter = document.getElementById('uniDetailMajorFilter').value;
     const degreeFilter = document.getElementById('uniDetailDegreeFilter').value;
     const isShare = isShareMode;
+    const tableWrap = document.querySelector('#uniDetailView .plan-db-table-wrap');
     
+    // 如果有raw_table_json，渲染原始表格格式
+    if (_currentUniRawTable) {
+        const { headers, rows } = _currentUniRawTable;
+        
+        // 如果有筛选条件，也过滤rawTable的行（尝试匹配关键字段列）
+        let filteredRows = rows;
+        if (majorFilter || degreeFilter) {
+            // 查找专业方向和学位层次对应的列索引
+            const majorIdx = headers.findIndex(h => 
+                /专业方向|方向|direction/i.test(h)
+            );
+            const degreeIdx = headers.findIndex(h => 
+                /学位|层次|degree/i.test(h)
+            );
+            filteredRows = rows.filter(row => {
+                if (majorFilter && majorIdx >= 0 && row[majorIdx] !== majorFilter) return false;
+                if (degreeFilter && degreeIdx >= 0 && row[degreeIdx] !== degreeFilter) return false;
+                return true;
+            });
+        }
+        
+        let html = '<table class="plan-db-table"><thead><tr>';
+        headers.forEach(h => { html += `<th>${escapeHtml(h)}</th>`; });
+        if (!isShare) html += '<th class="action-cell">操作</th>';
+        html += '</tr></thead><tbody>';
+        
+        if (filteredRows.length === 0) {
+            html += `<tr><td colspan="${headers.length + (isShare ? 0 : 1)}" style="text-align:center;color:#999;padding:30px"><i class="fas fa-inbox"></i> 暂无数据</td></tr>`;
+        } else {
+            filteredRows.forEach(row => {
+                html += '<tr>';
+                headers.forEach((h, idx) => {
+                    const val = row[idx] || '-';
+                    // 检测链接
+                    if (/^https?:\/\//i.test(val)) {
+                        html += `<td><a href="${escapeHtml(val)}" target="_blank" onclick="event.stopPropagation()"><i class="fas fa-link"></i> 查看</a></td>`;
+                    } else {
+                        html += `<td>${escapeHtml(val)}</td>`;
+                    }
+                });
+                if (!isShare) {
+                    html += '<td class="action-cell"><span style="color:#999;font-size:12px">原始数据</span></td>';
+                }
+                html += '</tr>';
+            });
+        }
+        html += '</tbody></table>';
+        tableWrap.innerHTML = html;
+        return;
+    }
+    
+    // 降级：使用固定格式渲染
     let filtered = _currentUniAllData;
     if (majorFilter) filtered = filtered.filter(r => r.major_direction === majorFilter);
     if (degreeFilter) filtered = filtered.filter(r => r.degree_level === degreeFilter);
@@ -7753,6 +7819,27 @@ function backToUniList() {
     document.getElementById('uniDetailView').style.display = 'none';
     _currentUniName = '';
     _currentUniAllData = [];
+    _currentUniRawTable = null;
+    // 恢复固定格式的表格结构
+    const tableWrap = document.querySelector('#uniDetailView .plan-db-table-wrap');
+    if (tableWrap) {
+        tableWrap.innerHTML = `
+            <table class="plan-db-table">
+                <thead>
+                    <tr>
+                        <th>专业方向</th>
+                        <th>专业名称</th>
+                        <th>学位</th>
+                        <th>均分要求</th>
+                        <th>语言要求</th>
+                        <th>备注</th>
+                        <th>链接</th>
+                        <th class="action-cell">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="uniDetailBody"></tbody>
+            </table>`;
+    }
 }
 
 async function deleteUniversityByName(uniName) {
@@ -7928,6 +8015,7 @@ async function deleteUniversity(id) {
 
 // ===== 批量导入 =====
 let _pendingImportRecords = []; // 等待确认导入的记录
+let _pendingImportRawTables = []; // 原始表格结构（用于动态渲染）
 
 const EXTRACT_SYSTEM_PROMPT = `你是一个留学院校数据提取助手。用户会提供包含院校录取要求信息的文档内容。请从中提取所有院校的录取要求信息，返回JSON数组。
 
@@ -7968,6 +8056,7 @@ function openImportModal() {
 function cancelImportPreview() {
     document.getElementById('importPreview').style.display = 'none';
     _pendingImportRecords = [];
+    _pendingImportRawTables = [];
     const btn = document.getElementById('importConfirmBtn');
     btn.innerHTML = '<i class="fas fa-upload"></i> 导入';
     btn.disabled = false;
@@ -7998,12 +8087,24 @@ async function extractExcelText(file) {
     const buf = await readFileAsArrayBuffer(file);
     const wb = XLSX.read(buf, { type: 'array' });
     const lines = [];
+    const rawTables = []; // 提取每个sheet的原始表格结构
     wb.SheetNames.forEach(name => {
         const ws = wb.Sheets[name];
         const csv = XLSX.utils.sheet_to_csv(ws);
-        if (csv.trim()) lines.push(`=== Sheet: ${name} ===\n${csv}`);
+        if (csv.trim()) {
+            lines.push(`=== Sheet: ${name} ===\n${csv}`);
+            // 提取原始表格结构
+            const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+            if (rows.length > 1) {
+                rawTables.push({
+                    sheetName: name,
+                    headers: rows[0].map(h => (h || '').toString().trim()),
+                    rows: rows.slice(1).map(r => r.map(c => (c || '').toString().trim()))
+                });
+            }
+        }
     });
-    return lines.join('\n\n');
+    return { text: lines.join('\n\n'), rawTables };
 }
 
 // 提取Word文本
@@ -8031,16 +8132,17 @@ async function extractPDFText(file) {
 async function extractFileContent(file) {
     const name = file.name.toLowerCase();
     if (name.endsWith('.csv')) {
-        return { type: 'csv', text: await file.text() };
+        return { type: 'csv', text: await file.text(), rawTables: [] };
     } else if (name.endsWith('.xlsx') || name.endsWith('.xls')) {
-        return { type: 'excel', text: await extractExcelText(file) };
+        const result = await extractExcelText(file);
+        return { type: 'excel', text: result.text, rawTables: result.rawTables };
     } else if (name.endsWith('.docx') || name.endsWith('.doc')) {
-        return { type: 'word', text: await extractWordText(file) };
+        return { type: 'word', text: await extractWordText(file), rawTables: [] };
     } else if (name.endsWith('.pdf')) {
-        return { type: 'pdf', text: await extractPDFText(file) };
+        return { type: 'pdf', text: await extractPDFText(file), rawTables: [] };
     } else if (/\.(jpg|jpeg|png)$/i.test(name)) {
         const dataUrl = await readFileAsDataURL(file);
-        return { type: 'image', dataUrl: dataUrl, text: '' };
+        return { type: 'image', dataUrl: dataUrl, text: '', rawTables: [] };
     }
     throw new Error('不支持的文件格式');
 }
@@ -8190,8 +8292,9 @@ async function parseWithAI(textContent, isImage, imageDataUrl) {
 }
 
 // 显示预览
-function showImportPreview(records) {
+function showImportPreview(records, rawTables) {
     _pendingImportRecords = records;
+    _pendingImportRawTables = rawTables || [];
     const tbody = document.getElementById('importPreviewBody');
     tbody.innerHTML = '';
     records.forEach(r => {
@@ -8226,8 +8329,45 @@ async function importFileData() {
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 导入中...';
         try {
             const records = _pendingImportRecords;
-            for (let i = 0; i < records.length; i += 50) {
-                const batch = records.slice(i, i + 50);
+            const rawTables = _pendingImportRawTables;
+            
+            // 为每条记录关联raw_table_json
+            // 策略：按university分组，每组关联对应的rawTable
+            const uniGroups = {};
+            records.forEach(r => {
+                const key = r.university || '';
+                if (!uniGroups[key]) uniGroups[key] = [];
+                uniGroups[key].push(r);
+            });
+            
+            // 将rawTable映射到university（优先用sheet名匹配，否则用第一个rawTable）
+            const uniNames = Object.keys(uniGroups);
+            const uniRawMap = {};
+            if (rawTables.length > 0) {
+                uniNames.forEach(name => {
+                    // 尝试按sheet名匹配
+                    const match = rawTables.find(t => 
+                        name.includes(t.sheetName) || t.sheetName.includes(name)
+                    );
+                    if (match) {
+                        uniRawMap[name] = JSON.stringify({ headers: match.headers, rows: match.rows });
+                    }
+                });
+                // 未匹配的院校：如果只有1个sheet或1个院校，全量关联
+                if (Object.keys(uniRawMap).length === 0 && (rawTables.length === 1 || uniNames.length === 1)) {
+                    const rawJson = JSON.stringify({ headers: rawTables[0].headers, rows: rawTables[0].rows });
+                    uniNames.forEach(name => { uniRawMap[name] = rawJson; });
+                }
+            }
+            
+            // 为每条记录设置raw_table_json
+            const enrichedRecords = records.map(r => ({
+                ...r,
+                raw_table_json: uniRawMap[r.university || ''] || null
+            }));
+            
+            for (let i = 0; i < enrichedRecords.length; i += 50) {
+                const batch = enrichedRecords.slice(i, i + 50);
                 const { error } = await supabaseClient
                     .from('university_requirements')
                     .insert(batch);
@@ -8253,14 +8393,16 @@ async function importFileData() {
         return;
     }
 
-    // CSV文本粘贴 → 直接解析
+    // CSV文本粘贴 → 直接解析（也生成rawTable）
     if (!file && csvText) {
         const records = parseCSVRecords(csvText);
         if (records.length === 0) {
             alert('未解析到有效数据');
             return;
         }
-        showImportPreview(records);
+        // 从CSV文本构建rawTable
+        const rawTable = buildRawTableFromCSV(csvText);
+        showImportPreview(records, rawTable ? [rawTable] : []);
         return;
     }
 
@@ -8279,16 +8421,30 @@ async function importFileData() {
             if (records.length === 0) {
                 throw new Error('CSV文件中未解析到有效数据');
             }
-            showImportPreview(records);
+            const rawTable = buildRawTableFromCSV(extracted.text);
+            showImportPreview(records, rawTable ? [rawTable] : (extracted.rawTables || []));
         } else if (extracted.type === 'excel') {
-            // Excel先尝试直接解析（按CSV格式），失败则AI解析
-            const records = parseCSVRecords(extracted.text);
-            if (records.length >= 2) {
-                showImportPreview(records);
+            // Excel：优先用rawTables（保留原始列结构）
+            if (extracted.rawTables && extracted.rawTables.length > 0) {
+                // 直接从rawTables构建结构化记录 + 保留原始格式
+                const records = buildRecordsFromRawTables(extracted.rawTables);
+                if (records.length >= 2) {
+                    showImportPreview(records, extracted.rawTables);
+                } else {
+                    // 降级：AI解析
+                    document.getElementById('importParseText').textContent = 'AI正在解析Excel内容...';
+                    const aiRecords = await parseWithAI(extracted.text, false, null);
+                    showImportPreview(aiRecords, extracted.rawTables);
+                }
             } else {
-                document.getElementById('importParseText').textContent = 'AI正在解析Excel内容...';
-                const aiRecords = await parseWithAI(extracted.text, false, null);
-                showImportPreview(aiRecords);
+                const records = parseCSVRecords(extracted.text);
+                if (records.length >= 2) {
+                    showImportPreview(records, []);
+                } else {
+                    document.getElementById('importParseText').textContent = 'AI正在解析Excel内容...';
+                    const aiRecords = await parseWithAI(extracted.text, false, null);
+                    showImportPreview(aiRecords, []);
+                }
             }
         } else {
             // Word/PDF/图片 → AI解析
@@ -8297,7 +8453,7 @@ async function importFileData() {
                 ? 'AI正在识别图片内容...' 
                 : 'AI正在解析文档内容...';
             const records = await parseWithAI(extracted.text, isImage, extracted.dataUrl);
-            showImportPreview(records);
+            showImportPreview(records, []);
         }
     } catch (err) {
         document.getElementById('importParseStatus').style.display = 'none';
@@ -8305,6 +8461,70 @@ async function importFileData() {
         btn.innerHTML = '<i class="fas fa-upload"></i> 导入';
         alert('文件解析失败: ' + err.message);
     }
+}
+
+// 从CSV文本构建rawTable结构
+function buildRawTableFromCSV(csvText) {
+    const lines = csvText.split('\n').filter(l => l.trim());
+    if (lines.length < 2) return null;
+    const headers = parseCSVLine(lines[0]);
+    const rows = [];
+    for (let i = 1; i < lines.length; i++) {
+        const cols = parseCSVLine(lines[i]);
+        if (cols.length > 0) rows.push(cols);
+    }
+    return { sheetName: 'CSV', headers, rows };
+}
+
+// 从rawTables（Excel各sheet）构建结构化记录
+// 保留原始表格列结构，同时提取关键字段用于搜索和筛选
+function buildRecordsFromRawTables(rawTables) {
+    const records = [];
+    rawTables.forEach(table => {
+        const { headers, rows } = table;
+        // 从sheet名或表头推断university名称
+        const uniName = table.sheetName.replace(/['""]/g, '').trim();
+        
+        // 尝试从表头匹配关键字段
+        const colMap = {};
+        headers.forEach((h, idx) => {
+            const hl = h.toLowerCase();
+            if (hl.includes('国家') || hl.includes('country')) colMap.country = idx;
+            else if (hl.includes('qs') || hl.includes('排名')) colMap.qs_rank = idx;
+            else if (hl.includes('院校') || hl.includes('大学') || hl.includes('university')) colMap.university = idx;
+            else if (hl.includes('英文') || hl.includes('english')) colMap.english_name = idx;
+            else if (hl.includes('官网') || hl.includes('website')) colMap.website = idx;
+            else if (hl.includes('专业方向') || hl.includes('方向') || hl.includes('direction')) colMap.major_direction = idx;
+            else if (hl.includes('专业名称') || hl.includes('课程') || hl.includes('programme') || hl.includes('course')) colMap.major_name = idx;
+            else if (hl.includes('学位') || hl.includes('层次') || hl.includes('degree')) colMap.degree_level = idx;
+            else if (hl.includes('均分') || hl.includes('gpa') || hl.includes('成绩')) colMap.gpa_requirement = idx;
+            else if (hl.includes('语言') || hl.includes('雅思') || hl.includes('ielts')) colMap.language_requirement = idx;
+            else if (hl.includes('备注') || hl.includes('note')) colMap.notes = idx;
+            else if (hl.includes('链接') || hl.includes('link') || hl.includes('url')) colMap.link = idx;
+        });
+        
+        rows.forEach(row => {
+            if (row.length === 0 || row.every(c => !c)) return;
+            const get = (field) => (colMap[field] !== undefined && row[colMap[field]]) || '';
+            records.push({
+                country: get('country') || '英国',
+                qs_rank: get('qs_rank') ? parseInt(get('qs_rank')) : null,
+                university: get('university') || uniName,
+                english_name: get('english_name') || null,
+                website: get('website') || null,
+                major_direction: get('major_direction') || '',
+                major_name: get('major_name') || null,
+                degree_level: get('degree_level') || '',
+                gpa_requirement: get('gpa_requirement') || null,
+                language_requirement: get('language_requirement') || null,
+                notes: get('notes') || null,
+                link: get('link') || null,
+                source: 'Excel导入',
+                is_active: true
+            });
+        });
+    });
+    return records;
 }
 
 // 兼容旧函数名
