@@ -8,6 +8,33 @@ const SHARE_PASSWORD = 'sales2026'; // 分享链接查看密码
 let supabaseClient = null;
 let isAdminMode = false;
 let allSubmissions = []; // 管理后台用：所有提交数据
+
+// ===== 懒加载大库（mammoth/pdfjs/xlsx仅在导入时按需加载） =====
+const _lazyLibs = {};
+function loadScript(url) {
+    return new Promise((resolve, reject) => {
+        if (document.querySelector(`script[src="${url}"]`)) return resolve();
+        const s = document.createElement('script');
+        s.src = url;
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+    });
+}
+async function ensureLib(name) {
+    if (_lazyLibs[name]) return;
+    _lazyLibs[name] = true; // 防止重复加载
+    if (name === 'xlsx') {
+        await loadScript('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js');
+    } else if (name === 'mammoth') {
+        await loadScript('https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js');
+    } else if (name === 'pdfjs') {
+        await loadScript('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.js');
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.js';
+        }
+    }
+}
 let currentAdminFilter = 'pending';
 
 // ==================== 登录门禁 ====================
@@ -3161,7 +3188,8 @@ function processUploadFile(file) {
             reader.onload = () => resolve({ name: file.name, type: 'image', content: reader.result });
             reader.onerror = reject;
             reader.readAsDataURL(file);
-        } else if (isPdf && typeof pdfjsLib !== 'undefined') {
+        } else if (isPdf) {
+            await ensureLib('pdfjs');
             reader.onload = async () => {
                 try {
                     const typedArray = new Uint8Array(reader.result);
@@ -3178,7 +3206,8 @@ function processUploadFile(file) {
             };
             reader.onerror = reject;
             reader.readAsArrayBuffer(file);
-        } else if (isDocx && typeof mammoth !== 'undefined') {
+        } else if (isDocx) {
+            await ensureLib('mammoth');
             reader.onload = async () => {
                 try {
                     const result = await mammoth.extractRawText({ arrayBuffer: reader.result });
@@ -7583,6 +7612,11 @@ function copyPlanResult() {
 let _currentUniName = '';
 let _currentUniAllData = [];
 let _currentUniRawTable = null; // 原始表格结构（用于动态渲染）
+let _uniSearchTimer = null;
+function debounceLoadUni() {
+    clearTimeout(_uniSearchTimer);
+    _uniSearchTimer = setTimeout(() => loadUniversityData(), 300);
+}
 
 async function loadUniversityData() {
     if (!supabaseClient) return;
@@ -8084,6 +8118,7 @@ function readFileAsDataURL(file) {
 
 // 提取Excel文本
 async function extractExcelText(file) {
+    await ensureLib('xlsx');
     const buf = await readFileAsArrayBuffer(file);
     const wb = XLSX.read(buf, { type: 'array' });
     const lines = [];
@@ -8109,6 +8144,7 @@ async function extractExcelText(file) {
 
 // 提取Word文本
 async function extractWordText(file) {
+    await ensureLib('mammoth');
     const buf = await readFileAsArrayBuffer(file);
     const result = await mammoth.extractRawText({ arrayBuffer: buf });
     return result.value;
@@ -8116,6 +8152,7 @@ async function extractWordText(file) {
 
 // 提取PDF文本
 async function extractPDFText(file) {
+    await ensureLib('pdfjs');
     const buf = await readFileAsArrayBuffer(file);
     const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
     const lines = [];
