@@ -3175,55 +3175,47 @@ async function handleStudioUpload(fileList) {
     renderStudioFileList();
 }
 
-function processUploadFile(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        const isImage = /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(file.name);
-        const isPdf = /\.pdf$/i.test(file.name);
-        const isDocx = /\.docx$/i.test(file.name);
-        const isDoc = /\.doc$/i.test(file.name);
-        const isTxt = /\.(txt|csv|md)$/i.test(file.name);
+async function processUploadFile(file) {
+    const isImage = /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(file.name);
+    const isPdf = /\.pdf$/i.test(file.name);
+    const isDocx = /\.docx$/i.test(file.name);
+    const isDoc = /\.doc$/i.test(file.name);
+    const isTxt = /\.(txt|csv|md)$/i.test(file.name);
 
-        if (isImage) {
+    if (isImage) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
             reader.onload = () => resolve({ name: file.name, type: 'image', content: reader.result });
             reader.onerror = reject;
             reader.readAsDataURL(file);
-        } else if (isPdf) {
-            await ensureLib('pdfjs');
-            reader.onload = async () => {
-                try {
-                    const typedArray = new Uint8Array(reader.result);
-                    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.js';
-                    const pdf = await pdfjsLib.getDocument(typedArray).promise;
-                    let text = '';
-                    for (let i = 1; i <= Math.min(pdf.numPages, 20); i++) {
-                        const page = await pdf.getPage(i);
-                        const content = await page.getTextContent();
-                        text += content.items.map(item => item.str).join(' ') + '\n';
-                    }
-                    resolve({ name: file.name, type: 'text', content: text.trim() });
-                } catch(e) { reject(e); }
-            };
-            reader.onerror = reject;
-            reader.readAsArrayBuffer(file);
-        } else if (isDocx) {
-            await ensureLib('mammoth');
-            reader.onload = async () => {
-                try {
-                    const result = await mammoth.extractRawText({ arrayBuffer: reader.result });
-                    resolve({ name: file.name, type: 'text', content: result.value });
-                } catch(e) { reject(e); }
-            };
-            reader.onerror = reject;
-            reader.readAsArrayBuffer(file);
-        } else if (isTxt) {
+        });
+    } else if (isPdf) {
+        await ensureLib('pdfjs');
+        const buf = await readFileAsArrayBuffer(file);
+        const typedArray = new Uint8Array(buf);
+        const pdf = await pdfjsLib.getDocument(typedArray).promise;
+        let text = '';
+        for (let i = 1; i <= Math.min(pdf.numPages, 20); i++) {
+            const page = await pdf.getPage(i);
+            const content = await page.getTextContent();
+            text += content.items.map(item => item.str).join(' ') + '\n';
+        }
+        return { name: file.name, type: 'text', content: text.trim() };
+    } else if (isDocx) {
+        await ensureLib('mammoth');
+        const buf = await readFileAsArrayBuffer(file);
+        const result = await mammoth.extractRawText({ arrayBuffer: buf });
+        return { name: file.name, type: 'text', content: result.value };
+    } else if (isTxt) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
             reader.onload = () => resolve({ name: file.name, type: 'text', content: reader.result });
             reader.onerror = reject;
             reader.readAsText(file);
-        } else {
-            resolve({ name: file.name, type: 'unsupported', content: '' });
-        }
-    });
+        });
+    } else {
+        return { name: file.name, type: 'unsupported', content: '' };
+    }
 }
 
 function renderStudioFileList() {
