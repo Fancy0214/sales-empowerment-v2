@@ -7784,47 +7784,134 @@ async function deleteUniversity(id) {
 }
 
 // ===== 批量导入 =====
+let _pendingImportRecords = []; // 等待确认导入的记录
+
+const EXTRACT_SYSTEM_PROMPT = `你是一个留学院校数据提取助手。用户会提供包含院校录取要求信息的文档内容。请从中提取所有院校的录取要求信息，返回JSON数组。
+
+每条记录包含以下字段（字符串类型，无则填空串，qs_rank无则填null）：
+- country: 国家（仅"英国"或"爱尔兰"）
+- qs_rank: QS排名（整数或null）
+- university: 院校名称
+- major_direction: 专业大方向（如"商科"、"工科"、"计算机"等）
+- major_name: 具体专业名称
+- degree_level: 学位层次（如"硕士"、"本科"）
+- gpa_requirement: 均分要求（如"985/211: 75%; 双非: 80%"）
+- language_requirement: 语言要求（如"雅思6.5(6.0)"）
+- notes: 备注
+- link: 专业链接
+
+严格规则：
+1. 仅返回JSON数组，不要返回任何其他内容、解释或markdown格式标记
+2. 如果数据不完整，尽力从上下文推断，无法推断的留空
+3. 一行一条记录，不要合并不同专业到同一条
+4. 如果完全没有院校数据，返回空数组 []`;
+
 function openImportModal() {
     if (isShareMode) return;
-    document.getElementById('importCsvFile').value = '';
+    document.getElementById('importFileInput').value = '';
     document.getElementById('importCsvText').value = '';
+    document.getElementById('importParseStatus').style.display = 'none';
+    document.getElementById('importPreview').style.display = 'none';
+    _pendingImportRecords = [];
+    const btn = document.getElementById('importConfirmBtn');
+    btn.innerHTML = '<i class="fas fa-upload"></i> 导入';
+    btn.disabled = false;
     document.getElementById('importModal').style.display = 'flex';
 }
 
-async function importCsvData() {
-    if (isShareMode) return;
-    
-    let csvText = document.getElementById('importCsvText').value.trim();
-    const fileInput = document.getElementById('importCsvFile');
-    
-    // 如果有上传文件，读取文件内容
-    if (fileInput.files && fileInput.files.length > 0) {
-        csvText = await fileInput.files[0].text();
+function cancelImportPreview() {
+    document.getElementById('importPreview').style.display = 'none';
+    _pendingImportRecords = [];
+    const btn = document.getElementById('importConfirmBtn');
+    btn.innerHTML = '<i class="fas fa-upload"></i> 导入';
+    btn.disabled = false;
+}
+
+// 读取文件为ArrayBuffer
+function readFileAsArrayBuffer(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(file);
+    });
+}
+
+// 读取文件为base64 Data URL
+function readFileAsDataURL(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+// 提取Excel文本
+async function extractExcelText(file) {
+    const buf = await readFileAsArrayBuffer(file);
+    const wb = XLSX.read(buf, { type: 'array' });
+    const lines = [];
+    wb.SheetNames.forEach(name => {
+        const ws = wb.Sheets[name];
+        const csv = XLSX.utils.sheet_to_csv(ws);
+        if (csv.trim()) lines.push(`=== Sheet: ${name} ===\n${csv}`);
+    });
+    return lines.join('\n\n');
+}
+
+// 提取Word文本
+async function extractWordText(file) {
+    const buf = await readFileAsArrayBuffer(file);
+    const result = await mammoth.extractRawText({ arrayBuffer: buf });
+    return result.value;
+}
+
+// 提取PDF文本
+async function extractPDFText(file) {
+    const buf = await readFileAsArrayBuffer(file);
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    const lines = [];
+    for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        const text = content.items.map(item => item.str).join(' ');
+        if (text.trim()) lines.push(text);
     }
-    
-    if (!csvText) {
-        alert('请上传CSV文件或粘贴CSV内容');
-        return;
+    return lines.join('\n');
+}
+
+// 统一提取文件内容
+async function extractFileContent(file) {
+    const name = file.name.toLowerCase();
+    if (name.endsWith('.csv')) {
+        return { type: 'csv', text: await file.text() };
+    } else if (name.endsWith('.xlsx') || name.endsWith('.xls')) {
+        return { type: 'excel', text: await extractExcelText(file) };
+    } else if (name.endsWith('.docx') || name.endsWith('.doc')) {
+        return { type: 'word', text: await extractWordText(file) };
+    } else if (name.endsWith('.pdf')) {
+        return { type: 'pdf', text: await extractPDFText(file) };
+    } else if (/\.(jpg|jpeg|png)$/i.test(name)) {
+        const dataUrl = await readFileAsDataURL(file);
+        return { type: 'image', dataUrl: dataUrl, text: '' };
     }
-    
+    throw new Error('不支持的文件格式');
+}
+
+// CSV直接解析（无需AI）
+function parseCSVRecords(csvText) {
     const lines = csvText.split('\n').filter(l => l.trim());
-    if (lines.length === 0) {
-        alert('无有效数据');
-        return;
-    }
-    
-    // 跳过表头（如果第一行看起来像表头）
+    if (lines.length === 0) return [];
     let startIdx = 0;
     const firstLine = lines[0].toLowerCase();
     if (firstLine.includes('国家') || firstLine.includes('country') || firstLine.includes('qs')) {
         startIdx = 1;
     }
-    
     const records = [];
     for (let i = startIdx; i < lines.length; i++) {
         const cols = parseCSVLine(lines[i]);
-        if (cols.length < 6) continue; // 至少需要6个字段
-        
+        if (cols.length < 3) continue;
         records.push({
             country: cols[0] || '',
             qs_rank: parseInt(cols[1]) || null,
@@ -7840,29 +7927,238 @@ async function importCsvData() {
             is_active: true
         });
     }
+    return records;
+}
+
+// AI解析文本内容
+async function parseWithAI(textContent, isImage, imageDataUrl) {
+    const config = getStudioConfig();
+    if (!config.cozeToken || !config.botId) {
+        throw new Error('请先在AI话术工坊中配置Coze API（Token和Bot ID）');
+    }
+
+    const messages = [
+        { role: 'system', content: EXTRACT_SYSTEM_PROMPT, content_type: 'text' }
+    ];
+
+    if (isImage && imageDataUrl) {
+        // 图片：发送图片+提示文本
+        messages.push({ role: 'user', content: imageDataUrl, content_type: 'image' });
+        messages.push({ role: 'user', content: '请从图片中提取所有院校录取要求信息，按指定JSON格式返回。', content_type: 'text' });
+    } else {
+        // 文本：发送文档内容
+        const truncated = textContent.length > 15000 ? textContent.substring(0, 15000) + '\n...(内容过长已截断)' : textContent;
+        messages.push({ role: 'user', content: '请从以下文档内容中提取所有院校录取要求信息：\n\n' + truncated, content_type: 'text' });
+    }
+
+    // 使用流式请求收集完整响应
+    const response = await fetch('https://api.coze.cn/v3/chat', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + config.cozeToken
+        },
+        body: JSON.stringify({
+            bot_id: config.botId,
+            user_id: 'import_parse_' + Math.random().toString(36).substring(2, 8),
+            stream: true,
+            auto_save_history: false,
+            additional_messages: messages
+        })
+    });
+
+    if (!response.ok) {
+        const errText = await response.text();
+        throw new Error('AI解析请求失败 (' + response.status + '): ' + errText.substring(0, 200));
+    }
+
+    // 收集流式响应
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let fullText = '';
+    let buffer = '';
+    let currentEvent = '';
+
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+        for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed) continue;
+            if (trimmed.startsWith('event:')) {
+                currentEvent = trimmed.slice(6).trim();
+                continue;
+            }
+            if (trimmed.startsWith('data:') && currentEvent === 'conversation.message.delta') {
+                try {
+                    const data = JSON.parse(trimmed.slice(5).trim());
+                    if (data.content) fullText += data.content;
+                } catch(e) {}
+            }
+        }
+    }
+
+    // 从响应中提取JSON
+    let jsonStr = fullText.trim();
+    // 去掉markdown代码块标记
+    jsonStr = jsonStr.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '');
+    // 尝试找到JSON数组
+    const arrMatch = jsonStr.match(/\[[\s\S]*\]/);
+    if (!arrMatch) {
+        throw new Error('AI未能提取到有效的院校数据，请检查文件内容是否包含院校信息');
+    }
     
-    if (records.length === 0) {
-        alert('未解析到有效数据');
+    let parsed;
+    try {
+        parsed = JSON.parse(arrMatch[0]);
+    } catch(e) {
+        throw new Error('AI返回数据格式异常，请重试或改用CSV格式');
+    }
+
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+        throw new Error('未从文件中提取到院校数据');
+    }
+
+    // 标准化字段
+    return parsed.map(item => ({
+        country: item.country || '',
+        qs_rank: item.qs_rank ? parseInt(item.qs_rank) : null,
+        university: item.university || '',
+        major_direction: item.major_direction || '',
+        major_name: item.major_name || null,
+        degree_level: item.degree_level || '',
+        gpa_requirement: item.gpa_requirement || null,
+        language_requirement: item.language_requirement || null,
+        notes: item.notes || null,
+        link: item.link || null,
+        source: 'AI解析导入',
+        is_active: true
+    }));
+}
+
+// 显示预览
+function showImportPreview(records) {
+    _pendingImportRecords = records;
+    const tbody = document.getElementById('importPreviewBody');
+    tbody.innerHTML = '';
+    records.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.style.borderBottom = '1px solid #f1f5f9';
+        tr.innerHTML = `
+            <td style="padding:4px 8px">${r.country || '-'}</td>
+            <td style="padding:4px 8px">${r.qs_rank || '-'}</td>
+            <td style="padding:4px 8px">${r.university || '-'}</td>
+            <td style="padding:4px 8px">${r.major_direction || '-'}</td>
+            <td style="padding:4px 8px">${r.major_name || '-'}</td>
+            <td style="padding:4px 8px">${r.degree_level || '-'}</td>
+            <td style="padding:4px 8px">${r.gpa_requirement || '-'}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+    document.getElementById('importPreviewTitle').textContent = `解析结果预览（${records.length}条）`;
+    document.getElementById('importPreview').style.display = 'block';
+    document.getElementById('importParseStatus').style.display = 'none';
+    const btn = document.getElementById('importConfirmBtn');
+    btn.innerHTML = '<i class="fas fa-check"></i> 确认导入 ' + records.length + ' 条';
+}
+
+// 主导入函数
+async function importFileData() {
+    if (isShareMode) return;
+
+    // 如果有待确认的记录，直接执行导入
+    if (_pendingImportRecords.length > 0) {
+        const btn = document.getElementById('importConfirmBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 导入中...';
+        try {
+            const records = _pendingImportRecords;
+            for (let i = 0; i < records.length; i += 50) {
+                const batch = records.slice(i, i + 50);
+                const { error } = await supabaseClient
+                    .from('university_requirements')
+                    .insert(batch);
+                if (error) throw error;
+            }
+            closeModal('importModal');
+            loadUniversityData();
+            alert(`成功导入 ${records.length} 条数据`);
+        } catch (err) {
+            alert('导入失败: ' + err.message);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check"></i> 确认导入 ' + _pendingImportRecords.length + ' 条';
+        }
         return;
     }
-    
-    try {
-        // 批量插入（每次最多50条）
-        for (let i = 0; i < records.length; i += 50) {
-            const batch = records.slice(i, i + 50);
-            const { error } = await supabaseClient
-                .from('university_requirements')
-                .insert(batch);
-            if (error) throw error;
+
+    const fileInput = document.getElementById('importFileInput');
+    const csvText = document.getElementById('importCsvText').value.trim();
+    const file = fileInput.files && fileInput.files.length > 0 ? fileInput.files[0] : null;
+
+    if (!file && !csvText) {
+        alert('请上传文件或粘贴CSV内容');
+        return;
+    }
+
+    // CSV文本粘贴 → 直接解析
+    if (!file && csvText) {
+        const records = parseCSVRecords(csvText);
+        if (records.length === 0) {
+            alert('未解析到有效数据');
+            return;
         }
+        showImportPreview(records);
+        return;
+    }
+
+    // 有文件上传
+    const btn = document.getElementById('importConfirmBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 解析中...';
+    document.getElementById('importParseStatus').style.display = 'block';
+
+    try {
+        const extracted = await extractFileContent(file);
         
-        closeModal('importModal');
-        loadUniversityData();
-        alert(`成功导入 ${records.length} 条数据`);
+        if (extracted.type === 'csv') {
+            // CSV文件直接解析
+            const records = parseCSVRecords(extracted.text);
+            if (records.length === 0) {
+                throw new Error('CSV文件中未解析到有效数据');
+            }
+            showImportPreview(records);
+        } else if (extracted.type === 'excel') {
+            // Excel先尝试直接解析（按CSV格式），失败则AI解析
+            const records = parseCSVRecords(extracted.text);
+            if (records.length >= 2) {
+                showImportPreview(records);
+            } else {
+                document.getElementById('importParseText').textContent = 'AI正在解析Excel内容...';
+                const aiRecords = await parseWithAI(extracted.text, false, null);
+                showImportPreview(aiRecords);
+            }
+        } else {
+            // Word/PDF/图片 → AI解析
+            const isImage = extracted.type === 'image';
+            document.getElementById('importParseText').textContent = isImage 
+                ? 'AI正在识别图片内容...' 
+                : 'AI正在解析文档内容...';
+            const records = await parseWithAI(extracted.text, isImage, extracted.dataUrl);
+            showImportPreview(records);
+        }
     } catch (err) {
-        alert('导入失败: ' + err.message);
+        document.getElementById('importParseStatus').style.display = 'none';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-upload"></i> 导入';
+        alert('文件解析失败: ' + err.message);
     }
 }
+
+// 兼容旧函数名
+async function importCsvData() { return importFileData(); }
 
 // 简易CSV行解析（处理引号内的逗号）
 function parseCSVLine(line) {
