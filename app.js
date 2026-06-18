@@ -7580,6 +7580,9 @@ function copyPlanResult() {
 }
 
 // ===== 院校数据库CRUD =====
+let _currentUniName = '';
+let _currentUniAllData = [];
+
 async function loadUniversityData() {
     if (!supabaseClient) return;
     
@@ -7589,109 +7592,198 @@ async function loadUniversityData() {
     
     let query = supabaseClient
         .from('university_requirements')
-        .select('*', { count: 'exact' })
+        .select('*')
         .eq('is_active', true);
     
     if (country) query = query.eq('country', country);
-    if (major) query = query.eq('major_direction', major);
     
     try {
-        const { data, error, count } = await query
+        const { data, error } = await query
             .order('qs_rank', { nulls_first: false, ascending: true })
-            .range((planDbPage - 1) * PLAN_DB_PAGE_SIZE, planDbPage * PLAN_DB_PAGE_SIZE - 1);
+            .limit(500);
         
         if (error) throw error;
         
-        let filtered = data || [];
+        let allData = data || [];
+        
+        // 按院校名称分组
+        let grouped = {};
+        allData.forEach(row => {
+            const key = row.university || '未知院校';
+            if (!grouped[key]) {
+                grouped[key] = {
+                    university: key,
+                    country: row.country,
+                    qs_rank: row.qs_rank,
+                    english_name: row.english_name || '',
+                    website: row.website || '',
+                    records: []
+                };
+            }
+            if (row.qs_rank && (!grouped[key].qs_rank || row.qs_rank < grouped[key].qs_rank)) {
+                grouped[key].qs_rank = row.qs_rank;
+            }
+            grouped[key].records.push(row);
+        });
+        
+        let uniList = Object.values(grouped);
         
         // 客户端搜索过滤
         if (search) {
-            filtered = filtered.filter(u => 
-                (u.university || '').toLowerCase().includes(search) ||
-                (u.major_name || '').toLowerCase().includes(search) ||
-                (u.major_direction || '').toLowerCase().includes(search)
+            uniList = uniList.filter(u => 
+                u.university.toLowerCase().includes(search) ||
+                (u.english_name || '').toLowerCase().includes(search)
             );
         }
+        if (major) {
+            uniList = uniList.filter(u => u.records.some(r => r.major_direction === major));
+        }
         
-        planDbAllData = filtered;
-        renderUniversityTable(filtered);
-        renderDbPagination(count || filtered.length);
+        planDbAllData = uniList;
+        renderUniversityCards(uniList);
     } catch (err) {
         console.error('加载院校数据失败:', err);
-        document.getElementById('planDbBody').innerHTML = `
-            <tr><td colspan="10" style="text-align:center;color:#999;padding:40px;">
+        document.getElementById('uniCardGrid').innerHTML = `
+            <div style="text-align:center;color:#999;padding:40px;grid-column:1/-1">
                 <i class="fas fa-exclamation-circle"></i> 加载失败：${err.message || '未知错误'}
                 ${err.message && err.message.includes('does not exist') ? '<br><small>提示：请先在Supabase中创建 university_requirements 表</small>' : ''}
-            </td></tr>`;
+            </div>`;
     }
 }
 
-function renderUniversityTable(data) {
-    const tbody = document.getElementById('planDbBody');
+function renderUniversityCards(uniList) {
+    const grid = document.getElementById('uniCardGrid');
     const isShare = isShareMode;
     
-    if (!data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#999;padding:40px;"><i class="fas fa-inbox"></i> 暂无数据</td></tr>';
+    if (!uniList || uniList.length === 0) {
+        grid.innerHTML = `<div style="text-align:center;color:#999;padding:60px 20px;grid-column:1/-1">
+            <i class="fas fa-inbox" style="font-size:32px;margin-bottom:12px;display:block"></i>
+            暂无数据
+        </div>`;
         return;
     }
     
-    tbody.innerHTML = data.map(u => `
+    grid.innerHTML = uniList.map(u => {
+        const majorSet = [...new Set(u.records.map(r => r.major_direction).filter(Boolean))];
+        const majorTags = majorSet.slice(0, 4).map(m => `<span class="uni-card-tag">${m}</span>`).join('');
+        const moreTag = majorSet.length > 4 ? `<span class="uni-card-tag">+${majorSet.length - 4}</span>` : '';
+        const websiteLink = u.website ? `<a href="${u.website}" target="_blank" class="uni-card-website" onclick="event.stopPropagation()"><i class="fas fa-external-link-alt"></i> 官网</a>` : '';
+        const escapedName = u.university.replace(/'/g, "\\'");
+        
+        return `<div class="uni-card" onclick="showUniDetail('${escapedName}')">
+            <div class="uni-card-rank">${u.qs_rank ? 'QS ' + u.qs_rank : '<span style="color:#999">暂无排名</span>'}</div>
+            <div class="uni-card-body">
+                <div class="uni-card-name">${u.university}</div>
+                <div class="uni-card-en">${u.english_name || ''}</div>
+                <div class="uni-card-meta">
+                    <span><i class="fas fa-map-marker-alt"></i> ${u.country}</span>
+                    <span><i class="fas fa-book"></i> ${u.records.length}个专业</span>
+                    ${websiteLink}
+                </div>
+                <div class="uni-card-tags">${majorTags}${moreTag}</div>
+            </div>
+            ${!isShare ? `<div class="uni-card-actions" onclick="event.stopPropagation()">
+                <button class="btn-icon btn-edit" title="编辑" onclick="openUniversityEditModal(null, '${escapedName}')"><i class="fas fa-pen"></i></button>
+                <button class="btn-icon btn-delete" title="删除" onclick="deleteUniversityByName('${escapedName}')"><i class="fas fa-trash-alt"></i></button>
+            </div>` : ''}
+        </div>`;
+    }).join('');
+}
+
+function showUniDetail(uniName) {
+    _currentUniName = uniName;
+    const uni = planDbAllData.find(u => u.university === uniName);
+    if (!uni) return;
+    
+    _currentUniAllData = uni.records;
+    
+    document.getElementById('uniDetailInfo').innerHTML = `
+        <div class="uni-detail-name">${uni.university}</div>
+        <div class="uni-detail-en">${uni.english_name || ''}</div>
+        <div class="uni-detail-meta">
+            <span>QS ${uni.qs_rank || '暂无'}</span>
+            <span>${uni.country}</span>
+            ${uni.website ? `<a href="${uni.website}" target="_blank"><i class="fas fa-external-link-alt"></i> 官网</a>` : ''}
+        </div>
+    `;
+    
+    document.getElementById('uniDetailMajorFilter').value = '';
+    document.getElementById('uniDetailDegreeFilter').value = '';
+    
+    document.getElementById('uniListView').style.display = 'none';
+    document.getElementById('uniDetailView').style.display = 'block';
+    
+    renderUniDetailTable();
+}
+
+function renderUniDetailTable() {
+    const majorFilter = document.getElementById('uniDetailMajorFilter').value;
+    const degreeFilter = document.getElementById('uniDetailDegreeFilter').value;
+    const isShare = isShareMode;
+    
+    let filtered = _currentUniAllData;
+    if (majorFilter) filtered = filtered.filter(r => r.major_direction === majorFilter);
+    if (degreeFilter) filtered = filtered.filter(r => r.degree_level === degreeFilter);
+    
+    const tbody = document.getElementById('uniDetailBody');
+    if (!filtered || filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#999;padding:30px"><i class="fas fa-inbox"></i> 暂无数据</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = filtered.map(r => `
         <tr>
-            <td>${u.country || '-'}</td>
-            <td>${u.qs_rank || '-'}</td>
-            <td><strong>${u.university || '-'}</strong></td>
-            <td>${u.major_direction || '-'}</td>
-            <td>${u.major_name || '-'}</td>
-            <td>${u.degree_level || '-'}</td>
-            <td>${u.gpa_requirement || '-'}</td>
-            <td>${u.language_requirement || '-'}</td>
-            <td>${u.notes || '-'}</td>
+            <td>${r.major_direction || '-'}</td>
+            <td>${r.major_name || '-'}</td>
+            <td>${r.degree_level || '-'}</td>
+            <td>${r.gpa_requirement || '-'}</td>
+            <td>${r.language_requirement || '-'}</td>
+            <td>${r.notes || '-'}</td>
+            <td>${r.link ? `<a href="${r.link}" target="_blank" onclick="event.stopPropagation()"><i class="fas fa-link"></i></a>` : '-'}</td>
             <td class="action-cell" ${isShare ? 'style="display:none"' : ''}>
-                <button class="btn-icon btn-edit" title="编辑" onclick="openUniversityEditModal('${u.id}')"><i class="fas fa-pen"></i></button>
-                <button class="btn-icon btn-delete" title="删除" onclick="deleteUniversity('${u.id}')"><i class="fas fa-trash-alt"></i></button>
+                <button class="btn-icon btn-edit" title="编辑" onclick="openUniversityEditModal('${r.id}')"><i class="fas fa-pen"></i></button>
+                <button class="btn-icon btn-delete" title="删除" onclick="deleteUniversity('${r.id}')"><i class="fas fa-trash-alt"></i></button>
             </td>
         </tr>
     `).join('');
 }
 
-function renderDbPagination(totalCount) {
-    const totalPages = Math.ceil(totalCount / PLAN_DB_PAGE_SIZE);
-    const container = document.getElementById('planDbPagination');
-    
-    if (totalPages <= 1) {
-        container.innerHTML = '';
-        return;
-    }
-    
-    let html = '<div class="pagination">';
-    if (planDbPage > 1) {
-        html += `<button class="btn btn-outline btn-sm" onclick="planDbGoPage(${planDbPage - 1})"><i class="fas fa-chevron-left"></i></button>`;
-    }
-    html += `<span class="pagination-info">第 ${planDbPage} / ${totalPages} 页</span>`;
-    if (planDbPage < totalPages) {
-        html += `<button class="btn btn-outline btn-sm" onclick="planDbGoPage(${planDbPage + 1})"><i class="fas fa-chevron-right"></i></button>`;
-    }
-    html += '</div>';
-    container.innerHTML = html;
+function backToUniList() {
+    document.getElementById('uniListView').style.display = 'block';
+    document.getElementById('uniDetailView').style.display = 'none';
+    _currentUniName = '';
+    _currentUniAllData = [];
 }
 
-function planDbGoPage(page) {
-    planDbPage = page;
-    loadUniversityData();
+async function deleteUniversityByName(uniName) {
+    if (isShareMode) return;
+    if (!confirm(`确定删除「${uniName}」的所有数据？`)) return;
+    try {
+        const { error } = await supabaseClient
+            .from('university_requirements')
+            .delete()
+            .eq('university', uniName);
+        if (error) throw error;
+        loadUniversityData();
+    } catch (err) {
+        alert('删除失败: ' + err.message);
+    }
 }
 
 // 打开院校编辑弹窗
-async function openUniversityEditModal(id) {
+async function openUniversityEditModal(id, uniName) {
     if (isShareMode) return;
     
     const modal = document.getElementById('universityEditModal');
     const form = document.getElementById('universityEditForm');
     form.reset();
     document.getElementById('uniEditId').value = '';
+    document.getElementById('uniEditEnglishName').value = '';
+    document.getElementById('uniEditWebsite').value = '';
     
     if (id) {
-        // 编辑模式
-        document.getElementById('universityEditTitle').innerHTML = '<i class="fas fa-university"></i> 编辑院校';
+        // 编辑单条专业记录
+        document.getElementById('universityEditTitle').innerHTML = '<i class="fas fa-university"></i> 编辑专业';
         try {
             const { data, error } = await supabaseClient
                 .from('university_requirements')
@@ -7704,6 +7796,8 @@ async function openUniversityEditModal(id) {
                 document.getElementById('uniEditCountry').value = data.country || '';
                 document.getElementById('uniEditQsRank').value = data.qs_rank || '';
                 document.getElementById('uniEditUniversity').value = data.university || '';
+                document.getElementById('uniEditEnglishName').value = data.english_name || '';
+                document.getElementById('uniEditWebsite').value = data.website || '';
                 document.getElementById('uniEditMajorDir').value = data.major_direction || '';
                 document.getElementById('uniEditMajorName').value = data.major_name || '';
                 document.getElementById('uniEditDegree').value = data.degree_level || '';
@@ -7713,8 +7807,20 @@ async function openUniversityEditModal(id) {
                 document.getElementById('uniEditLink').value = data.link || '';
             }
         } catch (err) {
-            alert('加载院校数据失败: ' + err.message);
+            alert('加载数据失败: ' + err.message);
             return;
+        }
+    } else if (uniName) {
+        // 从卡片添加：预填院校名
+        document.getElementById('universityEditTitle').innerHTML = '<i class="fas fa-university"></i> 添加专业';
+        document.getElementById('uniEditUniversity').value = uniName;
+        // 尝试从已有数据预填院校信息
+        const uni = planDbAllData.find(u => u.university === uniName);
+        if (uni) {
+            document.getElementById('uniEditCountry').value = uni.country || '';
+            document.getElementById('uniEditQsRank').value = uni.qs_rank || '';
+            document.getElementById('uniEditEnglishName').value = uni.english_name || '';
+            document.getElementById('uniEditWebsite').value = uni.website || '';
         }
     } else {
         document.getElementById('universityEditTitle').innerHTML = '<i class="fas fa-university"></i> 添加院校';
@@ -7733,6 +7839,8 @@ async function saveUniversity(event) {
         country: document.getElementById('uniEditCountry').value,
         qs_rank: parseInt(document.getElementById('uniEditQsRank').value) || null,
         university: document.getElementById('uniEditUniversity').value,
+        english_name: document.getElementById('uniEditEnglishName').value || null,
+        website: document.getElementById('uniEditWebsite').value || null,
         major_direction: document.getElementById('uniEditMajorDir').value,
         major_name: document.getElementById('uniEditMajorName').value || null,
         degree_level: document.getElementById('uniEditDegree').value,
@@ -7745,14 +7853,25 @@ async function saveUniversity(event) {
     
     try {
         if (id) {
-            // 更新
             const { error } = await supabaseClient
                 .from('university_requirements')
                 .update(record)
                 .eq('id', id);
             if (error) throw error;
+            // 更新该院校其他记录的院校信息（同步英文名/官网/QS排名）
+            const syncFields = {};
+            if (record.english_name) syncFields.english_name = record.english_name;
+            if (record.website) syncFields.website = record.website;
+            if (record.qs_rank) syncFields.qs_rank = record.qs_rank;
+            if (record.country) syncFields.country = record.country;
+            if (Object.keys(syncFields).length > 0) {
+                await supabaseClient
+                    .from('university_requirements')
+                    .update(syncFields)
+                    .eq('university', record.university)
+                    .neq('id', id);
+            }
         } else {
-            // 新增
             const { error } = await supabaseClient
                 .from('university_requirements')
                 .insert([record]);
@@ -7761,15 +7880,26 @@ async function saveUniversity(event) {
         
         closeModal('universityEditModal');
         loadUniversityData();
+        // 如果在详情页，也刷新详情
+        if (_currentUniName) {
+            // 重新加载数据后刷新详情
+            setTimeout(() => {
+                const uni = planDbAllData.find(u => u.university === _currentUniName);
+                if (uni) {
+                    _currentUniAllData = uni.records;
+                    renderUniDetailTable();
+                }
+            }, 500);
+        }
     } catch (err) {
         alert('保存失败: ' + err.message);
     }
 }
 
-// 删除院校
+// 删除单条专业记录
 async function deleteUniversity(id) {
     if (isShareMode) return;
-    if (!confirm('确定删除该院校数据？')) return;
+    if (!confirm('确定删除该专业记录？')) return;
     
     try {
         const { error } = await supabaseClient
@@ -7778,6 +7908,19 @@ async function deleteUniversity(id) {
             .eq('id', id);
         if (error) throw error;
         loadUniversityData();
+        // 刷新详情页
+        if (_currentUniName) {
+            setTimeout(() => {
+                const uni = planDbAllData.find(u => u.university === _currentUniName);
+                if (uni) {
+                    _currentUniAllData = uni.records;
+                    renderUniDetailTable();
+                } else {
+                    // 院校已无数据，返回列表
+                    backToUniList();
+                }
+            }, 500);
+        }
     } catch (err) {
         alert('删除失败: ' + err.message);
     }
@@ -7791,7 +7934,9 @@ const EXTRACT_SYSTEM_PROMPT = `你是一个留学院校数据提取助手。用�
 每条记录包含以下字段（字符串类型，无则填空串，qs_rank无则填null）：
 - country: 国家（仅"英国"或"爱尔兰"）
 - qs_rank: QS排名（整数或null）
-- university: 院校名称
+- university: 院校中文名称
+- english_name: 院校英文名称
+- website: 院校官网链接
 - major_direction: 专业大方向（如"商科"、"工科"、"计算机"等）
 - major_name: 具体专业名称
 - degree_level: 学位层次（如"硕士"、"本科"）
@@ -7804,7 +7949,8 @@ const EXTRACT_SYSTEM_PROMPT = `你是一个留学院校数据提取助手。用�
 1. 仅返回JSON数组，不要返回任何其他内容、解释或markdown格式标记
 2. 如果数据不完整，尽力从上下文推断，无法推断的留空
 3. 一行一条记录，不要合并不同专业到同一条
-4. 如果完全没有院校数据，返回空数组 []`;
+4. 如果完全没有院校数据，返回空数组 []
+5. english_name和website同一院校各条记录保持一致`;
 
 function openImportModal() {
     if (isShareMode) return;
@@ -7916,13 +8062,15 @@ function parseCSVRecords(csvText) {
             country: cols[0] || '',
             qs_rank: parseInt(cols[1]) || null,
             university: cols[2] || '',
-            major_direction: cols[3] || '',
-            major_name: cols[4] || null,
-            degree_level: cols[5] || '',
-            gpa_requirement: cols[6] || null,
-            language_requirement: cols[7] || null,
-            notes: cols[8] || null,
-            link: cols[9] || null,
+            english_name: cols[3] || null,
+            website: cols[4] || null,
+            major_direction: cols[5] || '',
+            major_name: cols[6] || null,
+            degree_level: cols[7] || '',
+            gpa_requirement: cols[8] || null,
+            language_requirement: cols[9] || null,
+            notes: cols[10] || null,
+            link: cols[11] || null,
             source: '手动录入',
             is_active: true
         });
@@ -8027,6 +8175,8 @@ async function parseWithAI(textContent, isImage, imageDataUrl) {
         country: item.country || '',
         qs_rank: item.qs_rank ? parseInt(item.qs_rank) : null,
         university: item.university || '',
+        english_name: item.english_name || null,
+        website: item.website || null,
         major_direction: item.major_direction || '',
         major_name: item.major_name || null,
         degree_level: item.degree_level || '',
