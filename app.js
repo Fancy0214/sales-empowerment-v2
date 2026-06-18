@@ -8056,7 +8056,6 @@ const EXTRACT_SYSTEM_PROMPT = `你是一个留学院校数据提取助手。用�
 function openImportModal() {
     if (isShareMode) return;
     document.getElementById('importFileInput').value = '';
-    document.getElementById('importCsvText').value = '';
     document.getElementById('importParseStatus').style.display = 'none';
     document.getElementById('importPreview').style.display = 'none';
     _pendingImportRecords = [];
@@ -8311,22 +8310,77 @@ async function parseWithAI(textContent, isImage, imageDataUrl) {
 function showImportPreview(records, rawTables) {
     _pendingImportRecords = records;
     _pendingImportRawTables = rawTables || [];
-    const tbody = document.getElementById('importPreviewBody');
-    tbody.innerHTML = '';
-    records.forEach(r => {
-        const tr = document.createElement('tr');
-        tr.style.borderBottom = '1px solid #f1f5f9';
-        tr.innerHTML = `
-            <td style="padding:4px 8px">${r.country || '-'}</td>
-            <td style="padding:4px 8px">${r.qs_rank || '-'}</td>
-            <td style="padding:4px 8px">${r.university || '-'}</td>
-            <td style="padding:4px 8px">${r.major_direction || '-'}</td>
-            <td style="padding:4px 8px">${r.major_name || '-'}</td>
-            <td style="padding:4px 8px">${r.degree_level || '-'}</td>
-            <td style="padding:4px 8px">${r.gpa_requirement || '-'}</td>
-        `;
-        tbody.appendChild(tr);
-    });
+    const container = document.getElementById('importPreviewContent');
+    container.innerHTML = '';
+    
+    if (rawTables && rawTables.length > 0) {
+        // 按原始表格格式预览（每个sheet一个表格）
+        rawTables.forEach((rt, idx) => {
+            const sheetDiv = document.createElement('div');
+            sheetDiv.style.marginBottom = idx < rawTables.length - 1 ? '16px' : '0';
+            
+            const sheetTitle = document.createElement('div');
+            sheetTitle.style.cssText = 'font-weight:600;font-size:13px;margin-bottom:6px;color:#3b5998';
+            sheetTitle.textContent = rt.sheetName ? `📋 ${rt.sheetName}（${rt.rows.length}行）` : `📋 表格${idx+1}（${rt.rows.length}行）`;
+            sheetDiv.appendChild(sheetTitle);
+            
+            const wrap = document.createElement('div');
+            wrap.style.cssText = 'border:1px solid #e2e8f0;border-radius:8px;overflow:hidden';
+            
+            const table = document.createElement('table');
+            table.style.cssText = 'width:100%;font-size:12px;border-collapse:collapse';
+            
+            // 原始表头
+            const thead = document.createElement('thead');
+            thead.style.cssText = 'background:#f8fafc;position:sticky;top:0';
+            const headRow = document.createElement('tr');
+            (rt.headers || []).forEach(h => {
+                const th = document.createElement('th');
+                th.style.cssText = 'padding:6px 8px;text-align:left;white-space:nowrap';
+                th.textContent = h || '-';
+                headRow.appendChild(th);
+            });
+            thead.appendChild(headRow);
+            table.appendChild(thead);
+            
+            // 原始行（最多显示50行预览）
+            const tbody = document.createElement('tbody');
+            const previewRows = rt.rows.slice(0, 50);
+            previewRows.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.style.borderBottom = '1px solid #f1f5f9';
+                (rt.headers || []).forEach((_, ci) => {
+                    const td = document.createElement('td');
+                    td.style.cssText = 'padding:4px 8px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+                    td.textContent = (row && row[ci]) || '-';
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+            if (rt.rows.length > 50) {
+                const tr = document.createElement('tr');
+                const td = document.createElement('td');
+                td.colSpan = (rt.headers || []).length;
+                td.style.cssText = 'text-align:center;color:#999;padding:8px;font-size:12px';
+                td.textContent = `... 还有 ${rt.rows.length - 50} 行未显示`;
+                tr.appendChild(td);
+                tbody.appendChild(tr);
+            }
+            table.appendChild(tbody);
+            wrap.appendChild(table);
+            sheetDiv.appendChild(wrap);
+            container.appendChild(sheetDiv);
+        });
+    } else {
+        // 无rawTable时，显示简单统计
+        const uniNames = [...new Set(records.map(r => r.university).filter(Boolean))];
+        container.innerHTML = `<div style="padding:16px;background:#f8fafc;border-radius:8px;text-align:center">
+            <div style="font-size:14px;font-weight:600;margin-bottom:8px">解析完成</div>
+            <div style="color:#666">共识别 <strong>${records.length}</strong> 条记录，涉及 <strong>${uniNames.length}</strong> 所院校</div>
+            <div style="margin-top:8px;font-size:12px;color:#999">${uniNames.slice(0,10).join('、')}${uniNames.length > 10 ? ' 等' : ''}</div>
+        </div>`;
+    }
+    
     document.getElementById('importPreviewTitle').textContent = `解析结果预览（${records.length}条）`;
     document.getElementById('importPreview').style.display = 'block';
     document.getElementById('importParseStatus').style.display = 'none';
@@ -8401,28 +8455,13 @@ async function importFileData() {
     }
 
     const fileInput = document.getElementById('importFileInput');
-    const csvText = document.getElementById('importCsvText').value.trim();
     const file = fileInput.files && fileInput.files.length > 0 ? fileInput.files[0] : null;
 
-    if (!file && !csvText) {
-        alert('请上传文件或粘贴CSV内容');
+    if (!file) {
+        alert('请上传文件');
         return;
     }
 
-    // CSV文本粘贴 → 直接解析（也生成rawTable）
-    if (!file && csvText) {
-        const records = parseCSVRecords(csvText);
-        if (records.length === 0) {
-            alert('未解析到有效数据');
-            return;
-        }
-        // 从CSV文本构建rawTable
-        const rawTable = buildRawTableFromCSV(csvText);
-        showImportPreview(records, rawTable ? [rawTable] : []);
-        return;
-    }
-
-    // 有文件上传
     const btn = document.getElementById('importConfirmBtn');
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 解析中...';
@@ -8431,36 +8470,21 @@ async function importFileData() {
     try {
         const extracted = await extractFileContent(file);
         
-        if (extracted.type === 'csv') {
-            // CSV文件直接解析
-            const records = parseCSVRecords(extracted.text);
-            if (records.length === 0) {
-                throw new Error('CSV文件中未解析到有效数据');
-            }
-            const rawTable = buildRawTableFromCSV(extracted.text);
-            showImportPreview(records, rawTable ? [rawTable] : (extracted.rawTables || []));
-        } else if (extracted.type === 'excel') {
+        if (extracted.type === 'excel') {
             // Excel：优先用rawTables（保留原始列结构）
             if (extracted.rawTables && extracted.rawTables.length > 0) {
-                // 直接从rawTables构建结构化记录 + 保留原始格式
                 const records = buildRecordsFromRawTables(extracted.rawTables);
                 if (records.length >= 2) {
                     showImportPreview(records, extracted.rawTables);
                 } else {
-                    // 降级：AI解析
                     document.getElementById('importParseText').textContent = 'AI正在解析Excel内容...';
                     const aiRecords = await parseWithAI(extracted.text, false, null);
                     showImportPreview(aiRecords, extracted.rawTables);
                 }
             } else {
-                const records = parseCSVRecords(extracted.text);
-                if (records.length >= 2) {
-                    showImportPreview(records, []);
-                } else {
-                    document.getElementById('importParseText').textContent = 'AI正在解析Excel内容...';
-                    const aiRecords = await parseWithAI(extracted.text, false, null);
-                    showImportPreview(aiRecords, []);
-                }
+                document.getElementById('importParseText').textContent = 'AI正在解析Excel内容...';
+                const aiRecords = await parseWithAI(extracted.text, false, null);
+                showImportPreview(aiRecords, []);
             }
         } else {
             // Word/PDF/图片 → AI解析
