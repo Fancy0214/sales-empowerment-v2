@@ -3815,6 +3815,46 @@ html.share-loading .share-loading-mask {
 }
 
 /* ===== 院校卡片列表 ===== */
+/* ===== 院校列表表格 ===== */
+.uni-list-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.uni-list-table thead th {
+    background: #f7f8fa;
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 2px solid #e2e8f0;
+    white-space: nowrap;
+}
+.uni-list-table tbody tr {
+    transition: background 0.15s;
+    border-bottom: 1px solid #f0f1f3;
+}
+.uni-list-table tbody tr:hover {
+    background: #f7f8fc;
+}
+.uni-list-table tbody td {
+    padding: 12px 16px;
+    font-size: 0.88rem;
+    color: var(--text-primary);
+    vertical-align: middle;
+}
+.uni-list-table tbody td a {
+    color: #2563eb;
+    text-decoration: none;
+}
+.uni-list-table tbody td a:hover {
+    text-decoration: underline;
+}
+
 .uni-card-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));

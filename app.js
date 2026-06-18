@@ -7670,50 +7670,37 @@ async function loadUniversityData() {
         renderUniversityCards(uniList);
     } catch (err) {
         console.error('加载院校数据失败:', err);
-        document.getElementById('uniCardGrid').innerHTML = `
-            <div style="text-align:center;color:#999;padding:40px;grid-column:1/-1">
-                <i class="fas fa-exclamation-circle"></i> 加载失败：${err.message || '未知错误'}
-                ${err.message && err.message.includes('does not exist') ? '<br><small>提示：请先在Supabase中创建 university_requirements 表</small>' : ''}
-            </div>`;
+        const tbody = document.getElementById('uniListBody');
+        if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#999;padding:40px">
+            <i class="fas fa-exclamation-circle"></i> 加载失败：${err.message || '未知错误'}
+            ${err.message && err.message.includes('does not exist') ? '<br><small>提示：请先在Supabase中创建 university_requirements 表</small>' : ''}
+        </td></tr>`;
     }
 }
 
 function renderUniversityCards(uniList) {
-    const grid = document.getElementById('uniCardGrid');
+    const tbody = document.getElementById('uniListBody');
     const isShare = isShareMode;
     
     if (!uniList || uniList.length === 0) {
-        grid.innerHTML = `<div style="text-align:center;color:#999;padding:60px 20px;grid-column:1/-1">
-            <i class="fas fa-inbox" style="font-size:32px;margin-bottom:12px;display:block"></i>
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#999;padding:40px">
+            <i class="fas fa-inbox" style="font-size:24px;margin-bottom:8px;display:block"></i>
             暂无数据
-        </div>`;
+        </td></tr>`;
         return;
     }
     
-    grid.innerHTML = uniList.map(u => {
-        const majorSet = [...new Set(u.records.map(r => r.major_direction).filter(Boolean))];
-        const majorTags = majorSet.slice(0, 4).map(m => `<span class="uni-card-tag">${m}</span>`).join('');
-        const moreTag = majorSet.length > 4 ? `<span class="uni-card-tag">+${majorSet.length - 4}</span>` : '';
-        const websiteLink = u.website ? `<a href="${u.website}" target="_blank" class="uni-card-website" onclick="event.stopPropagation()"><i class="fas fa-external-link-alt"></i> 官网</a>` : '';
+    tbody.innerHTML = uniList.map(u => {
         const escapedName = u.university.replace(/'/g, "\\'");
+        const websiteLink = u.website ? `<a href="${u.website}" target="_blank" onclick="event.stopPropagation()"><i class="fas fa-external-link-alt"></i> 官网</a>` : '<span style="color:#ccc">—</span>';
         
-        return `<div class="uni-card" onclick="showUniDetail('${escapedName}')">
-            <div class="uni-card-rank">${u.qs_rank ? 'QS ' + u.qs_rank : '<span style="color:#999">暂无排名</span>'}</div>
-            <div class="uni-card-body">
-                <div class="uni-card-name">${u.university}</div>
-                <div class="uni-card-en">${u.english_name || ''}</div>
-                <div class="uni-card-meta">
-                    <span><i class="fas fa-map-marker-alt"></i> ${u.country}</span>
-                    <span><i class="fas fa-book"></i> ${u.records.length}个专业</span>
-                    ${websiteLink}
-                </div>
-                <div class="uni-card-tags">${majorTags}${moreTag}</div>
-            </div>
-            ${!isShare ? `<div class="uni-card-actions" onclick="event.stopPropagation()">
-                <button class="btn-icon btn-edit" title="编辑" onclick="openUniversityEditModal(null, '${escapedName}')"><i class="fas fa-pen"></i></button>
-                <button class="btn-icon btn-delete" title="删除" onclick="deleteUniversityByName('${escapedName}')"><i class="fas fa-trash-alt"></i></button>
-            </div>` : ''}
-        </div>`;
+        return `<tr onclick="showUniDetail('${escapedName}')" style="cursor:pointer">
+            <td>${u.qs_rank || '<span style="color:#ccc">—</span>'}</td>
+            <td>${u.country || ''}</td>
+            <td><a href="javascript:void(0)" onclick="event.stopPropagation();showUniDetail('${escapedName}')" style="color:#2563eb;font-weight:500">${u.university}</a></td>
+            <td style="color:#666">${u.english_name || '<span style="color:#ccc">—</span>'}</td>
+            <td>${websiteLink}</td>
+        </tr>`;
     }).join('');
 }
 

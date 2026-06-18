@@ -904,12 +904,27 @@
                                 </button>
                             </div>
                         </div>
-                        <!-- 院校卡片列表 -->
-                        <div class="uni-card-grid" id="uniCardGrid">
-                            <div style="text-align:center;color:#999;padding:60px 20px;grid-column:1/-1">
-                                <i class="fas fa-inbox" style="font-size:32px;margin-bottom:12px;display:block"></i>
-                                暂无数据
-                            </div>
+                        <!-- 院校表格列表 -->
+                        <div class="plan-db-table-wrap">
+                            <table class="uni-list-table" id="uniListTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width:80px">QS排名</th>
+                                        <th style="width:80px">国别</th>
+                                        <th>院校中文名称</th>
+                                        <th>院校英文名称</th>
+                                        <th style="width:100px">官网链接</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="uniListBody">
+                                    <tr>
+                                        <td colspan="5" style="text-align:center;color:#999;padding:40px">
+                                            <i class="fas fa-inbox" style="font-size:24px;margin-bottom:8px;display:block"></i>
+                                            暂无数据
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                         <!-- 分页 -->
                         <div class="plan-db-pagination" id="planDbPagination"></div>
