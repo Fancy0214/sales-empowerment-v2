@@ -8392,68 +8392,6 @@ function showImportPreview(records, rawTables) {
 async function importFileData() {
     if (isShareMode) return;
 
-    // 如果有待确认的记录，直接执行导入
-    if (_pendingImportRecords.length > 0) {
-        const btn = document.getElementById('importConfirmBtn');
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 导入中...';
-        try {
-            const records = _pendingImportRecords;
-            const rawTables = _pendingImportRawTables;
-            
-            // 为每条记录关联raw_table_json
-            // 策略：按university分组，每组关联对应的rawTable
-            const uniGroups = {};
-            records.forEach(r => {
-                const key = r.university || '';
-                if (!uniGroups[key]) uniGroups[key] = [];
-                uniGroups[key].push(r);
-            });
-            
-            // 将rawTable映射到university（优先用sheet名匹配，否则用第一个rawTable）
-            const uniNames = Object.keys(uniGroups);
-            const uniRawMap = {};
-            if (rawTables.length > 0) {
-                uniNames.forEach(name => {
-                    // 尝试按sheet名匹配
-                    const match = rawTables.find(t => 
-                        name.includes(t.sheetName) || t.sheetName.includes(name)
-                    );
-                    if (match) {
-                        uniRawMap[name] = JSON.stringify({ headers: match.headers, rows: match.rows });
-                    }
-                });
-                // 未匹配的院校：如果只有1个sheet或1个院校，全量关联
-                if (Object.keys(uniRawMap).length === 0 && (rawTables.length === 1 || uniNames.length === 1)) {
-                    const rawJson = JSON.stringify({ headers: rawTables[0].headers, rows: rawTables[0].rows });
-                    uniNames.forEach(name => { uniRawMap[name] = rawJson; });
-                }
-            }
-            
-            // 为每条记录设置raw_table_json
-            const enrichedRecords = records.map(r => ({
-                ...r,
-                raw_table_json: uniRawMap[r.university || ''] || null
-            }));
-            
-            for (let i = 0; i < enrichedRecords.length; i += 50) {
-                const batch = enrichedRecords.slice(i, i + 50);
-                const { error } = await supabaseClient
-                    .from('university_requirements')
-                    .insert(batch);
-                if (error) throw error;
-            }
-            closeModal('importModal');
-            loadUniversityData();
-            alert(`成功导入 ${records.length} 条数据`);
-        } catch (err) {
-            alert('导入失败: ' + err.message);
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check"></i> 确认导入 ' + _pendingImportRecords.length + ' 条';
-        }
-        return;
-    }
-
     const fileInput = document.getElementById('importFileInput');
     const file = fileInput.files && fileInput.files.length > 0 ? fileInput.files[0] : null;
 
@@ -8464,42 +8402,71 @@ async function importFileData() {
 
     const btn = document.getElementById('importConfirmBtn');
     btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 解析中...';
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 导入中...';
     document.getElementById('importParseStatus').style.display = 'block';
+    document.getElementById('importParseText').textContent = '正在解析文件...';
 
     try {
         const extracted = await extractFileContent(file);
-        
-        if (extracted.type === 'excel') {
-            // Excel：优先用rawTables（保留原始列结构）
-            if (extracted.rawTables && extracted.rawTables.length > 0) {
-                const records = buildRecordsFromRawTables(extracted.rawTables);
-                if (records.length >= 2) {
-                    showImportPreview(records, extracted.rawTables);
-                } else {
-                    document.getElementById('importParseText').textContent = 'AI正在解析Excel内容...';
-                    const aiRecords = await parseWithAI(extracted.text, false, null);
-                    showImportPreview(aiRecords, extracted.rawTables);
-                }
-            } else {
-                document.getElementById('importParseText').textContent = 'AI正在解析Excel内容...';
-                const aiRecords = await parseWithAI(extracted.text, false, null);
-                showImportPreview(aiRecords, []);
-            }
+        let records = [];
+
+        if (extracted.type === 'excel' && extracted.rawTables && extracted.rawTables.length > 0) {
+            // Excel：sheet名=院校名，直接存原始表格，不走AI
+            extracted.rawTables.forEach(table => {
+                const uniName = table.sheetName.replace(/['""]/g, '').trim();
+                if (!uniName || table.rows.length === 0) return;
+                // 每个sheet存一条记录，raw_table_json存完整原始表
+                records.push({
+                    country: '英国',
+                    qs_rank: null,
+                    university: uniName,
+                    english_name: null,
+                    website: null,
+                    major_direction: null,
+                    major_name: null,
+                    degree_level: null,
+                    gpa_requirement: null,
+                    language_requirement: null,
+                    notes: null,
+                    link: null,
+                    source: 'Excel导入',
+                    is_active: true,
+                    raw_table_json: JSON.stringify({ headers: table.headers, rows: table.rows })
+                });
+            });
         } else {
             // Word/PDF/图片 → AI解析
             const isImage = extracted.type === 'image';
-            document.getElementById('importParseText').textContent = isImage 
-                ? 'AI正在识别图片内容...' 
+            document.getElementById('importParseText').textContent = isImage
+                ? 'AI正在识别图片内容...'
                 : 'AI正在解析文档内容...';
-            const records = await parseWithAI(extracted.text, isImage, extracted.dataUrl);
-            showImportPreview(records, []);
+            records = await parseWithAI(extracted.text, isImage, extracted.dataUrl);
         }
+
+        if (records.length === 0) {
+            throw new Error('未解析到有效数据');
+        }
+
+        document.getElementById('importParseText').textContent = `正在写入 ${records.length} 条数据...`;
+
+        for (let i = 0; i < records.length; i += 50) {
+            const batch = records.slice(i, i + 50);
+            const { error } = await supabaseClient
+                .from('university_requirements')
+                .insert(batch);
+            if (error) throw error;
+        }
+
+        closeModal('importModal');
+        loadUniversityData();
+        const uniNames = [...new Set(records.map(r => r.university).filter(Boolean))];
+        alert(`成功导入 ${uniNames.length} 所院校数据`);
     } catch (err) {
         document.getElementById('importParseStatus').style.display = 'none';
+        alert('导入失败: ' + err.message);
+    } finally {
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-upload"></i> 导入';
-        alert('文件解析失败: ' + err.message);
     }
 }
 
