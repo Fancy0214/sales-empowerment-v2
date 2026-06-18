@@ -3692,3 +3692,124 @@ html.share-loading .share-loading-mask {
         min-width: 100%;
     }
 }
+
+/* ===== 本科院校搜索 ===== */
+.plan-uni-search {
+    position: relative;
+}
+
+.plan-uni-search input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 8px;
+    font-size: 14px;
+    background: var(--bg-input, #fff);
+    color: var(--text-primary, #1e293b);
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.plan-uni-search input:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.plan-uni-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: 280px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    z-index: 100;
+    margin-top: 4px;
+}
+
+.plan-uni-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.plan-uni-item:last-child {
+    border-bottom: none;
+}
+
+.plan-uni-item:hover {
+    background: #f0f4ff;
+}
+
+.plan-uni-name {
+    font-size: 14px;
+    color: #1e293b;
+}
+
+.plan-uni-badge {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.plan-uni-badge-985 { background: #fef3c7; color: #92400e; }
+.plan-uni-badge-211 { background: #dbeafe; color: #1e40af; }
+.plan-uni-badge-syl { background: #e0e7ff; color: #4338ca; }
+.plan-uni-badge-overseas { background: #f0fdf4; color: #166534; }
+.plan-uni-badge-normal { background: #f1f5f9; color: #475569; }
+
+.plan-uni-no-result {
+    padding: 12px 14px;
+    color: #94a3b8;
+    font-size: 13px;
+    text-align: center;
+}
+
+.plan-uni-manual {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 14px 14px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.plan-uni-manual label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    color: #475569;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background: #f8fafc;
+}
+
+.plan-uni-manual label:hover {
+    background: #f0f4ff;
+}
+
+.plan-uni-level-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    padding: 6px 12px;
+    background: #eef2ff;
+    border: 1px solid #c7d2fe;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #4338ca;
+    font-weight: 600;
+}

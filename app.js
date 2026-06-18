@@ -7030,6 +7030,169 @@ document.addEventListener('click', function(e) {
     }
 });
 
+// ===== 本科院校搜索 =====
+const UNIVERSITY_LIST = [
+    // 985院校
+    {name:'北京大学',level:'985'},{name:'清华大学',level:'985'},{name:'中国人民大学',level:'985'},
+    {name:'北京师范大学',level:'985'},{name:'北京航空航天大学',level:'985'},{name:'北京理工大学',level:'985'},
+    {name:'中国农业大学',level:'985'},{name:'中央民族大学',level:'985'},{name:'南开大学',level:'985'},
+    {name:'天津大学',level:'985'},{name:'大连理工大学',level:'985'},{name:'东北大学',level:'985'},
+    {name:'吉林大学',level:'985'},{name:'哈尔滨工业大学',level:'985'},{name:'复旦大学',level:'985'},
+    {name:'上海交通大学',level:'985'},{name:'同济大学',level:'985'},{name:'华东师范大学',level:'985'},
+    {name:'南京大学',level:'985'},{name:'东南大学',level:'985'},{name:'浙江大学',level:'985'},
+    {name:'中国科学技术大学',level:'985'},{name:'厦门大学',level:'985'},{name:'山东大学',level:'985'},
+    {name:'武汉大学',level:'985'},{name:'华中科技大学',level:'985'},{name:'湖南大学',level:'985'},
+    {name:'中南大学',level:'985'},{name:'中山大学',level:'985'},{name:'华南理工大学',level:'985'},
+    {name:'四川大学',level:'985'},{name:'重庆大学',level:'985'},{name:'电子科技大学',level:'985'},
+    {name:'西安交通大学',level:'985'},{name:'西北工业大学',level:'985'},{name:'西北农林科技大学',level:'985'},
+    {name:'兰州大学',level:'985'},{name:'国防科技大学',level:'985'},{name:'中国海洋大学',level:'985'},
+    // 211（非985）
+    {name:'北京交通大学',level:'211'},{name:'北京工业大学',level:'211'},{name:'北京科技大学',level:'211'},
+    {name:'北京化工大学',level:'211'},{name:'北京邮电大学',level:'211'},{name:'北京林业大学',level:'211'},
+    {name:'北京中医药大学',level:'211'},{name:'北京外国语大学',level:'211'},{name:'中国传媒大学',level:'211'},
+    {name:'中央财经大学',level:'211'},{name:'对外经济贸易大学',level:'211'},{name:'北京体育大学',level:'211'},
+    {name:'中央音乐学院',level:'211'},{name:'中国政法大学',level:'211'},{name:'华北电力大学',level:'211'},
+    {name:'天津医科大学',level:'211'},{name:'河北工业大学',level:'211'},{name:'太原理工大学',level:'211'},
+    {name:'内蒙古大学',level:'211'},{name:'辽宁大学',level:'211'},{name:'大连海事大学',level:'211'},
+    {name:'延边大学',level:'211'},{name:'东北师范大学',level:'211'},{name:'东北农业大学',level:'211'},
+    {name:'东北林业大学',level:'211'},{name:'哈尔滨工程大学',level:'211'},{name:'上海大学',level:'211'},
+    {name:'苏州大学',level:'211'},{name:'南京航空航天大学',level:'211'},{name:'南京理工大学',level:'211'},
+    {name:'中国矿业大学',level:'211'},{name:'南京邮电大学',level:'211'},{name:'河海大学',level:'211'},
+    {name:'江南大学',level:'211'},{name:'南京农业大学',level:'211'},{name:'中国药科大学',level:'211'},
+    {name:'南京师范大学',level:'211'},{name:'安徽大学',level:'211'},{name:'合肥工业大学',level:'211'},
+    {name:'福州大学',level:'211'},{name:'南昌大学',level:'211'},{name:'中国石油大学',level:'211'},
+    {name:'郑州大学',level:'211'},{name:'中国地质大学',level:'211'},{name:'武汉理工大学',level:'211'},
+    {name:'华中农业大学',level:'211'},{name:'华中师范大学',level:'211'},{name:'中南财经政法大学',level:'211'},
+    {name:'湖南师范大学',level:'211'},{name:'暨南大学',level:'211'},{name:'华南师范大学',level:'211'},
+    {name:'海南大学',level:'211'},{name:'广西大学',level:'211'},{name:'西南交通大学',level:'211'},
+    {name:'西南大学',level:'211'},{name:'西南财经大学',level:'211'},{name:'贵州大学',level:'211'},
+    {name:'云南大学',level:'211'},{name:'西藏大学',level:'211'},{name:'西北大学',level:'211'},
+    {name:'西安电子科技大学',level:'211'},{name:'长安大学',level:'211'},{name:'陕西师范大学',level:'211'},
+    {name:'青海大学',level:'211'},{name:'宁夏大学',level:'211'},{name:'新疆大学',level:'211'},{name:'石河子大学',level:'211'},
+    {name:'第二军医大学',level:'211'},{name:'第四军医大学',level:'211'},
+    // 双一流（非985/211）
+    {name:'中国科学院大学',level:'双一流'},{name:'上海科技大学',level:'双一流'},{name:'南方科技大学',level:'双一流'},
+    {name:'首都师范大学',level:'双一流'},{name:'外交学院',level:'双一流'},{name:'中国人民公安大学',level:'双一流'},
+    {name:'中央美术学院',level:'双一流'},{name:'中央戏剧学院',level:'双一流'},{name:'中国音乐学院',level:'双一流'},
+    {name:'天津工业大学',level:'双一流'},{name:'天津中医药大学',level:'双一流'},{name:'上海海洋大学',level:'双一流'},
+    {name:'上海中医药大学',level:'双一流'},{name:'上海体育大学',level:'双一流'},{name:'上海音乐学院',level:'双一流'},
+    {name:'南京医科大学',level:'双一流'},{name:'南京林业大学',level:'双一流'},{name:'南京信息工程大学',level:'双一流'},
+    {name:'南京中医药大学',level:'双一流'},{name:'中国美术学院',level:'双一流'},{name:'河南大学',level:'双一流'},
+    {name:'广州医科大学',level:'双一流'},{name:'广州中医药大学',level:'双一流'},{name:'华南农业大学',level:'双一流'},
+    {name:'湘潭大学',level:'双一流'},{name:'山西大学',level:'双一流'},
+    // 常见普通本科
+    {name:'深圳大学',level:'普通本科'},{name:'浙江工业大学',level:'普通本科'},{name:'杭州电子科技大学',level:'普通本科'},
+    {name:'广东工业大学',level:'普通本科'},{name:'广东外语外贸大学',level:'普通本科'},{name:'广州大学',level:'普通本科'},
+    {name:'南方医科大学',level:'普通本科'},{name:'汕头大学',level:'普通本科'},{name:'深圳技术大学',level:'普通本科'},
+    {name:'浙江工商大学',level:'普通本科'},{name:'浙江理工大学',level:'普通本科'},{name:'宁波大学',level:'普通本科'},
+    {name:'温州大学',level:'普通本科'},{name:'温州医科大学',level:'普通本科'},{name:'杭州师范大学',level:'普通本科'},
+    {name:'浙江师范大学',level:'普通本科'},{name:'中国计量大学',level:'普通本科'},{name:'浙江财经大学',level:'普通本科'},
+    {name:'北京工商大学',level:'普通本科'},{name:'首都经济贸易大学',level:'普通本科'},{name:'北京语言大学',level:'普通本科'},
+    {name:'北京建筑大学',level:'普通本科'},{name:'北京信息科技大学',level:'普通本科'},{name:'北京第二外国语学院',level:'普通本科'},
+    {name:'天津师范大学',level:'普通本科'},{name:'天津财经大学',level:'普通本科'},{name:'天津外国语大学',level:'普通本科'},
+    {name:'天津理工大学',level:'普通本科'},{name:'河北大学',level:'普通本科'},{name:'山东师范大学',level:'普通本科'},
+    {name:'青岛大学',level:'普通本科'},{name:'济南大学',level:'普通本科'},{name:'山东科技大学',level:'普通本科'},
+    {name:'山东财经大学',level:'普通本科'},{name:'烟台大学',level:'普通本科'},{name:'河南财经政法大学',level:'普通本科'},
+    {name:'郑州轻工业大学',level:'普通本科'},{name:'湖北大学',level:'普通本科'},{name:'武汉科技大学',level:'普通本科'},
+    {name:'湖北工业大学',level:'普通本科'},{name:'武汉工程大学',level:'普通本科'},{name:'中南民族大学',level:'普通本科'},
+    {name:'长沙理工大学',level:'普通本科'},{name:'湖南科技大学',level:'普通本科'},{name:'福建师范大学',level:'普通本科'},
+    {name:'福州大学至诚学院',level:'独立学院'},{name:'厦门大学嘉庚学院',level:'独立学院'},
+    {name:'四川师范大学',level:'普通本科'},{name:'成都理工大学',level:'普通本科'},{name:'西南石油大学',level:'普通本科'},
+    {name:'成都信息工程大学',level:'普通本科'},{name:'西华大学',level:'普通本科'},{name:'重庆邮电大学',level:'普通本科'},
+    {name:'重庆师范大学',level:'普通本科'},{name:'重庆交通大学',level:'普通本科'},{name:'西安建筑科技大学',level:'普通本科'},
+    {name:'西安理工大学',level:'普通本科'},{name:'西安科技大学',level:'普通本科'},{name:'西安外国语大学',level:'普通本科'},
+    {name:'陕西科技大学',level:'普通本科'},{name:'兰州理工大学',level:'普通本科'},{name:'兰州交通大学',level:'普通本科'},
+    {name:'东北财经大学',level:'普通本科'},{name:'辽宁师范大学',level:'普通本科'},{name:'沈阳工业大学',level:'普通本科'},
+    {name:'沈阳建筑大学',level:'普通本科'},{name:'大连大学',level:'普通本科'},{name:'大连交通大学',level:'普通本科'},
+    {name:'长春理工大学',level:'普通本科'},{name:'吉林农业大学',level:'普通本科'},{name:'哈尔滨理工大学',level:'普通本科'},
+    {name:'黑龙江大学',level:'普通本科'},{name:'哈尔滨商业大学',level:'普通本科'},{name:'南昌航空大学',level:'普通本科'},
+    {name:'江西财经大学',level:'普通本科'},{name:'江西师范大学',level:'普通本科'},{name:'华东交通大学',level:'普通本科'},
+    {name:'广西师范大学',level:'普通本科'},{name:'桂林电子科技大学',level:'普通本科'},{name:'昆明理工大学',level:'普通本科'},
+    {name:'云南师范大学',level:'普通本科'},{name:'贵州师范大学',level:'普通本科'},{name:'贵州财经大学',level:'普通本科'},
+    {name:'新疆师范大学',level:'普通本科'},{name:'新疆农业大学',level:'普通本科'},{name:'内蒙古师范大学',level:'普通本科'},
+    {name:'内蒙古工业大学',level:'普通本科'},{name:'宁夏医科大学',level:'普通本科'},{name:'青海师范大学',level:'普通本科'},
+    // 独立学院（常见）
+    {name:'浙江大学城市学院',level:'独立学院'},{name:'浙江大学宁波理工学院',level:'独立学院'},
+    {name:'中山大学南方学院',level:'独立学院'},{name:'广东外语外贸大学南国商学院',level:'独立学院'},
+    {name:'四川大学锦城学院',level:'独立学院'},{name:'四川大学锦江学院',level:'独立学院'},
+    {name:'电子科技大学中山学院',level:'独立学院'},{name:'重庆大学城市科技学院',level:'独立学院'},
+    {name:'西南财经大学天府学院',level:'独立学院'},{name:'成都理工大学工程技术学院',level:'独立学院'},
+    {name:'武汉科技大学城市学院',level:'独立学院'},{name:'湖北大学知行学院',level:'独立学院'},
+    {name:'南京大学金陵学院',level:'独立学院'},{name:'东南大学成贤学院',level:'独立学院'},
+    {name:'中国传媒大学南广学院',level:'独立学院'},{name:'北京理工大学珠海学院',level:'独立学院'},
+    {name:'吉林大学珠海学院',level:'独立学院'},{name:'北京师范大学珠海分校',level:'独立学院'},
+    {name:'北京师范大学-香港浸会大学联合国际学院',level:'独立学院'},
+    // 海外本科
+    {name:'海外本科',level:'海外本科'},
+];
+
+function searchUniversity(keyword) {
+    const dropdown = document.getElementById('planUniDropdown');
+    const levelTag = document.getElementById('planUniLevelTag');
+    const levelInput = document.getElementById('planUniLevel');
+    
+    // 清空之前的选中状态
+    levelInput.value = '';
+    levelTag.style.display = 'none';
+    
+    if (!keyword || keyword.trim().length < 1) {
+        dropdown.style.display = 'none';
+        return;
+    }
+    
+    const kw = keyword.trim().toLowerCase();
+    const matches = UNIVERSITY_LIST.filter(u => 
+        u.name.toLowerCase().includes(kw) || u.level.includes(kw)
+    ).slice(0, 20);
+    
+    if (matches.length === 0) {
+        dropdown.innerHTML = '<div class="plan-uni-no-result">未找到该院校，可手动选择层次</div>';
+        dropdown.style.display = 'block';
+        // 显示手动选择
+        dropdown.innerHTML += '<div class="plan-uni-manual">' +
+            '<label><input type="radio" name="manualLevel" value="985" onchange="setManualLevel(\'985\')"> 985</label>' +
+            '<label><input type="radio" name="manualLevel" value="211" onchange="setManualLevel(\'211\')"> 211</label>' +
+            '<label><input type="radio" name="manualLevel" value="双一流" onchange="setManualLevel(\'双一流\')"> 双一流</label>' +
+            '<label><input type="radio" name="manualLevel" value="普通本科" onchange="setManualLevel(\'普通本科\')"> 普通本科</label>' +
+            '<label><input type="radio" name="manualLevel" value="独立学院" onchange="setManualLevel(\'独立学院\')"> 独立学院</label>' +
+            '<label><input type="radio" name="manualLevel" value="海外本科" onchange="setManualLevel(\'海外本科\')"> 海外本科</label>' +
+            '</div>';
+    } else {
+        dropdown.innerHTML = matches.map(u => 
+            `<div class="plan-uni-item" onclick="selectUniversity('${u.name}','${u.level}')">
+                <span class="plan-uni-name">${u.name}</span>
+                <span class="plan-uni-badge plan-uni-badge-${u.level === '985' ? '985' : u.level === '211' ? '211' : u.level === '双一流' ? 'syl' : u.level === '海外本科' ? 'overseas' : 'normal'}">${u.level}</span>
+            </div>`
+        ).join('');
+        dropdown.style.display = 'block';
+    }
+}
+
+function selectUniversity(name, level) {
+    document.getElementById('planUniInput').value = name;
+    document.getElementById('planUniLevel').value = level;
+    document.getElementById('planUniDropdown').style.display = 'none';
+    
+    const tag = document.getElementById('planUniLevelTag');
+    document.getElementById('planUniLevelText').textContent = level;
+    tag.style.display = 'inline-flex';
+}
+
+function setManualLevel(level) {
+    document.getElementById('planUniLevel').value = level;
+    const tag = document.getElementById('planUniLevelTag');
+    document.getElementById('planUniLevelText').textContent = level;
+    tag.style.display = 'inline-flex';
+}
+
+// 点击外部关闭院校搜索下拉
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('#planUniSearchWrap')) {
+        const dropdown = document.getElementById('planUniDropdown');
+        if (dropdown) dropdown.style.display = 'none';
+    }
+});
+
 // ===== 方案生成 =====
 async function generatePlan() {
     // 收集表单数据
@@ -7037,16 +7200,16 @@ async function generatePlan() {
     const countries = Array.from(countryCheckboxes).map(cb => cb.value);
     const degree = document.getElementById('planDegree').value;
     const major = document.getElementById('planMajor').value;
+    const uniName = document.getElementById('planUniInput').value.trim();
     const uniLevel = document.getElementById('planUniLevel').value;
     const gpa = document.getElementById('planGPA').value;
-    const ielts = document.getElementById('planIELTS').value;
-    const extra = document.getElementById('planExtra').value.trim();
     
     // 验证必填
     if (countries.length === 0) { alert('请选择意向国家'); return; }
-    if (!degree) { alert('请选择学位层次'); return; }
+    if (!degree) { alert('请选择学历层次'); return; }
     if (!major) { alert('请选择专业方向'); return; }
-    if (!uniLevel) { alert('请选择本科院校层次'); return; }
+    if (!uniName) { alert('请输入本科院校'); return; }
+    if (!uniLevel) { alert('请选择或确认本科院校层次'); return; }
     
     // 检查Coze配置
     const config = getStudioConfig();
@@ -7111,12 +7274,10 @@ async function generatePlan() {
         // 构建用户消息
         let userMsg = `学生背景信息：
 - 意向国家：${countries.join('、')}
-- 学位层次：${degree}
+- 学历层次：${degree}
 - 专业方向：${major}
-- 本科院校层次：${uniLevel}
-- 均分/GPA：${gpa || '未提供'}
-- 雅思总分：${ielts || '未提供'}`;
-        if (extra) userMsg += `\n- 补充信息：${extra}`;
+- 本科院校：${uniName}（${uniLevel}）
+- 均分/GPA：${gpa || '未提供'}`;
         
         if (matchedUnis.length > 0) {
             userMsg += `\n\n以下是从院校数据库中筛选出的匹配院校数据（共${matchedUnis.length}条），请结合这些数据和学生背景进行推荐：\n`;

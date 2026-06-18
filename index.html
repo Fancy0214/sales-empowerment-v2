@@ -816,12 +816,11 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label>学位层次 <span class="required">*</span></label>
+                                <label>学历层次 <span class="required">*</span></label>
                                 <select id="planDegree">
                                     <option value="">请选择</option>
-                                    <option value="硕士预科">硕士预科</option>
-                                    <option value="硕士">硕士</option>
-                                    <option value="博士">博士</option>
+                                    <option value="本科">本科</option>
+                                    <option value="大专（3年全日制）">大专（3年全日制）</option>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -842,31 +841,19 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label>本科院校层次 <span class="required">*</span></label>
-                                <select id="planUniLevel">
-                                    <option value="">请选择</option>
-                                    <option value="985">985</option>
-                                    <option value="211">211</option>
-                                    <option value="双一流">双一流</option>
-                                    <option value="普通本科">普通本科</option>
-                                    <option value="独立学院">独立学院</option>
-                                    <option value="专升本">专升本</option>
-                                    <option value="海外本科">海外本科</option>
-                                </select>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>均分/GPA</label>
-                                    <input type="number" id="planGPA" placeholder="如 80" min="0" max="100" step="0.1">
+                                <label>本科院校 <span class="required">*</span></label>
+                                <div class="plan-uni-search" id="planUniSearchWrap">
+                                    <input type="text" id="planUniInput" placeholder="输入院校名称搜索" autocomplete="off" oninput="searchUniversity(this.value)">
+                                    <input type="hidden" id="planUniLevel">
+                                    <div class="plan-uni-dropdown" id="planUniDropdown"></div>
                                 </div>
-                                <div class="form-group">
-                                    <label>雅思总分</label>
-                                    <input type="number" id="planIELTS" placeholder="如 6.5" min="0" max="9" step="0.5">
+                                <div class="plan-uni-level-tag" id="planUniLevelTag" style="display:none;">
+                                    <i class="fas fa-university"></i> <span id="planUniLevelText"></span>
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label>其他补充信息</label>
-                                <textarea id="planExtra" rows="3" placeholder="如工作经验、跨申需求、预算等"></textarea>
+                                <label>均分/GPA</label>
+                                <input type="number" id="planGPA" placeholder="如 80" min="0" max="100" step="0.1">
                             </div>
                             <button class="btn btn-primary btn-block" id="planGenerateBtn" onclick="generatePlan()">
                                 <i class="fas fa-magic"></i> 生成方案
