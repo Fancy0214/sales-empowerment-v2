@@ -7603,7 +7603,7 @@ function copyPlanResult() {
 // ===== 院校数据库CRUD =====
 let _currentUniName = '';
 let _currentUniAllData = [];
-let _currentUniRawTable = null; // 原始表格结构（用于动态渲染）
+let _currentUniRawTables = []; // 原始表格结构数组（可能多个子表）
 let _uniSearchTimer = null;
 function debounceLoadUni() {
     clearTimeout(_uniSearchTimer);
@@ -7711,17 +7711,18 @@ function showUniDetail(uniName) {
     
     _currentUniAllData = uni.records;
     
-    // 检查是否有raw_table_json（原始表格格式）
-    const rawRecord = uni.records.find(r => r.raw_table_json);
-    if (rawRecord && rawRecord.raw_table_json) {
-        try {
-            _currentUniRawTable = JSON.parse(rawRecord.raw_table_json);
-        } catch(e) {
-            _currentUniRawTable = null;
+    // 收集所有raw_table_json（一个院校可能有多条记录）
+    _currentUniRawTables = [];
+    uni.records.forEach(r => {
+        if (r.raw_table_json) {
+            try {
+                const parsed = JSON.parse(r.raw_table_json);
+                if (parsed && parsed.headers && parsed.rows) {
+                    _currentUniRawTables.push(parsed);
+                }
+            } catch(e) {}
         }
-    } else {
-        _currentUniRawTable = null;
-    }
+    });
     
     document.getElementById('uniDetailInfo').innerHTML = `
         <div class="uni-detail-name">${uni.university}</div>
@@ -7746,85 +7747,82 @@ function renderUniDetailTable() {
     const majorFilter = document.getElementById('uniDetailMajorFilter').value;
     const degreeFilter = document.getElementById('uniDetailDegreeFilter').value;
     const isShare = isShareMode;
-    const tableWrap = document.querySelector('#uniDetailView .plan-db-table-wrap');
+    const tableWrap = document.getElementById('uniDetailTableWrap');
+    const toolbar = document.getElementById('uniDetailToolbar');
     
-    // 如果有raw_table_json，渲染原始表格格式
-    if (_currentUniRawTable) {
-        const { headers, rows } = _currentUniRawTable;
+    // raw模式：隐藏工具栏，渲染原始表格
+    if (_currentUniRawTables && _currentUniRawTables.length > 0) {
+        toolbar.style.display = 'none';
         
-        // 如果有筛选条件，也过滤rawTable的行（尝试匹配关键字段列）
-        let filteredRows = rows;
-        if (majorFilter || degreeFilter) {
-            // 查找专业方向和学位层次对应的列索引
-            const majorIdx = headers.findIndex(h => 
-                /专业方向|方向|direction/i.test(h)
-            );
-            const degreeIdx = headers.findIndex(h => 
-                /学位|层次|degree/i.test(h)
-            );
-            filteredRows = rows.filter(row => {
-                if (majorFilter && majorIdx >= 0 && row[majorIdx] !== majorFilter) return false;
-                if (degreeFilter && degreeIdx >= 0 && row[degreeIdx] !== degreeFilter) return false;
-                return true;
-            });
-        }
-        
-        let html = '<table class="plan-db-table"><thead><tr>';
-        headers.forEach(h => { html += `<th>${escapeHtml(h)}</th>`; });
-        if (!isShare) html += '<th class="action-cell">操作</th>';
-        html += '</tr></thead><tbody>';
-        
-        if (filteredRows.length === 0) {
-            html += `<tr><td colspan="${headers.length + (isShare ? 0 : 1)}" style="text-align:center;color:#999;padding:30px"><i class="fas fa-inbox"></i> 暂无数据</td></tr>`;
-        } else {
-            filteredRows.forEach(row => {
-                html += '<tr>';
-                headers.forEach((h, idx) => {
-                    const val = row[idx] || '-';
-                    // 检测链接
-                    if (/^https?:\/\//i.test(val)) {
-                        html += `<td><a href="${escapeHtml(val)}" target="_blank" onclick="event.stopPropagation()"><i class="fas fa-link"></i> 查看</a></td>`;
-                    } else {
-                        html += `<td>${escapeHtml(val)}</td>`;
-                    }
+        let html = '';
+        _currentUniRawTables.forEach((rawTable, tIdx) => {
+            const { headers, rows } = rawTable;
+            
+            html += '<table class="plan-db-table"><thead><tr>';
+            headers.forEach(h => { html += `<th>${escapeHtml(h)}</th>`; });
+            html += '</tr></thead><tbody>';
+            
+            if (rows.length === 0) {
+                html += `<tr><td colspan="${headers.length}" style="text-align:center;color:#999;padding:30px"><i class="fas fa-inbox"></i> 暂无数据</td></tr>`;
+            } else {
+                rows.forEach(row => {
+                    html += '<tr>';
+                    headers.forEach((h, idx) => {
+                        const val = (row && row[idx] != null) ? String(row[idx]) : '';
+                        if (/^https?:\/\//i.test(val)) {
+                            html += `<td><a href="${escapeHtml(val)}" target="_blank" onclick="event.stopPropagation()"><i class="fas fa-link"></i> 查看</a></td>`;
+                        } else {
+                            html += `<td>${escapeHtml(val)}</td>`;
+                        }
+                    });
+                    html += '</tr>';
                 });
-                if (!isShare) {
-                    html += '<td class="action-cell"><span style="color:#999;font-size:12px">原始数据</span></td>';
-                }
-                html += '</tr>';
-            });
-        }
-        html += '</tbody></table>';
+            }
+            html += '</tbody></table>';
+            // 多表之间加间距
+            if (tIdx < _currentUniRawTables.length - 1) {
+                html += '<div style="height:20px"></div>';
+            }
+        });
+        
         tableWrap.innerHTML = html;
         return;
     }
     
-    // 降级：使用固定格式渲染
+    // 结构化模式：显示工具栏，用固定列渲染
+    toolbar.style.display = '';
     let filtered = _currentUniAllData;
     if (majorFilter) filtered = filtered.filter(r => r.major_direction === majorFilter);
     if (degreeFilter) filtered = filtered.filter(r => r.degree_level === degreeFilter);
     
-    const tbody = document.getElementById('uniDetailBody');
-    if (!filtered || filtered.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#999;padding:30px"><i class="fas fa-inbox"></i> 暂无数据</td></tr>';
-        return;
-    }
+    let html = '<table class="plan-db-table"><thead><tr>';
+    html += '<th>专业方向</th><th>专业名称</th><th>学位</th><th>均分要求</th><th>语言要求</th><th>备注</th><th>链接</th>';
+    if (!isShare) html += '<th class="action-cell">操作</th>';
+    html += '</tr></thead><tbody>';
     
-    tbody.innerHTML = filtered.map(r => `
-        <tr>
-            <td>${r.major_direction || '-'}</td>
-            <td>${r.major_name || '-'}</td>
-            <td>${r.degree_level || '-'}</td>
-            <td>${r.gpa_requirement || '-'}</td>
-            <td>${r.language_requirement || '-'}</td>
-            <td>${r.notes || '-'}</td>
-            <td>${r.link ? `<a href="${r.link}" target="_blank" onclick="event.stopPropagation()"><i class="fas fa-link"></i></a>` : '-'}</td>
-            <td class="action-cell" ${isShare ? 'style="display:none"' : ''}>
-                <button class="btn-icon btn-edit" title="编辑" onclick="openUniversityEditModal('${r.id}')"><i class="fas fa-pen"></i></button>
-                <button class="btn-icon btn-delete" title="删除" onclick="deleteUniversity('${r.id}')"><i class="fas fa-trash-alt"></i></button>
-            </td>
-        </tr>
-    `).join('');
+    if (!filtered || filtered.length === 0) {
+        html += `<tr><td colspan="${isShare ? 7 : 8}" style="text-align:center;color:#999;padding:30px"><i class="fas fa-inbox"></i> 暂无数据</td></tr>`;
+    } else {
+        filtered.forEach(r => {
+            html += '<tr>';
+            html += `<td>${r.major_direction || '-'}</td>`;
+            html += `<td>${r.major_name || '-'}</td>`;
+            html += `<td>${r.degree_level || '-'}</td>`;
+            html += `<td>${r.gpa_requirement || '-'}</td>`;
+            html += `<td>${r.language_requirement || '-'}</td>`;
+            html += `<td>${r.notes || '-'}</td>`;
+            html += `<td>${r.link ? `<a href="${r.link}" target="_blank" onclick="event.stopPropagation()"><i class="fas fa-link"></i></a>` : '-'}</td>`;
+            if (!isShare) {
+                html += `<td class="action-cell">`;
+                html += `<button class="btn-icon btn-edit" title="编辑" onclick="openUniversityEditModal('${r.id}')"><i class="fas fa-pen"></i></button>`;
+                html += `<button class="btn-icon btn-delete" title="删除" onclick="deleteUniversity('${r.id}')"><i class="fas fa-trash-alt"></i></button>`;
+                html += `</td>`;
+            }
+            html += '</tr>';
+        });
+    }
+    html += '</tbody></table>';
+    tableWrap.innerHTML = html;
 }
 
 function backToUniList() {
@@ -7832,27 +7830,7 @@ function backToUniList() {
     document.getElementById('uniDetailView').style.display = 'none';
     _currentUniName = '';
     _currentUniAllData = [];
-    _currentUniRawTable = null;
-    // 恢复固定格式的表格结构
-    const tableWrap = document.querySelector('#uniDetailView .plan-db-table-wrap');
-    if (tableWrap) {
-        tableWrap.innerHTML = `
-            <table class="plan-db-table">
-                <thead>
-                    <tr>
-                        <th>专业方向</th>
-                        <th>专业名称</th>
-                        <th>学位</th>
-                        <th>均分要求</th>
-                        <th>语言要求</th>
-                        <th>备注</th>
-                        <th>链接</th>
-                        <th class="action-cell">操作</th>
-                    </tr>
-                </thead>
-                <tbody id="uniDetailBody"></tbody>
-            </table>`;
-    }
+    _currentUniRawTables = [];
 }
 
 async function deleteUniversityByName(uniName) {

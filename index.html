@@ -936,7 +936,7 @@
                             <button class="btn btn-outline btn-sm" onclick="backToUniList()"><i class="fas fa-arrow-left"></i> 返回列表</button>
                             <div class="uni-detail-info" id="uniDetailInfo"></div>
                         </div>
-                        <div class="plan-db-toolbar" style="margin-bottom:12px">
+                        <div class="plan-db-toolbar" id="uniDetailToolbar" style="margin-bottom:12px">
                             <div class="plan-db-filters">
                                 <select id="uniDetailMajorFilter" onchange="renderUniDetailTable()">
                                     <option value="">全部专业</option>
@@ -963,22 +963,7 @@
                                 <button class="btn btn-primary btn-sm" id="uniDetailAddBtn" onclick="openUniversityEditModal()"><i class="fas fa-plus"></i> 添加专业</button>
                             </div>
                         </div>
-                        <div class="plan-db-table-wrap">
-                            <table class="plan-db-table">
-                                <thead>
-                                    <tr>
-                                        <th>专业方向</th>
-                                        <th>专业名称</th>
-                                        <th>学位</th>
-                                        <th>均分要求</th>
-                                        <th>语言要求</th>
-                                        <th>备注</th>
-                                        <th>链接</th>
-                                        <th class="action-cell">操作</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="uniDetailBody"></tbody>
-                            </table>
+                        <div class="plan-db-table-wrap" id="uniDetailTableWrap">
                         </div>
                     </div>
                 </div>
