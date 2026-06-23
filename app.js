@@ -4146,16 +4146,60 @@ async function loadCompetitorNews() {
     }
 }
 
-// 分享链接生成（旧版兼容，仍支持 hash 方式）
+// 分享链接生成
 function generateShareLink(type) {
-    const shareUrl = window.location.href.split('#')[0].split('?')[0] + '?share=' + type;
-    
-    if (navigator.clipboard) {
-        navigator.clipboard.writeText(shareUrl).then(() => {
-            alert('分享链接已复制到剪贴板！\n\n链接：' + shareUrl);
-        });
+    if (type === 'competitors') {
+        // 竞品情报站：生成竞品信息收集链接
+        generateCollectLink();
     } else {
-        prompt('请复制以下分享链接：', shareUrl);
+        // 其他板块：生成查看型分享链接
+        const shareUrl = window.location.href.split('#')[0].split('?')[0] + '?share=' + type;
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                alert('分享链接已复制到剪贴板！\n\n链接：' + shareUrl);
+            });
+        } else {
+            prompt('请复制以下分享链接：', shareUrl);
+        }
+    }
+}
+
+// 生成竞品信息收集链接（写入share_links表，link_type='collect'）
+async function generateCollectLink() {
+    if (!supabaseClient) {
+        alert('数据库未连接，无法生成收集链接');
+        return;
+    }
+    
+    // 生成8位随机token
+    const token = 'cl-' + Math.random().toString(36).substring(2, 10);
+    
+    try {
+        const { data, error } = await supabaseClient
+            .from('share_links')
+            .insert([{
+                token: token,
+                title: '竞品信息收集',
+                sections: ['competitors'],
+                is_active: true
+            }])
+            .select()
+            .single();
+        
+        if (error) throw error;
+        
+        const collectUrl = window.location.href.split('#')[0].split('?')[0] + '?collect=' + token;
+        
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(collectUrl).then(() => {
+                alert('竞品信息收集链接已复制到剪贴板！\n\n他人可通过此链接提交竞品信息，提交后需在后台审核。\n\n链接：' + collectUrl);
+            });
+        } else {
+            prompt('请复制以下竞品信息收集链接：', collectUrl);
+        }
+    } catch(err) {
+        console.error('生成收集链接失败:', err);
+        alert('生成收集链接失败：' + (err.message || '未知错误'));
     }
 }
 
@@ -4195,7 +4239,9 @@ async function submitFeedback(e) {
                     submitter: submitter,
                     status: 'pending',
                     score: 7.0,
-                    radar: { brand: 7, price: 7, service: 7, channel: 7, product: 7, tech: 7 }
+                    radar: { brand: 7, price: 7, service: 7, channel: 7, product: 7, tech: 7 },
+                    // attachments stored in source field for now
+                    source: collectFiles.length > 0 ? (source ? source + ' | 附件: ' + collectFiles.map(f=>f.name).join(', ') : '附件: ' + collectFiles.map(f=>f.name).join(', ')) : source
                 }])
                 .select();
             
@@ -4215,7 +4261,20 @@ async function submitFeedback(e) {
     document.getElementById('resultContent').style.display = 'block';
     
     if (success) {
-        const 整理结果 = `【竞品信息整理结果】
+        let 整理结果;
+        if (isCollectMode) {
+            // 收集模式：简洁结果
+            整理结果 = `✅ 感谢您的反馈！
+
+您提交的竞品信息已成功发送，管理员将在审核后决定是否新增或更新至竞品数据库。
+
+提交内容摘要：
+• 竞品名称：${name}
+• 国家/地区：${country}
+• 核心产品：${product}
+• 提交人：${submitter}`;
+        } else {
+            整理结果 = `【竞品信息整理结果】
 
 📋 基本信息
 • 竞品名称：${name}
@@ -4233,11 +4292,64 @@ ${disadvantage}
 
 ---
 系统已将此信息标记为"待审核"状态，管理员审核通过后将更新至竞品数据库。`;
+        }
         
         document.getElementById('整理结果Box').textContent = 整理结果;
     } else {
         document.getElementById('整理结果Box').textContent = `提交失败：${errorMsg}\n\n请稍后重试或联系管理员。`;
     }
+}
+
+// 收集模式文件处理
+let collectFiles = [];
+
+function handleCollectFiles(files) {
+    for (const file of files) {
+        if (file.size > 10 * 1024 * 1024) {
+            alert(`文件 ${file.name} 超过10MB限制，请压缩后上传`);
+            continue;
+        }
+        collectFiles.push(file);
+    }
+    renderCollectFileList();
+}
+
+function removeCollectFile(index) {
+    collectFiles.splice(index, 1);
+    renderCollectFileList();
+}
+
+function renderCollectFileList() {
+    const container = document.getElementById('collectFileList');
+    if (!container) return;
+    
+    if (collectFiles.length === 0) {
+        container.innerHTML = '';
+        return;
+    }
+    
+    container.innerHTML = collectFiles.map((f, i) => {
+        const icon = f.type.startsWith('image/') ? 'fa-image' : 
+                     f.type === 'application/pdf' ? 'fa-file-pdf' : 
+                     f.type.includes('word') ? 'fa-file-word' : 'fa-file';
+        const size = (f.size / 1024).toFixed(0);
+        return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #F3F4F6;">
+            <i class="fas ${icon}" style="color:#6B7280;"></i>
+            <span style="flex:1;font-size:0.85rem;">${f.name}</span>
+            <span style="color:#9CA3AF;font-size:0.8rem;">${size}KB</span>
+            <button type="button" onclick="removeCollectFile(${i})" style="background:none;border:none;color:#EF4444;cursor:pointer;font-size:0.85rem;">✕</button>
+        </div>`;
+    }).join('');
+}
+
+// 将文件转为Base64（用于存储到Supabase）
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
 }
 
 // ==================== AI话术工坊功能 ====================
@@ -5605,11 +5717,21 @@ document.querySelectorAll('.modal').forEach(modal => {
 
 // 当前是否处于分享模式
 let isShareMode = false;
+let isCollectMode = false; // 是否为竞品收集模式
 let shareConfig = null; // 当前分享配置
 
 function checkShareMode() {
-    // 优先检查 URL 参数 ?share=token
     const urlParams = new URLSearchParams(window.location.search);
+    
+    // 检查 ?collect=token 竞品信息收集模式
+    const collectToken = urlParams.get('collect');
+    if (collectToken) {
+        document.documentElement.classList.add('share-loading');
+        loadCollectConfig(collectToken);
+        return;
+    }
+    
+    // 检查 URL 参数 ?share=token
     const shareToken = urlParams.get('share');
     
     if (shareToken) {
@@ -5653,6 +5775,116 @@ function checkShareMode() {
         // 管理后台模式
         enableAdminMode();
     }
+}
+
+// 加载竞品信息收集链接配置
+async function loadCollectConfig(token) {
+    if (!supabaseClient) {
+        document.documentElement.classList.remove('share-loading');
+        showShareInvalid('数据库未连接，无法验证收集链接');
+        return;
+    }
+    
+    try {
+        const { data, error } = await supabaseClient
+            .from('share_links')
+            .select('*')
+            .eq('token', token)
+            .single();
+        
+        if (error || !data) {
+            document.documentElement.classList.remove('share-loading');
+            showShareInvalid('该收集链接不存在', '请确认链接是否正确，或联系分享者获取新的链接。');
+            return;
+        }
+        
+        if (!data.is_active) {
+            document.documentElement.classList.remove('share-loading');
+            showShareInvalid('该收集链接已被禁用', '请联系分享者了解详情。');
+            return;
+        }
+        
+        if (data.expires_at && new Date(data.expires_at) < new Date()) {
+            document.documentElement.classList.remove('share-loading');
+            showShareInvalid('该收集链接已过期', '请联系分享者获取新的链接。');
+            return;
+        }
+        
+        // 有效收集链接，激活收集模式
+        isShareMode = true;
+        isCollectMode = true;
+        shareConfig = data;
+        activateCollectMode(data);
+        
+    } catch(err) {
+        console.error('加载收集链接配置失败:', err);
+        document.documentElement.classList.remove('share-loading');
+        showShareInvalid('验证收集链接时出错', err.message);
+    }
+}
+
+// 激活竞品信息收集模式
+function activateCollectMode(data) {
+    // 隐藏侧边栏、顶部导航等
+    document.getElementById('shareHeader').style.display = 'flex';
+    document.getElementById('sidebar').style.display = 'none';
+    document.getElementById('mainContent').classList.add('share-mode');
+    
+    // 隐藏所有导航项
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.style.display = 'none';
+    });
+    
+    // 隐藏后台管理入口
+    const adminNavItem = document.getElementById('adminNavItem');
+    if (adminNavItem) adminNavItem.style.display = 'none';
+    
+    // 切换到竞品情报站页面
+    switchPage('competitors');
+    
+    // 隐藏竞品表格和筛选器，只显示收集表单
+    setTimeout(() => {
+        const filtersBar = document.getElementById('competitorFilters');
+        if (filtersBar) filtersBar.style.display = 'none';
+        
+        // 隐藏竞品总览卡片
+        const compCards = document.querySelectorAll('#page-competitors > .card');
+        compCards.forEach(card => {
+            if (card.id !== 'competitorFeedbackForm' && card.id !== 'feedbackResult' && card.id !== 'collectModeIntro') {
+                card.style.display = 'none';
+            }
+        });
+        
+        // 隐藏竞品动态时间线
+        const timelineSection = document.querySelector('#page-competitors .timeline-container');
+        if (timelineSection) timelineSection.parentElement.style.display = 'none';
+        
+        // 显示收集模式说明
+        const introCard = document.getElementById('collectModeIntro');
+        if (introCard) introCard.style.display = 'block';
+        
+        // 显示收集表单
+        const feedbackForm = document.getElementById('competitorFeedbackForm');
+        if (feedbackForm) feedbackForm.style.display = 'block';
+        
+        // 更新表单标题
+        const formTitle = feedbackForm.querySelector('h3');
+        if (formTitle) formTitle.innerHTML = '<i class="fas fa-pen-fancy"></i> 提交竞品信息';
+        const formHint = feedbackForm.querySelector('.hint');
+        if (formHint) formHint.textContent = '请填写您了解到的竞品信息，提交后将由管理员审核。您也可以上传相关资料截图。';
+        
+        // 显示文件上传区域
+        const uploadArea = document.getElementById('collectFileUpload');
+        if (uploadArea) uploadArea.style.display = 'block';
+        
+        // 隐藏竞品弹窗相关的查看按钮
+        const modalTriggers = document.querySelectorAll('#page-competitors [onclick*="openCompetitor"]');
+        modalTriggers.forEach(el => el.style.display = 'none');
+    }, 100);
+    
+    // 移除加载遮罩
+    document.documentElement.classList.remove('share-loading');
+    document.documentElement.classList.remove('not-logged-in');
 }
 
 // 从 Supabase 加载分享配置
@@ -6406,7 +6638,14 @@ function renderShareLinks(links) {
             ? `<span style="font-size:0.8rem;color:${new Date(link.expires_at) < new Date() ? '#EF4444' : '#6B7280'}"><i class="fas fa-clock"></i> ${new Date(link.expires_at) < new Date() ? '已过期' : '过期于'} ${new Date(link.expires_at).toLocaleString('zh-CN')}</span>`
             : '<span style="font-size:0.8rem;color:#10B981"><i class="fas fa-infinity"></i> 永久有效</span>';
         
-        const shareUrl = `https://fancy0214.github.io/sales-empowerment-v2/?share=${link.token}`;
+        // 区分收集链接和查看链接
+        const isCollect = link.token && link.token.startsWith('cl-');
+        const linkTypeLabel = isCollect 
+            ? '<span style="background:#8B5CF6;color:white;padding:2px 8px;border-radius:4px;font-size:0.75rem;margin-left:6px;"><i class="fas fa-pen"></i> 收集</span>'
+            : '<span style="background:#3B82F6;color:white;padding:2px 8px;border-radius:4px;font-size:0.75rem;margin-left:6px;"><i class="fas fa-eye"></i> 查看</span>';
+        const shareUrl = isCollect 
+            ? `https://fancy0214.github.io/sales-empowerment-v2/?collect=${link.token}`
+            : `https://fancy0214.github.io/sales-empowerment-v2/?share=${link.token}`;
         
         const dateStr = link.created_at ? new Date(link.created_at).toLocaleString('zh-CN') : '';
         
@@ -6415,6 +6654,7 @@ function renderShareLinks(links) {
                 <div class="share-link-card-header">
                     <div>
                         <strong style="font-size:1.05rem;">${link.title || '未命名分享'}</strong>
+                        ${linkTypeLabel}
                         ${statusBadge}
                     </div>
                     <div class="share-link-card-meta">

@@ -334,6 +334,13 @@
                 </div>
             </div>
 
+            <!-- 收集模式说明（?collect=token 模式下显示） -->
+            <div class="card" id="collectModeIntro" style="display: none;">
+                <h3><i class="fas fa-bullhorn"></i> 竞品信息收集</h3>
+                <p style="color:#4B5563;line-height:1.8;">欢迎提交您了解到的竞品信息！您的反馈将帮助我们更好地了解市场动态。</p>
+                <p style="color:#6B7280;font-size:0.9rem;margin-top:8px;"><i class="fas fa-shield-alt"></i> 提交后信息将由管理员审核，审核通过后将更新至竞品数据库。</p>
+            </div>
+
             <!-- 访客反馈表单（分享模式下显示） -->
             <div class="card feedback-form" id="competitorFeedbackForm" style="display: none;">
                 <h3><i class="fas fa-edit"></i> 新增竞品反馈</h3>
@@ -378,6 +385,18 @@
                             <input type="text" id="fbSubmitter" placeholder="请留下您的姓名" required>
                         </div>
                     </div>
+                    <!-- 文件上传区域（收集模式下显示） -->
+                    <div id="collectFileUpload" style="display:none;margin-bottom:16px;">
+                        <label style="font-weight:600;margin-bottom:6px;display:block;"><i class="fas fa-cloud-upload-alt"></i> 上传竞品资料（可选）</label>
+                        <p style="color:#6B7280;font-size:0.85rem;margin-bottom:8px;">支持图片、PDF、Word等格式，如竞品截图、宣传资料等</p>
+                        <div id="collectDropZone" style="border:2px dashed #D1D5DB;border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:border-color 0.2s;" onclick="document.getElementById('collectFileInput').click()" ondragover="event.preventDefault();this.style.borderColor='#4F46E5'" ondragleave="this.style.borderColor='#D1D5DB'" ondrop="event.preventDefault();this.style.borderColor='#D1D5DB';handleCollectFiles(event.dataTransfer.files)">
+                            <i class="fas fa-cloud-upload-alt" style="font-size:1.5rem;color:#9CA3AF;"></i>
+                            <p style="color:#6B7280;margin:8px 0 0;">点击或拖拽文件到此处</p>
+                            <input type="file" id="collectFileInput" multiple accept="image/*,.pdf,.doc,.docx,.txt" style="display:none" onchange="handleCollectFiles(this.files)">
+                        </div>
+                        <div id="collectFileList" style="margin-top:8px;"></div>
+                    </div>
+
                     <button type="submit" class="btn btn-primary btn-lg">
                         <i class="fas fa-paper-plane"></i> 提交反馈
                     </button>
