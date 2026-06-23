@@ -5770,7 +5770,7 @@ function applyShareMode(config) {
         }
     }
     
-    // 隐藏后台管理入口
+    // 隐藏后台管理入口（分享模式不显示管理后台）
     const adminNavItem = document.getElementById('adminNavItem');
     if (adminNavItem) adminNavItem.style.display = 'none';
     
@@ -5788,7 +5788,7 @@ function applyShareMode(config) {
     document.querySelectorAll('.nav-item').forEach(item => {
         const page = item.dataset.page;
         if (page === 'admin') {
-            item.style.display = 'none';
+            item.style.display = 'none'; // 分享模式始终隐藏管理后台
         } else if (navSections.includes(page)) {
             item.style.display = 'flex';
         } else {
@@ -5890,7 +5890,11 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.nav-item').forEach(item => {
         item.addEventListener('click', function() {
             const page = this.dataset.page;
-            switchPage(page);
+            if (page === 'admin') {
+                enableAdminMode();
+            } else {
+                switchPage(page);
+            }
         });
     });
     
@@ -5965,9 +5969,19 @@ function enableAdminMode() {
     isAdminMode = true;
     const navItem = document.getElementById('adminNavItem');
     if (navItem) navItem.style.display = 'flex';
+    // 重置管理页面显示状态
+    const loginCard = document.getElementById('adminLoginCard');
+    const adminPanel = document.getElementById('adminPanel');
     // 检查是否已登录
     if (localStorage.getItem('salesEmpowerment_admin') === 'true') {
-        showAdminPanel();
+        if (loginCard) loginCard.style.display = 'none';
+        if (adminPanel) adminPanel.style.display = 'block';
+        isAdminMode = true;
+        loadAllSubmissions();
+    } else {
+        // 未登录：显示登录卡片，隐藏管理面板
+        if (loginCard) loginCard.style.display = 'block';
+        if (adminPanel) adminPanel.style.display = 'none';
     }
     switchPage('admin');
 }
@@ -6981,21 +6995,27 @@ function formatFileSize(bytes) {
 const PLAN_SYSTEM_PROMPT = `你是一位资深留学方案规划专家，擅长根据学生背景精准推荐院校方案。
 
 核心原则：
-1. 按QS排名从高到低优先推荐，找学生够得到的最好的院校
+1. 按QS排名从高到低优先推荐，找学生够得到的最好的院校，推荐5-10所
 2. 均分是硬门槛，严格按学生院校层次匹配对应要求
-3. 如果排名很好的院校学生均分符合但意向专业无合适选项，找1个可申专业并备注"⚠️ 非意向专业，但背景符合可考虑"
+3. 如果排名很好的院校学生均分符合但意向专业无合适选项，找1个可申专业并备注"非意向专业，但背景符合可考虑"
 4. 务实推荐，不推荐明显达不到的院校浪费学生精力
-5. 每个推荐附上推荐理由（1句话）
+5. 不代理G5院校（牛津、剑桥、帝国理工、UCL、LSE），不要推荐这5所
+6. 意向国家仅限英国和爱尔兰
 
-输出格式（严格遵循，每个院校一行）：
-📊 推荐方案
+输出格式（严格遵循，每个院校一行，不要分析过程，只要结果）：
 
-| QS排名 | 院校名称 | 均分要求+备注 | 专业 | 链接 |
-|--------|---------|-------------|------|------|
-| XX | XXX大学 | XXX | XXX | 链接 |
+QS排名 院校名称 专业 链接 均分要求+备注
 
-💡 推荐说明
-（整体推荐策略说明，2-3句话）`;
+示例：
+QS77 利兹大学 Law and Finance MSc https://courses.leeds.ac.uk/xxx 75%+，交叉学科，没有明确背景限制
+QS85 杜伦大学 Law and Finance MSc https://www.durham.ac.uk/xxx 82%+
+
+注意事项：
+- 每行一条推荐，格式统一
+- 链接必须是该专业真实的申请页面URL
+- 均分要求写具体数字+%，备注紧跟其后用逗号分隔
+- 按QS排名从高到低排列
+- 不输出任何分析过程、客户痛点、话术等内容`;
 
 // 方案生成参考资料（从plan-reference-data.json按需加载）
 let _planRefData = null;
