@@ -10,14 +10,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // 同步检测分享参数，在body渲染前隐藏内容防止闪烁
-        if (new URLSearchParams(window.location.search).get('share')) {
+        // 同步检测分享/收集参数，在body渲染前隐藏内容防止闪烁
+        var _urlParams = new URLSearchParams(window.location.search);
+        if (_urlParams.get('share') || _urlParams.get('collect')) {
             document.documentElement.classList.add('share-loading');
         }
-        // 同步检测登录状态：未登录且非分享模式，隐藏所有内容
-        var _isShare = !!new URLSearchParams(window.location.search).get('share');
+        // 同步检测登录状态：未登录且非分享/收集模式，隐藏所有内容
+        var _isShareOrCollect = !!(_urlParams.get('share') || _urlParams.get('collect'));
         var _isLoggedIn = !!sessionStorage.getItem('salesEmpowerment_loggedIn');
-        if (!_isLoggedIn && !_isShare) {
+        if (!_isLoggedIn && !_isShareOrCollect) {
             document.documentElement.classList.add('not-logged-in');
         }
     </script>

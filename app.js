@@ -5822,8 +5822,9 @@ async function loadCollectConfig(token) {
 
 // 激活竞品信息收集模式
 function activateCollectMode(data) {
-    // 隐藏侧边栏、顶部导航、header
+    // 隐藏侧边栏、顶部导航、header、主状态栏
     document.getElementById('shareHeader').style.display = 'none';
+    document.querySelector('.top-bar').style.display = 'none';
     document.getElementById('sidebar').style.display = 'none';
     document.getElementById('mainContent').classList.add('share-mode');
     
