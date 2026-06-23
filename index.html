@@ -124,7 +124,7 @@
                 <i class="fas fa-user-circle"></i>
                 <span>九型人格</span>
             </li>
-            <li class="nav-item" data-page="plan-generator">
+            <li class="nav-item" data-page="plan-generator" style="display:none;">
                 <i class="fas fa-graduation-cap"></i>
                 <span>方案生成</span>
             </li>
@@ -625,8 +625,8 @@
                         <input type="text" id="studioBotId" placeholder="在Bot发布页URL中获取">
                     </div>
                     <div class="form-group">
-                        <label>Bot ID（方案生成）</label>
-                        <input type="text" id="studioPlanBotId" placeholder="方案生成专用Bot，留空则共用话术Bot">
+                        <label style="display:none;">Bot ID（方案生成）</label>
+                        <input type="text" id="studioPlanBotId" placeholder="方案生成专用Bot，留空则共用话术Bot" style="display:none;">
                     </div>
                     <button class="btn btn-primary" onclick="saveStudioSettings()" style="width:100%;">保存设置</button>
                 </div>
@@ -799,7 +799,7 @@
             </div>
         </div>
         <!-- ==================== 方案生成页面 ==================== -->
-        <div class="page" id="page-plan-generator">
+        <div class="page" id="page-plan-generator" style="display:none !important;">
             <h1 class="page-title"><i class="fas fa-graduation-cap"></i> 方案生成</h1>
 
             <!-- Tab切换 -->
@@ -1131,8 +1131,8 @@
                             <span class="share-section-label"><i class="fas fa-user-circle"></i> 九型人格</span>
                         </label>
                         <label class="share-section-checkbox">
-                            <input type="checkbox" name="shareSection" value="plan-generator">
-                            <span class="share-section-label"><i class="fas fa-graduation-cap"></i> 方案生成</span>
+                            <input type="checkbox" name="shareSection" value="plan-generator" style="display:none;">
+                            <span class="share-section-label" style="display:none;"><i class="fas fa-graduation-cap"></i> 方案生成</span>
                         </label>
                     </div>
                 </div>
