@@ -3133,13 +3133,14 @@ function getStudioConfig() {
         const saved = localStorage.getItem('studio_api_config');
         if (saved) return JSON.parse(saved);
     } catch(e) {}
-    return { cozeToken: '', botId: '' };
+    return { cozeToken: '', botId: '', planBotId: '' };
 }
 
 function saveStudioSettings() {
     const config = {
         cozeToken: document.getElementById('studioCozeToken').value.trim(),
-        botId: document.getElementById('studioBotId').value.trim()
+        botId: document.getElementById('studioBotId').value.trim(),
+        planBotId: document.getElementById('studioPlanBotId').value.trim()
     };
     localStorage.setItem('studio_api_config', JSON.stringify(config));
     closeStudioSettings();
@@ -3151,6 +3152,7 @@ function openStudioSettings() {
     const modal = document.getElementById('studioSettingsModal');
     document.getElementById('studioCozeToken').value = config.cozeToken || '';
     document.getElementById('studioBotId').value = config.botId || '';
+    document.getElementById('studioPlanBotId').value = config.planBotId || '';
     modal.style.display = 'flex';
 }
 
@@ -7021,30 +7023,28 @@ function formatFileSize(bytes) {
 // ==================== 方案生成功能 ====================
 
 // Plan Generator System Prompt
-const PLAN_SYSTEM_PROMPT = `你是一位资深留学方案规划专家，擅长根据学生背景精准推荐院校方案。
+const PLAN_SYSTEM_PROMPT = `【最高优先级指令】你现在执行的是"方案生成"任务，不是话术生成任务。你必须严格按照以下格式输出院校推荐方案，禁止输出任何话术、沟通框架、客户痛点分析、破冰共情等内容。
 
 核心原则：
 1. 按QS排名从高到低优先推荐，找学生够得到的最好的院校，推荐5-10所
 2. 均分是硬门槛，严格按学生院校层次匹配对应要求
-3. 如果排名很好的院校学生均分符合但意向专业无合适选项，找1个可申专业并备注"非意向专业，但背景符合可考虑"
-4. 务实推荐，不推荐明显达不到的院校浪费学生精力
-5. 不代理G5院校（牛津、剑桥、帝国理工、UCL、LSE），不要推荐这5所
-6. 意向国家仅限英国和爱尔兰
+3. 跨专业申请时，只推荐接受该学生本科背景的意向专业，不推荐要求相关专业背景的专业
+4. 如果排名很好的院校学生均分符合但意向专业无合适选项，找1个可申专业并备注"非意向专业，但背景符合可考虑"
+5. 务实推荐，不推荐明显达不到的院校浪费学生精力
+6. 不代理G5院校（牛津、剑桥、帝国理工、UCL、LSE），不要推荐这5所
+7. 意向国家仅限英国和爱尔兰
 
-输出格式（严格遵循，每个院校一行，不要分析过程，只要结果）：
-
+【强制输出格式】每行一条，按QS从高到低排列，5-10所，格式如下：
 QS排名 院校名称 专业 链接 均分要求+备注
 
 示例：
 QS77 利兹大学 Law and Finance MSc https://courses.leeds.ac.uk/xxx 75%+，交叉学科，没有明确背景限制
 QS85 杜伦大学 Law and Finance MSc https://www.durham.ac.uk/xxx 82%+
 
-注意事项：
-- 每行一条推荐，格式统一
-- 链接必须是该专业真实的申请页面URL
-- 均分要求写具体数字+%，备注紧跟其后用逗号分隔
-- 按QS排名从高到低排列
-- 不输出任何分析过程、客户痛点、话术等内容`;
+【绝对禁止】：
+- 禁止输出"客户痛点分析"、"匹配沟通框架"、"话术方案"、"破冰与共情"等话术内容
+- 禁止输出分析过程，只要最终的推荐列表
+- 禁止输出markdown标题、加粗等格式，纯文本列表即可`;
 
 // 方案生成参考资料（从plan-reference-data.json按需加载）
 let _planRefData = null;
@@ -7280,6 +7280,7 @@ async function generatePlan() {
     const countries = Array.from(countryCheckboxes).map(cb => cb.value);
     const degree = document.getElementById('planDegree').value;
     const major = document.getElementById('planMajor').value;
+    const targetMajor = document.getElementById('planTargetMajor').value;
     const uniName = document.getElementById('planUniInput').value.trim();
     const uniLevel = document.getElementById('planUniLevel').value;
     const gpa = document.getElementById('planGPA').value;
@@ -7287,13 +7288,15 @@ async function generatePlan() {
     // 验证必填
     if (countries.length === 0) { alert('请选择意向国家'); return; }
     if (!degree) { alert('请选择学历层次'); return; }
-    if (!major) { alert('请选择专业方向'); return; }
+    if (!major) { alert('请选择本科专业'); return; }
+    if (!targetMajor) { alert('请选择意向专业'); return; }
     if (!uniName) { alert('请输入本科院校'); return; }
     if (!uniLevel) { alert('请选择或确认本科院校层次'); return; }
     
-    // 检查Coze配置
+    // 检查Coze配置（方案专用Bot优先，无则回退话术Bot）
     const config = getStudioConfig();
-    if (!config.cozeToken || !config.botId) {
+    const planBotId = config.planBotId || config.botId;
+    if (!config.cozeToken || !planBotId) {
         document.getElementById('planResultArea').innerHTML = `
             <div class="plan-error-state">
                 <i class="fas fa-exclamation-circle"></i>
@@ -7313,21 +7316,24 @@ async function generatePlan() {
     
     try {
         // 构建用户消息
+        const isCrossMajor = major !== targetMajor;
         let userMsg = `学生背景信息：
 - 意向国家：${countries.join('、')}
 - 学历层次：${degree}
-- 专业方向：${major}
+- 本科专业：${major}
+- 意向专业：${targetMajor}${isCrossMajor ? '（跨专业申请）' : '（本专业申请）'}
 - 本科院校：${uniName}（${uniLevel}）
 - 均分/GPA：${gpa || '未提供'}`;
+
+        if (isCrossMajor) {
+            userMsg += `\n\n重要：该学生为跨专业申请，本科是${major}，想申${targetMajor}方向。请只推荐接受${major}背景学生申请的${targetMajor}相关专业，不要推荐要求${targetMajor}本科背景的专业。`;
+        }
 
         // 注入参考资料：从JSON按条件筛选相关院校
         const refData = await loadPlanRefData();
         if (refData) {
-            // 筛选策略：加载全部院校数据，按匹配度排序
-            // 匹配逻辑：院校名包含专业方向关键词的优先，其他按院校名排序
             let refText = '';
             const uniNames = Object.keys(refData);
-            // 所有院校数据都注入，让LLM自行判断
             for (const uni of uniNames) {
                 const sheetText = uniSheetToText(uni, refData[uni]);
                 if (sheetText) {
@@ -7335,7 +7341,6 @@ async function generatePlan() {
                 }
             }
             if (refText.length > 80000) {
-                // 如果数据太大，截断到8万字符（约2万token）
                 refText = refText.substring(0, 80000) + '\n...(更多院校数据已省略)';
             }
             userMsg += '\n\n以下是英国/爱尔兰院校录取要求参考资料，请结合这些数据和学生背景进行推荐：\n' + refText;
@@ -7343,8 +7348,8 @@ async function generatePlan() {
             userMsg += '\n\n注意：院校参考资料加载失败，请根据你的专业知识推荐。';
         }
 
-        // 调用Coze API（使用system prompt方式）
-        await streamPlanCozeResponse(config, PLAN_SYSTEM_PROMPT, userMsg, resultArea);
+        // 调用Coze API（使用方案专用Bot ID）
+        await streamPlanCozeResponse(config, planBotId, PLAN_SYSTEM_PROMPT, userMsg, resultArea);
 
     } catch (err) {
         console.error('方案生成失败:', err);
@@ -7356,7 +7361,7 @@ async function generatePlan() {
 }
 
 // 方案生成专用流式响应（带system prompt）
-async function streamPlanCozeResponse(config, systemPrompt, userMessage, outputArea) {
+async function streamPlanCozeResponse(config, botId, systemPrompt, userMessage, outputArea) {
     const response = await fetch('https://api.coze.cn/v3/chat', {
         method: 'POST',
         headers: {
@@ -7364,7 +7369,7 @@ async function streamPlanCozeResponse(config, systemPrompt, userMessage, outputA
             'Authorization': 'Bearer ' + config.cozeToken
         },
         body: JSON.stringify({
-            bot_id: config.botId,
+            bot_id: botId,
             user_id: 'plan_user_' + Math.random().toString(36).substring(2, 8),
             stream: true,
             auto_save_history: false,
