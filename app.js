@@ -7360,8 +7360,11 @@ async function generatePlan() {
     }
 }
 
-// 方案生成专用流式响应（带system prompt）
+// 方案生成专用流式响应（指令嵌入用户消息，因Coze API不支持system角色）
 async function streamPlanCozeResponse(config, botId, systemPrompt, userMessage, outputArea) {
+    // Coze API additional_messages不支持role=system，将指令嵌入用户消息
+    const combinedMessage = systemPrompt + '\n\n---\n\n' + userMessage;
+    
     const response = await fetch('https://api.coze.cn/v3/chat', {
         method: 'POST',
         headers: {
@@ -7375,13 +7378,8 @@ async function streamPlanCozeResponse(config, botId, systemPrompt, userMessage, 
             auto_save_history: false,
             additional_messages: [
                 {
-                    role: 'system',
-                    content: systemPrompt,
-                    content_type: 'text'
-                },
-                {
                     role: 'user',
-                    content: userMessage,
+                    content: combinedMessage,
                     content_type: 'text'
                 }
             ]
