@@ -4264,15 +4264,7 @@ async function submitFeedback(e) {
         let 整理结果;
         if (isCollectMode) {
             // 收集模式：简洁结果
-            整理结果 = `✅ 感谢您的反馈！
-
-您提交的竞品信息已成功发送，管理员将在审核后决定是否新增或更新至竞品数据库。
-
-提交内容摘要：
-• 竞品名称：${name}
-• 国家/地区：${country}
-• 核心产品：${product}
-• 提交人：${submitter}`;
+            整理结果 = `✅ 感谢您的反馈！`;
         } else {
             整理结果 = `【竞品信息整理结果】
 
@@ -4295,6 +4287,11 @@ ${disadvantage}
         }
         
         document.getElementById('整理结果Box').textContent = 整理结果;
+        // 收集模式下隐藏底部提示
+        if (isCollectMode) {
+            const resultTip = document.querySelector('#feedbackResult .result-tip');
+            if (resultTip) resultTip.style.display = 'none';
+        }
     } else {
         document.getElementById('整理结果Box').textContent = `提交失败：${errorMsg}\n\n请稍后重试或联系管理员。`;
     }
