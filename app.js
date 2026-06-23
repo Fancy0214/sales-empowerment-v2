@@ -4107,10 +4107,10 @@ async function loadCompetitorNews() {
         if (error) throw error;
         if (data && data.length > 0) {
             const now = new Date();
-            // 只展示14天内的动态
+            // 只展示7天内的动态
             const recentItems = data.filter(row => {
                 const diffMs = now - new Date(row.date);
-                return diffMs <= 14 * 24 * 60 * 60 * 1000;
+                return diffMs <= 7 * 24 * 60 * 60 * 1000;
             });
             if (recentItems.length === 0) {
                 renderTimeline(competitorTimelineFallback);
@@ -4123,9 +4123,7 @@ async function loadCompetitorNews() {
                 if (diffDays === 0) dateLabel = '今天';
                 else if (diffDays === 1) dateLabel = '昨天';
                 else if (diffDays <= 3) dateLabel = `${diffDays}天前`;
-                else if (diffDays <= 7) dateLabel = '本周';
-                else if (diffDays <= 14) dateLabel = '上周';
-                else dateLabel = row.date;
+                else dateLabel = '本周';
                 return {
                     date: dateLabel,
                     tag: row.tag || '动态',
@@ -5670,6 +5668,29 @@ async function loadShareConfig(token) {
             .single();
         
         if (error || !data) {
+            // 兼容旧版 ?share=competitors / ?share=enneagram 等板块名格式
+            const sectionMap = {
+                'competitors': ['competitors'],
+                'enneagram': ['enneagram'],
+                'tools': ['tools'],
+                'ai-studio': ['ai-studio'],
+                'ai-studio:craft': ['ai-studio:craft'],
+                'ai-studio:library': ['ai-studio:library']
+            };
+            if (sectionMap[token]) {
+                isShareMode = true;
+                shareConfig = { sections: sectionMap[token] };
+                if (sessionStorage.getItem('salesEmpowerment_shareVerified') === 'true') {
+                    activateShareMode(shareConfig);
+                } else {
+                    document.documentElement.classList.remove('share-loading');
+                    document.documentElement.classList.remove('not-logged-in');
+                    _pendingShareConfig = shareConfig;
+                    document.getElementById('sharePasswordGate').style.display = 'flex';
+                    document.getElementById('sharePasswordInput').focus();
+                }
+                return;
+            }
             document.documentElement.classList.remove('share-loading');
             showShareInvalid('该分享链接不存在', '请确认链接是否正确，或联系分享者获取新的链接。');
             return;
