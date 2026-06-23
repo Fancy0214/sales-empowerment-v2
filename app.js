@@ -5969,10 +5969,19 @@ function enableAdminMode() {
     isAdminMode = true;
     const navItem = document.getElementById('adminNavItem');
     if (navItem) navItem.style.display = 'flex';
+    
+    // 切换到admin页面
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const adminPage = document.getElementById('page-admin');
+    if (adminPage) adminPage.classList.add('active');
+    if (navItem) navItem.classList.add('active');
+    
     // 重置管理页面显示状态
     const loginCard = document.getElementById('adminLoginCard');
     const adminPanel = document.getElementById('adminPanel');
-    // 检查是否已登录
+    
+    // 检查是否已登录管理后台
     if (localStorage.getItem('salesEmpowerment_admin') === 'true') {
         if (loginCard) loginCard.style.display = 'none';
         if (adminPanel) adminPanel.style.display = 'block';
@@ -5983,7 +5992,6 @@ function enableAdminMode() {
         if (loginCard) loginCard.style.display = 'block';
         if (adminPanel) adminPanel.style.display = 'none';
     }
-    switchPage('admin');
 }
 
 // 管理员登录
