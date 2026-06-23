@@ -7026,7 +7026,7 @@ function formatFileSize(bytes) {
 const PLAN_SYSTEM_PROMPT = `【最高优先级指令】你现在执行的是"方案生成"任务，不是话术生成任务。你必须严格按照以下格式输出院校推荐方案，禁止输出任何话术、沟通框架、客户痛点分析、破冰共情等内容。
 
 核心原则：
-1. 按QS 2026排名从高到低优先推荐，找学生够得到的最好的院校，推荐5-10所
+1. 按QS 2027排名从高到低优先推荐，找学生够得到的最好的院校，推荐5-10所
 2. 均分是硬门槛，严格按学生院校层次匹配对应要求
 3. 跨专业申请时，优先推荐接受该学生本科背景的意向专业；如果意向专业要求相关专业背景不可申，则推荐与意向专业相近的可申专业并备注"非意向专业但相近，接受XX背景申请"
 4. 如果排名很好的院校学生均分符合但意向专业无合适选项，找1-2个相近可申专业并备注"非意向专业，但背景符合可考虑"
@@ -7034,15 +7034,15 @@ const PLAN_SYSTEM_PROMPT = `【最高优先级指令】你现在执行的是"方
 6. 不代理G5院校（牛津、剑桥、帝国理工、UCL、LSE），不要推荐这5所
 7. 意向国家仅限英国和爱尔兰
 
-【QS 2026世界大学排名参考】（2025年6月发布，请使用此版本排名）：
-帝国理工#2、牛津#4、剑桥#6、UCL#9、KCL#31、爱丁堡#34、曼大#35、布里斯托#51、LSE#56、华威#74、伯明翰#76、格拉斯哥#79、利兹#86、南安普顿#87、谢菲尔德#92、杜伦#94、诺丁汉#97、QMUL#110、圣安德鲁斯#113、纽卡斯尔#137、利物浦#147、卡迪夫#181、贝尔法斯特女王#199
+【QS 2027世界大学排名参考】（2026年6月18日发布，请使用此版本排名）：
+帝国理工#2、牛津#4、剑桥#6、UCL#8、爱丁堡#35、KCL#37、曼大#40、布里斯托#57、LSE#62、华威#68、伯明翰#68、利兹#77、格拉斯哥#80、谢菲尔德#82、杜伦#85、诺丁汉#97、QMUL#103、南安普顿#111、圣安德鲁斯#115、巴斯#125、埃克塞特#136、利物浦#139、纽卡斯尔#149、约克#158、兰卡斯特#164、贝尔法斯特女王#174、卡迪夫#179
 
-【强制输出格式】每所院校独占一行（换行分隔），按QS 2026从高到低排列，5-10所，格式如下：
+【强制输出格式】每所院校独占一行（换行分隔），按QS 2027从高到低排列，5-10所，格式如下：
 QS排名 院校名称 专业 链接 均分要求+备注
 
 示例（每所院校一行，中间用换行隔开）：
-QS51 布里斯托大学 Film and Television MA https://www.bristol.ac.uk/study/postgraduate/2026/arts/ma-film-television/ 80%+，接受广泛背景，商科可申
-QS76 伯明翰大学 Creative Industries and Cultural Policy MA https://www.birmingham.ac.uk/postgraduate/courses/taught/creative-industries-cultural-policy.aspx 80%+，接受商科背景，偏向文化产业方向
+QS57 布里斯托大学 Film and Television MA https://www.bristol.ac.uk/study/postgraduate/2026/arts/ma-film-television/ 80%+，接受广泛背景，商科可申
+QS68 伯明翰大学 Creative Industries and Cultural Policy MA https://www.birmingham.ac.uk/postgraduate/courses/taught/creative-industries-cultural-policy.aspx 80%+，接受商科背景，偏向文化产业方向
 
 【专业链接要求】链接必须是该专业在大学官网的真实页面URL，不要编造链接。正确获取方式：进入大学官网→找到Postgraduate taught courses/Masters programmes板块→搜索相关专业→点进专业页面获取URL。如果不确定真实链接，链接位置写"请前往官网查询"。
 
@@ -7050,7 +7050,7 @@ QS76 伯明翰大学 Creative Industries and Cultural Policy MA https://www.birm
 - 禁止输出"客户痛点分析"、"匹配沟通框架"、"话术方案"、"破冰与共情"等话术内容
 - 禁止输出分析过程，只要最终的推荐列表
 - 禁止输出markdown标题、加粗等格式，纯文本列表即可
-- 禁止使用旧版QS排名，必须使用上面提供的QS 2026排名`;
+- 禁止使用旧版QS排名，必须使用上面提供的QS 2027排名`;
 
 // 方案生成参考资料（从plan-reference-data.json按需加载）
 let _planRefData = null;
