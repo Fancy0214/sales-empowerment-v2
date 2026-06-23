@@ -5822,8 +5822,8 @@ async function loadCollectConfig(token) {
 
 // 激活竞品信息收集模式
 function activateCollectMode(data) {
-    // 隐藏侧边栏、顶部导航等
-    document.getElementById('shareHeader').style.display = 'flex';
+    // 隐藏侧边栏、顶部导航、header
+    document.getElementById('shareHeader').style.display = 'none';
     document.getElementById('sidebar').style.display = 'none';
     document.getElementById('mainContent').classList.add('share-mode');
     
@@ -5847,7 +5847,7 @@ function activateCollectMode(data) {
         // 隐藏竞品总览卡片
         const compCards = document.querySelectorAll('#page-competitors > .card');
         compCards.forEach(card => {
-            if (card.id !== 'competitorFeedbackForm' && card.id !== 'feedbackResult' && card.id !== 'collectModeIntro') {
+            if (card.id !== 'competitorFeedbackForm' && card.id !== 'feedbackResult') {
                 card.style.display = 'none';
             }
         });
@@ -5856,9 +5856,7 @@ function activateCollectMode(data) {
         const timelineSection = document.querySelector('#page-competitors .timeline-container');
         if (timelineSection) timelineSection.parentElement.style.display = 'none';
         
-        // 显示收集模式说明
-        const introCard = document.getElementById('collectModeIntro');
-        if (introCard) introCard.style.display = 'block';
+        // 收集模式下不显示说明卡片
         
         // 显示收集表单
         const feedbackForm = document.getElementById('competitorFeedbackForm');
