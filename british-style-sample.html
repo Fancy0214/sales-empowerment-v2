@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>留学销售赋能平台 — 英伦风格样本</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* ===== 英伦风格色彩体系 ===== */
+        :root {
+            --brit-navy: #1B2A4A;
+            --brit-navy-deep: #0F1B33;
+            --brit-burgundy: #7B2D3B;
+            --brit-burgundy-light: #9E4455;
+            --brit-gold: #C4A35A;
+            --brit-gold-light: #D4BE7E;
+            --brit-cream: #F5F0E8;
+            --brit-ivory: #FAF8F3;
+            --brit-warm-gray: #E8E2D8;
+            --brit-text: #2C2C2C;
+            --brit-text-muted: #6B6358;
+            --brit-border: #D5CFC3;
+            --brit-card-shadow: 0 2px 12px rgba(27, 42, 74, 0.08);
+            --brit-card-hover: 0 4px 20px rgba(27, 42, 74, 0.14);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans SC', -apple-system, sans-serif;
+            background: var(--brit-cream);
+            color: var(--brit-text);
+            min-height: 100vh;
+        }
+
+        /* ===== 顶部栏 — 深海军蓝 + 金色分割线 ===== */
+        .top-bar {
+            background: linear-gradient(135deg, var(--brit-navy-deep), var(--brit-navy));
+            color: white;
+            padding: 0 28px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+        .top-bar::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--brit-gold), var(--brit-gold-light), var(--brit-gold));
+        }
+        .top-bar .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .top-bar .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--brit-gold);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--brit-navy-deep);
+        }
+        .top-bar .logo-text {
+            font-family: 'Noto Serif SC', 'Playfair Display', serif;
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: 2px;
+        }
+        .top-bar .logo-sub {
+            font-size: 11px;
+            opacity: 0.65;
+            margin-left: 10px;
+            letter-spacing: 1px;
+            font-weight: 300;
+        }
+        .top-bar .time-info {
+            font-size: 12px;
+            opacity: 0.6;
+            letter-spacing: 0.5px;
+        }
+
+        /* ===== 侧边栏 — 深蓝+勃艮第点缀 ===== */
+        .layout {
+            display: flex;
+            min-height: calc(100vh - 55px);
+        }
+        .sidebar {
+            width: 220px;
+            background: var(--brit-navy-deep);
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar-header {
+            padding: 0 20px 16px;
+            border-bottom: 1px solid rgba(196, 163, 90, 0.2);
+            margin-bottom: 8px;
+        }
+        .sidebar-header span {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 13px;
+            color: var(--brit-gold);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 20px;
+            color: rgba(255,255,255,0.6);
+            cursor: pointer;
+            transition: all 0.25s;
+            font-size: 14px;
+            position: relative;
+            letter-spacing: 0.5px;
+        }
+        .nav-item:hover {
+            color: white;
+            background: rgba(196, 163, 90, 0.08);
+        }
+        .nav-item.active {
+            color: var(--brit-gold);
+            background: rgba(196, 163, 90, 0.12);
+        }
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 6px;
+            bottom: 6px;
+            width: 3px;
+            background: var(--brit-gold);
+            border-radius: 0 2px 2px 0;
+        }
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 15px;
+        }
+        .nav-item .nav-label {
+            font-weight: 500;
+        }
+
+        /* ===== 主内容区 — 奶油底+卡片 ===== */
+        .main-content {
+            flex: 1;
+            padding: 28px 32px;
+            overflow-y: auto;
+        }
+        .page-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+        .page-header-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--brit-burgundy), var(--brit-burgundy-light));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+        .page-header h2 {
+            font-family: 'Noto Serif SC', 'Playfair Display', serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--brit-navy);
+            letter-spacing: 1px;
+        }
+
+        /* ===== 卡片 — 温暖阴影+微圆角 ===== */
+        .card {
+            background: var(--brit-ivory);
+            border: 1px solid var(--brit-border);
+            border-radius: 8px;
+            box-shadow: var(--brit-card-shadow);
+            transition: box-shadow 0.3s;
+        }
+        .card:hover {
+            box-shadow: var(--brit-card-hover);
+        }
+
+        /* ===== 竞品情报站示例 ===== */
+        .section-title {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 15px;
+            color: var(--brit-navy);
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--brit-gold);
+            display: inline-block;
+        }
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-select {
+            padding: 8px 32px 8px 12px;
+            border: 1px solid var(--brit-border);
+            border-radius: 6px;
+            background: var(--brit-ivory);
+            color: var(--brit-text);
+            font-size: 13px;
+            font-family: 'Noto Sans SC', sans-serif;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236B6358'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            cursor: pointer;
+        }
+        .btn-filter {
+            padding: 8px 16px;
+            background: var(--brit-navy);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'Noto Sans SC', sans-serif;
+            transition: background 0.2s;
+        }
+        .btn-filter:hover {
+            background: var(--brit-burgundy);
+        }
+
+        .competitor-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .competitor-table th {
+            background: var(--brit-navy);
+            color: var(--brit-gold-light);
+            font-size: 12px;
+            font-weight: 600;
+            padding: 12px 14px;
+            text-align: left;
+            letter-spacing: 0.5px;
+        }
+        .competitor-table th:first-child { border-radius: 6px 0 0 0; }
+        .competitor-table th:last-child { border-radius: 0 6px 0 0; }
+        .competitor-table td {
+            padding: 12px 14px;
+            font-size: 13px;
+            border-bottom: 1px solid var(--brit-warm-gray);
+            vertical-align: middle;
+        }
+        .competitor-table tr:hover td {
+            background: rgba(196, 163, 90, 0.06);
+        }
+        .competitor-table tr:last-child td:first-child { border-radius: 0 0 0 6px; }
+        .competitor-table tr:last-child td:last-child { border-radius: 0 0 6px 0; }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        .tag-burgundy {
+            background: rgba(123, 45, 59, 0.1);
+            color: var(--brit-burgundy);
+        }
+        .tag-navy {
+            background: rgba(27, 42, 74, 0.08);
+            color: var(--brit-navy);
+        }
+        .tag-gold {
+            background: rgba(196, 163, 90, 0.15);
+            color: #8B7332;
+        }
+        .score-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: 'Playfair Display', serif;
+        }
+        .score-high {
+            background: linear-gradient(135deg, var(--brit-gold), var(--brit-gold-light));
+            color: var(--brit-navy-deep);
+        }
+        .score-mid {
+            background: var(--brit-warm-gray);
+            color: var(--brit-text-muted);
+        }
+
+        /* ===== AI话术工坊示例 ===== */
+        .studio-config {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .config-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .config-field label {
+            font-size: 12px;
+            color: var(--brit-text-muted);
+            font-weight: 500;
+        }
+        .config-field select,
+        .config-field input,
+        .config-field textarea {
+            padding: 9px 12px;
+            border: 1px solid var(--brit-border);
+            border-radius: 6px;
+            background: white;
+            font-size: 13px;
+            font-family: 'Noto Sans SC', sans-serif;
+            color: var(--brit-text);
+            transition: border-color 0.2s;
+        }
+        .config-field select:focus,
+        .config-field input:focus,
+        .config-field textarea:focus {
+            outline: none;
+            border-color: var(--brit-gold);
+            box-shadow: 0 0 0 3px rgba(196, 163, 90, 0.15);
+        }
+        .config-field textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn-primary {
+            padding: 10px 24px;
+            background: linear-gradient(135deg, var(--brit-burgundy), var(--brit-burgundy-light));
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: 'Noto Sans SC', sans-serif;
+            transition: all 0.25s;
+            letter-spacing: 0.5px;
+        }
+        .btn-primary:hover {
+            box-shadow: 0 4px 14px rgba(123, 45, 59, 0.3);
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            padding: 10px 24px;
+            background: transparent;
+            color: var(--brit-navy);
+            border: 1.5px solid var(--brit-navy);
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: 'Noto Sans SC', sans-serif;
+            transition: all 0.25s;
+        }
+        .btn-secondary:hover {
+            background: var(--brit-navy);
+            color: white;
+        }
+        .btn-gold {
+            padding: 10px 24px;
+            background: linear-gradient(135deg, var(--brit-gold), var(--brit-gold-light));
+            color: var(--brit-navy-deep);
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Noto Sans SC', sans-serif;
+            transition: all 0.25s;
+        }
+        .btn-gold:hover {
+            box-shadow: 0 4px 14px rgba(196, 163, 90, 0.35);
+            transform: translateY(-1px);
+        }
+
+        /* ===== 话术结果卡片 ===== */
+        .script-result {
+            background: white;
+            border-left: 3px solid var(--brit-burgundy);
+            border-radius: 0 8px 8px 0;
+            padding: 20px 24px;
+        }
+        .script-result h4 {
+            font-family: 'Noto Serif SC', serif;
+            color: var(--brit-burgundy);
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+        .script-step {
+            margin-bottom: 14px;
+            padding-left: 16px;
+            border-left: 2px solid var(--brit-gold-light);
+        }
+        .script-step-title {
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--brit-navy);
+            margin-bottom: 4px;
+        }
+        .script-step-text {
+            font-size: 13px;
+            color: var(--brit-text-muted);
+            line-height: 1.7;
+        }
+        .script-tip {
+            background: rgba(196, 163, 90, 0.1);
+            border: 1px solid rgba(196, 163, 90, 0.25);
+            border-radius: 6px;
+            padding: 12px 16px;
+            margin-top: 16px;
+        }
+        .script-tip-title {
+            font-size: 12px;
+            color: var(--brit-burgundy);
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        .script-tip ul {
+            list-style: none;
+            font-size: 12px;
+            color: var(--brit-text-muted);
+            line-height: 1.8;
+        }
+        .script-tip ul li::before {
+            content: '✓';
+            color: var(--brit-gold);
+            margin-right: 6px;
+            font-weight: 700;
+        }
+
+        /* ===== 九型人格示例 ===== */
+        .enneagram-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+        .enneagram-card {
+            background: var(--brit-ivory);
+            border: 1px solid var(--brit-border);
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .enneagram-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--brit-burgundy), var(--brit-gold));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .enneagram-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--brit-card-hover);
+            border-color: var(--brit-gold-light);
+        }
+        .enneagram-card:hover::before {
+            opacity: 1;
+        }
+        .enneagram-number {
+            font-family: 'Playfair Display', serif;
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--brit-navy);
+            line-height: 1;
+        }
+        .enneagram-name {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--brit-burgundy);
+            margin: 4px 0;
+        }
+        .enneagram-alias {
+            font-size: 12px;
+            color: var(--brit-text-muted);
+        }
+        .enneagram-traits {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .enneagram-traits .tag {
+            font-size: 10px;
+        }
+
+        /* ===== 销售工具箱示例 ===== */
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+        .tool-card {
+            background: var(--brit-ivory);
+            border: 1px solid var(--brit-border);
+            border-radius: 8px;
+            padding: 18px;
+            cursor: pointer;
+            transition: all 0.25s;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+        .tool-card:hover {
+            border-color: var(--brit-gold);
+            box-shadow: var(--brit-card-hover);
+        }
+        .tool-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        .tool-icon-navy {
+            background: rgba(27, 42, 74, 0.08);
+            color: var(--brit-navy);
+        }
+        .tool-icon-burgundy {
+            background: rgba(123, 45, 59, 0.08);
+            color: var(--brit-burgundy);
+        }
+        .tool-icon-gold {
+            background: rgba(196, 163, 90, 0.12);
+            color: #8B7332;
+        }
+        .tool-info h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--brit-navy);
+            margin-bottom: 3px;
+        }
+        .tool-info p {
+            font-size: 11px;
+            color: var(--brit-text-muted);
+        }
+        .tool-category {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 10px;
+            padding: 2px 8px;
+        }
+
+        /* ===== 页面切换标签 ===== */
+        .page-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 24px;
+            border-bottom: 2px solid var(--brit-warm-gray);
+        }
+        .page-tab {
+            padding: 10px 20px;
+            font-size: 14px;
+            color: var(--brit-text-muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        .page-tab:hover {
+            color: var(--brit-navy);
+        }
+        .page-tab.active {
+            color: var(--brit-burgundy);
+            border-bottom-color: var(--brit-burgundy);
+            font-weight: 600;
+        }
+
+        /* ===== 底部装饰线 ===== */
+        .footer-line {
+            height: 2px;
+            background: linear-gradient(90deg, var(--brit-navy), var(--brit-burgundy), var(--brit-gold), var(--brit-burgundy), var(--brit-navy));
+            opacity: 0.3;
+        }
+
+        /* ===== 分隔样式 ===== */
+        .divider {
+            height: 1px;
+            background: var(--brit-border);
+            margin: 24px 0;
+        }
+        .divider-ornament {
+            text-align: center;
+            margin: 28px 0;
+            position: relative;
+        }
+        .divider-ornament::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--brit-border);
+        }
+        .divider-ornament span {
+            background: var(--brit-cream);
+            padding: 0 16px;
+            position: relative;
+            color: var(--brit-gold);
+            font-size: 14px;
+            letter-spacing: 4px;
+        }
+
+        /* ===== 样本说明面板 ===== */
+        .sample-note {
+            background: linear-gradient(135deg, rgba(27,42,74,0.04), rgba(196,163,90,0.08));
+            border: 1px solid var(--brit-gold-light);
+            border-radius: 10px;
+            padding: 20px 24px;
+            margin-bottom: 28px;
+        }
+        .sample-note h3 {
+            font-family: 'Noto Serif SC', serif;
+            color: var(--brit-navy);
+            font-size: 15px;
+            margin-bottom: 10px;
+        }
+        .sample-note p {
+            font-size: 13px;
+            color: var(--brit-text-muted);
+            line-height: 1.8;
+        }
+        .sample-note .color-palette {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+        .color-swatch {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--brit-text-muted);
+        }
+        .color-swatch .swatch {
+            width: 22px;
+            height: 22px;
+            border-radius: 4px;
+            border: 1px solid rgba(0,0,0,0.08);
+        }
+    </style>
+</head>
+<body>
+
+<!-- 顶部栏 -->
+<div class="top-bar">
+    <div class="logo">
+        <div class="logo-icon">SE</div>
+        <span class="logo-text">留学销售赋能平台</span>
+        <span class="logo-sub">SALES EMPOWERMENT</span>
+    </div>
+    <div class="time-info">
+        <i class="far fa-clock"></i> 2026年6月24日 星期三
+    </div>
+</div>
+
+<div class="layout">
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <span>导航</span>
+        </div>
+        <div class="nav-item active">
+            <i class="fas fa-shield-alt"></i>
+            <span class="nav-label">竞品情报站</span>
+        </div>
+        <div class="nav-item">
+            <i class="fas fa-comment-dots"></i>
+            <span class="nav-label">AI话术工坊</span>
+        </div>
+        <div class="nav-item">
+            <i class="fas fa-tools"></i>
+            <span class="nav-label">销售工具箱</span>
+        </div>
+        <div class="nav-item">
+            <i class="fas fa-user-circle"></i>
+            <span class="nav-label">九型人格</span>
+        </div>
+        <div class="nav-item">
+            <i class="fas fa-cog"></i>
+            <span class="nav-label">后台管理</span>
+        </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="main-content">
+
+        <!-- 样本说明 -->
+        <div class="sample-note">
+            <h3><i class="fas fa-palette" style="color:var(--brit-gold);margin-right:8px;"></i>英伦风格样本预览</h3>
+            <p>此页面为风格样本，不影响线上版本。核心改动：配色从浅蓝科技风 → 海军蓝+勃艮第+金色英伦经典配色；字体引入衬线体 Noto Serif SC / Playfair Display；卡片和按钮增加质感和层次感。</p>
+            <div class="color-palette">
+                <div class="color-swatch"><div class="swatch" style="background:#1B2A4A"></div>海军蓝</div>
+                <div class="color-swatch"><div class="swatch" style="background:#7B2D3B"></div>勃艮第</div>
+                <div class="color-swatch"><div class="swatch" style="background:#C4A35A"></div>皇室金</div>
+                <div class="color-swatch"><div class="swatch" style="background:#F5F0E8"></div>奶油白</div>
+                <div class="color-swatch"><div class="swatch" style="background:#FAF8F3"></div>象牙</div>
+                <div class="color-swatch"><div class="swatch" style="background:#E8E2D8"></div>暖灰</div>
+            </div>
+        </div>
+
+        <!-- ========== 竞品情报站 ========== -->
+        <div class="page-header">
+            <div class="page-header-icon"><i class="fas fa-shield-alt"></i></div>
+            <h2>竞品情报站</h2>
+        </div>
+
+        <div class="filter-bar">
+            <select class="filter-select"><option>覆盖国别</option></select>
+            <select class="filter-select"><option>业务模式</option></select>
+            <button class="btn-filter"><i class="fas fa-filter"></i> 应用筛选</button>
+            <div style="flex:1"></div>
+            <button class="btn-secondary" style="padding:8px 14px;font-size:12px;"><i class="fas fa-link"></i> 生成分享链接</button>
+        </div>
+
+        <div class="card" style="overflow:hidden;">
+            <table class="competitor-table">
+                <thead>
+                    <tr>
+                        <th>机构</th>
+                        <th>覆盖国别</th>
+                        <th>优势区域</th>
+                        <th>核心优势</th>
+                        <th>主要劣势</th>
+                        <th>评分</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="font-weight:600;">启德教育</td>
+                        <td><span class="tag tag-navy">英国</span> <span class="tag tag-navy">美国</span> <span class="tag tag-navy">+4</span></td>
+                        <td>华南、华中</td>
+                        <td style="color:var(--brit-navy);font-size:12px;">英国院校代理资源全网最全</td>
+                        <td style="color:var(--brit-burgundy);font-size:12px;">澳洲方向服务口碑一般</td>
+                        <td><span class="score-badge score-high">A</span></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:600;">新通教育</td>
+                        <td><span class="tag tag-navy">英国</span> <span class="tag tag-navy">美国</span> <span class="tag tag-navy">+3</span></td>
+                        <td>江浙沪</td>
+                        <td style="color:var(--brit-navy);font-size:12px;">前端BD满意度高，强建联型</td>
+                        <td style="color:var(--brit-burgundy);font-size:12px;">后期服务一般，放假期间找不到人</td>
+                        <td><span class="score-badge score-high">A</span></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:600;">小希</td>
+                        <td><span class="tag tag-navy">英国</span> <span class="tag tag-navy">澳洲</span></td>
+                        <td>线上为主</td>
+                        <td style="color:var(--brit-navy);font-size:12px;">佣金全返；全系统化对接</td>
+                        <td style="color:var(--brit-burgundy);font-size:12px;">人工服务少，高需求客户不适用</td>
+                        <td><span class="score-badge score-mid">B</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="divider-ornament"><span>◆</span></div>
+
+        <!-- ========== AI话术工坊 ========== -->
+        <div class="page-header">
+            <div class="page-header-icon"><i class="fas fa-comment-dots"></i></div>
+            <h2>AI话术工坊</h2>
+        </div>
+
+        <div class="page-tabs">
+            <div class="page-tab active">话术生成</div>
+            <div class="page-tab">话术库</div>
+        </div>
+
+        <div class="card" style="padding:24px;">
+            <div class="studio-config">
+                <div class="config-field">
+                    <label>我方角色</label>
+                    <select><option>B2B留学顾问（销售）</option><option>B2B渠道专员（市场人员）</option></select>
+                </div>
+                <div class="config-field">
+                    <label>客户层级</label>
+                    <select><option>C级（中型企业）</option><option>D级（小型企业）</option></select>
+                </div>
+                <div class="config-field">
+                    <label>客户身份</label>
+                    <select><option>影响者</option><option>决策者</option></select>
+                </div>
+                <div class="config-field">
+                    <label>触达阶段</label>
+                    <select><option>签约阶段</option><option>首次触达</option></select>
+                </div>
+            </div>
+            <div class="config-field" style="margin-bottom:16px;">
+                <label>客户背景信息</label>
+                <textarea placeholder="请描述客户的核心需求或痛点…">合作方在申请旺季出现产能不足，客户需要稳定高效的备选通道来分流和保障申请进度。</textarea>
+            </div>
+            <button class="btn-primary"><i class="fas fa-magic" style="margin-right:6px;"></i>一键生成话术</button>
+        </div>
+
+        <div style="height:20px;"></div>
+
+        <div class="script-result">
+            <h4><i class="fas fa-scroll" style="margin-right:8px;"></i>匹配沟通框架：【价值共鸣 + 低门槛行动】</h4>
+            <div class="script-step">
+                <div class="script-step-title">第一步：破冰并建立价值共鸣</div>
+                <div class="script-step-text">王总/经理，下午好，之前聊到贵司的英国业务发展挺快的，上的学生量也在增长…</div>
+            </div>
+            <div class="script-step">
+                <div class="script-step-title">如果对方询问具体院校或优势</div>
+                <div class="script-step-text">我们主要做英国和爱尔兰，像KCL、曼大、布里斯托、华威这些前10的热门校，都是我们长期稳定代理、案例丰富的…</div>
+            </div>
+            <div class="script-step">
+                <div class="script-step-title">如果对方表示"有合作方了"</div>
+                <div class="script-step-text">完全理解，稳定的合作肯定是最重要的。我们的建议从来不是替换，而是"新增一个安全通道"。</div>
+            </div>
+            <div class="script-tip">
+                <div class="script-tip-title">话术原则提醒</div>
+                <ul>
+                    <li>推新增不推替换，降低决策压力</li>
+                    <li>只共情问题，不评判对方现有合作方</li>
+                    <li>先体验再决定，用服务说话</li>
+                    <li>发完不追问，等1-2天再换场景钩子触达</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="divider-ornament"><span>◆</span></div>
+
+        <!-- ========== 九型人格 ========== -->
+        <div class="page-header">
+            <div class="page-header-icon"><i class="fas fa-user-circle"></i></div>
+            <h2>九型人格</h2>
+        </div>
+
+        <div class="page-tabs">
+            <div class="page-tab active">九型详解</div>
+            <div class="page-tab">互动测试</div>
+            <div class="page-tab">团队搭配</div>
+        </div>
+
+        <div class="enneagram-grid">
+            <div class="enneagram-card">
+                <div class="enneagram-number">1</div>
+                <div class="enneagram-name">完美型</div>
+                <div class="enneagram-alias">改革者</div>
+                <div class="enneagram-traits">
+                    <span class="tag tag-burgundy">追求卓越</span>
+                    <span class="tag tag-gold">规范化</span>
+                </div>
+            </div>
+            <div class="enneagram-card">
+                <div class="enneagram-number">2</div>
+                <div class="enneagram-name">助人型</div>
+                <div class="enneagram-alias">给予者</div>
+                <div class="enneagram-traits">
+                    <span class="tag tag-burgundy">利他主义</span>
+                    <span class="tag tag-gold">关系导向</span>
+                </div>
+            </div>
+            <div class="enneagram-card">
+                <div class="enneagram-number">3</div>
+                <div class="enneagram-name">成就型</div>
+                <div class="enneagram-alias">实干者</div>
+                <div class="enneagram-traits">
+                    <span class="tag tag-burgundy">目标驱动</span>
+                    <span class="tag tag-gold">高效执行</span>
+                </div>
+            </div>
+            <div class="enneagram-card">
+                <div class="enneagram-number">4</div>
+                <div class="enneagram-name">独特型</div>
+                <div class="enneagram-alias">艺术家</div>
+                <div class="enneagram-traits">
+                    <span class="tag tag-burgundy">追求独特</span>
+                    <span class="tag tag-gold">深度感受</span>
+                </div>
+            </div>
+            <div class="enneagram-card">
+                <div class="enneagram-number">5</div>
+                <div class="enneagram-name">理智型</div>
+                <div class="enneagram-alias">观察者</div>
+                <div class="enneagram-traits">
+                    <span class="tag tag-burgundy">独立思考</span>
+                    <span class="tag tag-gold">知识储备</span>
+                </div>
+            </div>
+            <div class="enneagram-card">
+                <div class="enneagram-number">6</div>
+                <div class="enneagram-name">忠诚型</div>
+                <div class="enneagram-alias">怀疑论者</div>
+                <div class="enneagram-traits">
+                    <span class="tag tag-burgundy">风险意识</span>
+                    <span class="tag tag-gold">忠诚可靠</span>
+                </div>
+            </div>
+            <div class="enneagram-card">
+                <div class="enneagram-number">7</div>
+                <div class="enneagram-name">活跃型</div>
+                <div class="enneagram-alias">享乐者</div>
+                <div class="enneagram-traits">
+                    <span class="tag tag-burgundy">乐观积极</span>
+                    <span class="tag tag-gold">多线并行</span>
+                </div>
+            </div>
+            <div class="enneagram-card">
+                <div class="enneagram-number">8</div>
+                <div class="enneagram-name">领袖型</div>
+                <div class="enneagram-alias">保护者</div>
+                <div class="enneagram-traits">
+                    <span class="tag tag-burgundy">掌控全局</span>
+                    <span class="tag tag-gold">果断行动</span>
+                </div>
+            </div>
+            <div class="enneagram-card">
+                <div class="enneagram-number">9</div>
+                <div class="enneagram-name">和平型</div>
+                <div class="enneagram-alias">调停者</div>
+                <div class="enneagram-traits">
+                    <span class="tag tag-burgundy">和谐稳定</span>
+                    <span class="tag tag-gold">包容融合</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="divider-ornament"><span>◆</span></div>
+
+        <!-- ========== 销售工具箱 ========== -->
+        <div class="page-header">
+            <div class="page-header-icon"><i class="fas fa-tools"></i></div>
+            <h2>销售工具箱</h2>
+        </div>
+
+        <div class="tool-grid">
+            <div class="tool-card">
+                <div class="tool-icon tool-icon-navy"><i class="fas fa-calendar-alt"></i></div>
+                <div class="tool-info">
+                    <h4>留学时间规划</h4>
+                    <p>英国硕士申请全流程时间节点与任务清单</p>
+                </div>
+            </div>
+            <div class="tool-card">
+                <div class="tool-icon tool-icon-burgundy"><i class="fas fa-plane-departure"></i></div>
+                <div class="tool-info">
+                    <h4>留英行前指南</h4>
+                    <p>签证、体检、换汇、行李、落地、生活全指引</p>
+                </div>
+            </div>
+            <div class="tool-card">
+                <div class="tool-icon tool-icon-gold"><i class="fas fa-certificate"></i></div>
+                <div class="tool-info">
+                    <h4>境外学历认证指南</h4>
+                    <p>国(境)外学历学位认证全流程操作指引</p>
+                </div>
+            </div>
+            <div class="tool-card">
+                <div class="tool-icon tool-icon-navy"><i class="fas fa-passport"></i></div>
+                <div class="tool-info">
+                    <h4>英国学生签证指南</h4>
+                    <p>签证材料、保证金、肺结核体检、申请流程</p>
+                </div>
+            </div>
+            <div class="tool-card">
+                <div class="tool-icon tool-icon-burgundy"><i class="fas fa-pound-sign"></i></div>
+                <div class="tool-info">
+                    <h4>留位费退费政策</h4>
+                    <p>13所英国热门大学留位费退费规则汇总</p>
+                </div>
+            </div>
+            <div class="tool-card">
+                <div class="tool-icon tool-icon-gold"><i class="fas fa-file-invoice-dollar"></i></div>
+                <div class="tool-info">
+                    <h4>院校报价工具</h4>
+                    <p>快速查询合作院校佣金及服务费标准</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="footer-line"></div>
+
+</body>
+</html>
