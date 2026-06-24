@@ -6127,10 +6127,17 @@ function applyShareMode(config) {
         const enneaTabBtns = document.querySelectorAll('#page-enneagram .tab-btn');
         enneaTabBtns.forEach(btn => {
             const onclick = btn.getAttribute('onclick') || '';
-            if (onclick.includes('ennea-types')) btn.style.display = hasEnneaTypes ? '' : 'none';
-            if (onclick.includes('ennea-test')) btn.style.display = hasEnneaTest ? '' : 'none';
-            if (onclick.includes('ennea-team')) btn.style.display = hasEnneaTeam ? '' : 'none';
+            if (onclick.includes("showEnneaTab('types')")) btn.style.display = hasEnneaTypes ? '' : 'none';
+            if (onclick.includes("showEnneaTab('test')")) btn.style.display = hasEnneaTest ? '' : 'none';
+            if (onclick.includes("showEnneaTab('team')")) btn.style.display = hasEnneaTeam ? '' : 'none';
         });
+        // 同步隐藏对应的内容区域
+        const enneaTypesContent = document.getElementById('ennea-types');
+        const enneaTestContent = document.getElementById('ennea-test');
+        const enneaTeamContent = document.getElementById('ennea-team');
+        if (enneaTypesContent) enneaTypesContent.style.display = hasEnneaTypes ? '' : 'none';
+        if (enneaTestContent) enneaTestContent.style.display = hasEnneaTest ? '' : 'none';
+        if (enneaTeamContent) enneaTeamContent.style.display = hasEnneaTeam ? '' : 'none';
         // 如果默认tab被隐藏，自动切换到第一个可见tab
         const activeTab = document.querySelector('#page-enneagram .tab-btn.active');
         if (activeTab && activeTab.style.display === 'none') {
