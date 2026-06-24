@@ -5906,7 +5906,10 @@ async function loadShareConfig(token) {
                 'tools': ['tools'],
                 'ai-studio': ['ai-studio'],
                 'ai-studio:craft': ['ai-studio:craft'],
-                'ai-studio:library': ['ai-studio:library']
+                'ai-studio:library': ['ai-studio:library'],
+                'enneagram:types': ['enneagram:types'],
+                'enneagram:test': ['enneagram:test'],
+                'enneagram:team': ['enneagram:team']
             };
             if (sectionMap[token]) {
                 isShareMode = true;
@@ -6015,7 +6018,7 @@ function applyShareMode(config) {
     const navSections = [];
     const seen = new Set();
     for (const s of sections) {
-        const navPage = s.startsWith('ai-studio') ? 'ai-studio' : s;
+        const navPage = s.startsWith('ai-studio') ? 'ai-studio' : (s.startsWith('enneagram') ? 'enneagram' : s);
         if (!seen.has(navPage)) {
             navSections.push(navPage);
             seen.add(navPage);
@@ -6113,8 +6116,31 @@ function applyShareMode(config) {
         // 附件区域的上传/删除按钮在 openTool 中根据 isShareMode 动态处理
     }
     
+    // ===== 九型人格子板块Tab控制 =====
+    const hasFullEnneagram = sections.includes('enneagram');
+    const hasEnneaTypes = hasFullEnneagram || sections.includes('enneagram:types');
+    const hasEnneaTest = hasFullEnneagram || sections.includes('enneagram:test');
+    const hasEnneaTeam = hasFullEnneagram || sections.includes('enneagram:team');
+    const hasAnyEnneagram = hasFullEnneagram || sections.includes('enneagram:types') || sections.includes('enneagram:test') || sections.includes('enneagram:team');
+    
+    if (hasAnyEnneagram) {
+        const enneaTabBtns = document.querySelectorAll('#page-enneagram .tab-btn');
+        enneaTabBtns.forEach(btn => {
+            const onclick = btn.getAttribute('onclick') || '';
+            if (onclick.includes('ennea-types')) btn.style.display = hasEnneaTypes ? '' : 'none';
+            if (onclick.includes('ennea-test')) btn.style.display = hasEnneaTest ? '' : 'none';
+            if (onclick.includes('ennea-team')) btn.style.display = hasEnneaTeam ? '' : 'none';
+        });
+        // 如果默认tab被隐藏，自动切换到第一个可见tab
+        const activeTab = document.querySelector('#page-enneagram .tab-btn.active');
+        if (activeTab && activeTab.style.display === 'none') {
+            const firstVisible = document.querySelector('#page-enneagram .tab-btn:not([style*="display: none"])');
+            if (firstVisible) firstVisible.click();
+        }
+    }
+    
     // 九型人格：隐藏测试保存功能
-    if (sections.includes('enneagram')) {
+    if (hasAnyEnneagram) {
         // 测试保存按钮通过CSS隐藏
     }
     
@@ -6527,6 +6553,9 @@ function getSectionDisplayName(section) {
     if (section === 'ai-studio') return 'AI话术工坊（全部）';
     if (section === 'ai-studio:craft') return 'AI话术工坊-生成';
     if (section === 'ai-studio:library') return 'AI话术工坊-话术库';
+    if (section === 'enneagram:types') return '九型人格-详解';
+    if (section === 'enneagram:test') return '九型人格-测试';
+    if (section === 'enneagram:team') return '九型人格-团队';
     return SECTION_NAMES[section] || section;
 }
 
@@ -6553,6 +6582,18 @@ function getSectionDisplayTags(sections) {
             tags.push({ key: 'ai-studio:craft', name: 'AI话术工坊-生成' });
         } else if (hasLibrary) {
             tags.push({ key: 'ai-studio:library', name: 'AI话术工坊-话术库' });
+        
+        // 九型人格子板块标签
+        const hasEnneaTypes = sections.includes('enneagram:types');
+        const hasEnneaTest = sections.includes('enneagram:test');
+        const hasEnneaTeam = sections.includes('enneagram:team');
+        if (hasEnneaTypes && hasEnneaTest && hasEnneaTeam) {
+            // Don't add individual tags, will be handled as full enneagram below
+        } else {
+            if (hasEnneaTypes) tags.push({ key: 'enneagram:types', name: '九型人格-详解' });
+            if (hasEnneaTest) tags.push({ key: 'enneagram:test', name: '九型人格-测试' });
+            if (hasEnneaTeam) tags.push({ key: 'enneagram:team', name: '九型人格-团队' });
+        }
         }
     }
     return tags;
@@ -6690,6 +6731,9 @@ function openCreateShareLink() {
     document.getElementById('shareLinkExpires').value = '';
     document.querySelectorAll('input[name="shareSection"]').forEach(cb => cb.checked = false);
     document.querySelectorAll('input[name="shareSubStudio"]').forEach(cb => cb.checked = false);
+    const enneagramSubOptions = document.getElementById('enneagramSubOptions');
+    if (enneagramSubOptions) enneagramSubOptions.style.display = 'none';
+    document.querySelectorAll('input[name="shareSubEnneagram"]').forEach(cb => cb.checked = false);
     document.getElementById('studioSubOptions').style.display = 'none';
     // 更新弹窗标题和按钮
     document.querySelector('#createShareLinkModal h2').innerHTML = '<i class="fas fa-share-alt"></i> 创建分享链接';
@@ -6741,6 +6785,9 @@ function openEditShareLink(id) {
             } else {
                 subOptions.style.display = 'none';
                 document.querySelectorAll('input[name="shareSubStudio"]').forEach(cb => cb.checked = false);
+    const enneagramSubOptions = document.getElementById('enneagramSubOptions');
+    if (enneagramSubOptions) enneagramSubOptions.style.display = 'none';
+    document.querySelectorAll('input[name="shareSubEnneagram"]').forEach(cb => cb.checked = false);
             }
             
             // 更新弹窗标题和按钮
@@ -6781,12 +6828,32 @@ async function createShareLink(event) {
         }
         
         if (subCraft && subLibrary) {
-            // 两个都选，存为 ai-studio
             sections.push('ai-studio');
         } else if (subCraft) {
             sections.push('ai-studio:craft');
         } else {
             sections.push('ai-studio:library');
+        }
+    }
+    
+    // 处理九型人格子板块
+    const enneagramChecked = document.querySelector('input[name="shareSection"][value="enneagram"]').checked;
+    if (enneagramChecked) {
+        const subTypes = document.querySelector('input[name="shareSubEnneagram"][value="types"]').checked;
+        const subTest = document.querySelector('input[name="shareSubEnneagram"][value="test"]').checked;
+        const subTeam = document.querySelector('input[name="shareSubEnneagram"][value="team"]').checked;
+        
+        if (!subTypes && !subTest && !subTeam) {
+            alert('九型人格至少需要选择一个子板块');
+            return;
+        }
+        
+        if (subTypes && subTest && subTeam) {
+            sections.push('enneagram');
+        } else {
+            if (subTypes) sections.push('enneagram:types');
+            if (subTest) sections.push('enneagram:test');
+            if (subTeam) sections.push('enneagram:team');
         }
     }
     

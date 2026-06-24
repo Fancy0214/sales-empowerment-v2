@@ -1126,10 +1126,26 @@
                             <input type="checkbox" name="shareSection" value="tools">
                             <span class="share-section-label"><i class="fas fa-tools"></i> 销售工具箱</span>
                         </label>
-                        <label class="share-section-checkbox">
-                            <input type="checkbox" name="shareSection" value="enneagram">
-                            <span class="share-section-label"><i class="fas fa-user-circle"></i> 九型人格</span>
-                        </label>
+                        <div class="share-section-checkbox-group">
+                            <label class="share-section-checkbox">
+                                <input type="checkbox" name="shareSection" value="enneagram" onchange="toggleEnneagramSubOptions()">
+                                <span class="share-section-label"><i class="fas fa-user-circle"></i> 九型人格</span>
+                            </label>
+                            <div class="studio-sub-options" id="enneagramSubOptions" style="display:none;">
+                                <label class="share-section-checkbox share-sub-checkbox">
+                                    <input type="checkbox" name="shareSubEnneagram" value="types" checked>
+                                    <span class="share-section-label"><i class="fas fa-book-open"></i> 九型详解</span>
+                                </label>
+                                <label class="share-section-checkbox share-sub-checkbox">
+                                    <input type="checkbox" name="shareSubEnneagram" value="test" checked>
+                                    <span class="share-section-label"><i class="fas fa-question-circle"></i> 互动测试</span>
+                                </label>
+                                <label class="share-section-checkbox share-sub-checkbox">
+                                    <input type="checkbox" name="shareSubEnneagram" value="team" checked>
+                                    <span class="share-section-label"><i class="fas fa-users"></i> 团队搭配</span>
+                                </label>
+                            </div>
+                        </div>
                         <label class="share-section-checkbox">
                             <input type="checkbox" name="shareSection" value="plan-generator" style="display:none;">
                             <span class="share-section-label" style="display:none;"><i class="fas fa-graduation-cap"></i> 方案生成</span>
