@@ -6839,9 +6839,9 @@ async function createShareLink(event) {
     const sections = [];
     const aiStudioChecked = document.querySelector('input[name="shareSection"][value="ai-studio"]').checked;
     
-    // 收集非AI话术工坊的板块
+    // 收集非AI话术工坊、非九型人格的板块（这俩有子板块逻辑单独处理）
     document.querySelectorAll('input[name="shareSection"]:checked').forEach(cb => {
-        if (cb.value !== 'ai-studio') {
+        if (cb.value !== 'ai-studio' && cb.value !== 'enneagram') {
             sections.push(cb.value);
         }
     });
