@@ -7026,13 +7026,16 @@ async function deleteShareLink(id) {
 
 // 复制分享链接
 function copyShareLink(token) {
-    const shareUrl = `https://fancy0214.github.io/sales-empowerment-v2/?share=${token}`;
+    const isCollect = token.startsWith('cl-');
+    const param = isCollect ? 'collect' : 'share';
+    const shareUrl = `https://fancy0214.github.io/sales-empowerment-v2/?${param}=${token}`;
+    const tip = isCollect ? '竞品信息收集链接已复制到剪贴板！\n\n他人可通过此链接提交竞品信息。\n\n链接：' : '分享链接已复制到剪贴板！\n\n链接：';
     if (navigator.clipboard) {
         navigator.clipboard.writeText(shareUrl).then(() => {
-            alert('分享链接已复制到剪贴板！\n\n链接：' + shareUrl);
+            alert(tip + shareUrl);
         });
     } else {
-        prompt('请复制以下分享链接：', shareUrl);
+        prompt('请复制以下链接：', shareUrl);
     }
 }
 
