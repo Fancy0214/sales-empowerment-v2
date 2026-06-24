@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>留学销售赋能平台 — 英伦精工样本</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* ══════════════════════════════════════════
+           英伦精工 · British Crafted
+           ══════════════════════════════════════════
+           学院派底色 + 现代交互温度
+           牛津蓝 / 剑桥深红 / 皇室金 / 羊皮纸白
+           不是"装英国"，是你本就做英国留学
+        */
+
+        :root {
+            /* 核心色 — 英式学院 */
+            --navy: #1B3A5C;
+            --navy-light: #2A5280;
+            --navy-pale: #E8EEF5;
+            --navy-glow: rgba(27, 58, 92, 0.12);
+
+            --burgundy: #7B2D3B;
+            --burgundy-light: #9E4555;
+            --burgundy-pale: #F5EAED;
+
+            --gold: #B8953A;
+            --gold-light: #D4B04E;
+            --gold-pale: #FAF5E8;
+            --gold-subtle: rgba(184, 149, 58, 0.10);
+
+            --cream: #FAF8F4;
+            --parchment: #F5F2EC;
+            --ivory: #FEFDFB;
+
+            --text-primary: #1C1C1E;
+            --text-secondary: #4A4A4F;
+            --text-tertiary: #8A8A8F;
+            --text-quaternary: #B0B0B5;
+
+            --success: #2D6B4F;
+            --success-pale: #E8F2EC;
+            --warning: #946B2F;
+            --warning-pale: #F5F0E5;
+            --danger: #943030;
+            --danger-pale: #F5E8E8;
+
+            --border: #DDD9D2;
+            --border-subtle: #EAE7E2;
+            --divider: #E5E2DC;
+
+            --shadow-sm: 0 1px 3px rgba(28,28,30,0.05);
+            --shadow-md: 0 2px 10px rgba(28,28,30,0.07), 0 1px 3px rgba(28,28,30,0.04);
+            --shadow-lg: 0 8px 28px rgba(28,28,30,0.09), 0 2px 8px rgba(28,28,30,0.05);
+            --shadow-xl: 0 16px 48px rgba(28,28,30,0.11), 0 4px 12px rgba(28,28,30,0.06);
+
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+
+            --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans SC', -apple-system, sans-serif;
+            background: var(--cream);
+            color: var(--text-primary);
+            min-height: 100vh;
+            font-size: 14px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ===== 顶栏 — 学院徽章感 ===== */
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(250, 248, 244, 0.85);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 0 28px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .topbar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .topbar-crest {
+            width: 34px;
+            height: 34px;
+            background: linear-gradient(145deg, var(--navy) 0%, var(--navy-light) 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gold);
+            font-size: 15px;
+            box-shadow: 0 2px 8px rgba(27, 58, 92, 0.25), inset 0 1px 0 rgba(255,255,255,0.1);
+            transition: transform 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+            position: relative;
+        }
+        .topbar-crest::after {
+            content: '';
+            position: absolute;
+            inset: 2px;
+            border: 1px solid rgba(184, 149, 58, 0.3);
+            border-radius: 5px;
+        }
+        .topbar-crest:hover {
+            transform: scale(1.06);
+            box-shadow: 0 4px 14px rgba(27, 58, 92, 0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+        }
+        .topbar-title {
+            font-family: 'Playfair Display', 'Noto Sans SC', serif;
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--navy);
+            letter-spacing: 0.5px;
+        }
+        .topbar-title-en {
+            font-family: 'Playfair Display', serif;
+            font-size: 10px;
+            font-weight: 400;
+            color: var(--text-quaternary);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: -2px;
+        }
+        .topbar-sep {
+            width: 1px;
+            height: 22px;
+            background: var(--border);
+            margin: 0 4px;
+        }
+        .topbar-greeting {
+            font-size: 13px;
+            color: var(--text-tertiary);
+        }
+        .topbar-greeting strong {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .topbar-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            border: none;
+            background: transparent;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.15s var(--ease-standard);
+            position: relative;
+        }
+        .topbar-btn:hover {
+            background: var(--parchment);
+            color: var(--navy);
+        }
+        .topbar-btn .dot {
+            position: absolute;
+            top: 7px; right: 7px;
+            width: 6px; height: 6px;
+            background: var(--burgundy);
+            border-radius: 50%;
+            border: 1.5px solid var(--cream);
+        }
+        .topbar-avatar {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--navy), var(--burgundy));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+        }
+        .topbar-avatar:hover {
+            transform: scale(1.08);
+            box-shadow: 0 2px 10px rgba(27,58,92,0.25);
+        }
+
+        /* ===== 布局 ===== */
+        .layout { display: flex; min-height: calc(100vh - 57px); }
+
+        /* ===== 侧边栏 — 金线分隔 ===== */
+        .sidebar {
+            width: 228px;
+            padding: 16px 10px;
+            border-right: 1px solid var(--border-subtle);
+            background: rgba(255,255,255,0.45);
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .sidebar-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-quaternary);
+            letter-spacing: 2.5px;
+            padding: 10px 14px 6px;
+            text-transform: uppercase;
+        }
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 14px;
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 13.5px;
+            font-weight: 400;
+            transition: all 0.15s var(--ease-standard);
+            position: relative;
+        }
+        .sidebar-item:hover {
+            background: var(--parchment);
+            color: var(--text-primary);
+        }
+        .sidebar-item.active {
+            background: var(--navy-pale);
+            color: var(--navy);
+            font-weight: 500;
+        }
+        .sidebar-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 5px;
+            bottom: 5px;
+            width: 3px;
+            border-radius: 0 3px 3px 0;
+            background: var(--navy);
+        }
+        .sidebar-item i {
+            width: 18px;
+            text-align: center;
+            font-size: 13px;
+            opacity: 0.6;
+        }
+        .sidebar-item.active i { opacity: 1; }
+        .sidebar-badge {
+            margin-left: auto;
+            background: var(--burgundy);
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 1px 7px;
+            border-radius: 10px;
+            line-height: 16px;
+        }
+        .sidebar-bottom {
+            margin-top: auto;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        /* ===== 主内容 ===== */
+        .main {
+            flex: 1;
+            padding: 28px 36px;
+            max-width: 1060px;
+        }
+
+        /* ===== 页面标题 — 衬线+金线 ===== */
+        .page-head {
+            margin-bottom: 24px;
+        }
+        .page-head-row {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        .page-title {
+            font-family: 'Playfair Display', 'Noto Sans SC', serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--navy);
+            letter-spacing: -0.3px;
+            line-height: 1.2;
+        }
+        .page-desc {
+            font-size: 13px;
+            color: var(--text-tertiary);
+            margin-top: 4px;
+        }
+        .page-rule {
+            border: none;
+            height: 1px;
+            background: linear-gradient(90deg, var(--gold), var(--border), transparent);
+            margin-top: 12px;
+        }
+
+        /* ===== 按钮 ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 18px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.15s var(--ease-standard);
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle, rgba(255,255,255,0.25) 0%, transparent 60%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .btn:active::after { opacity: 1; }
+
+        .btn-primary {
+            background: var(--navy);
+            color: white;
+            box-shadow: 0 1px 3px rgba(27,58,92,0.2);
+        }
+        .btn-primary:hover {
+            background: var(--navy-light);
+            box-shadow: 0 3px 10px rgba(27,58,92,0.25);
+            transform: translateY(-1px);
+        }
+        .btn-primary:active { transform: translateY(0); }
+
+        .btn-secondary {
+            background: white;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover {
+            border-color: var(--navy);
+            color: var(--navy);
+            background: var(--navy-pale);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-tertiary);
+            border: 1px solid var(--border);
+            padding: 7px 14px;
+            font-size: 12px;
+        }
+        .btn-ghost:hover {
+            border-color: var(--navy);
+            color: var(--navy);
+            background: var(--navy-pale);
+        }
+
+        /* ===== 标签页 ===== */
+        .tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--divider);
+        }
+        .tab {
+            padding: 10px 18px;
+            font-size: 13px;
+            font-weight: 450;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-family: inherit;
+            transition: color 0.15s;
+            position: relative;
+        }
+        .tab:hover { color: var(--text-secondary); }
+        .tab.active {
+            color: var(--navy);
+            font-weight: 500;
+        }
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            left: 18px; right: 18px;
+            bottom: -1px;
+            height: 2px;
+            background: var(--navy);
+            border-radius: 2px 2px 0 0;
+            animation: slideIn 0.25s var(--ease-out);
+        }
+        @keyframes slideIn {
+            from { transform: scaleX(0); }
+            to { transform: scaleX(1); }
+        }
+
+        /* ===== 卡片 ===== */
+        .card {
+            background: var(--ivory);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            transition: box-shadow 0.25s, transform 0.25s;
+        }
+        .card:hover { box-shadow: var(--shadow-md); }
+        .card-body { padding: 22px 24px; }
+
+        /* ===== 竞品情报站 — 数据表 ===== */
+        .stat-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+        .stat-box {
+            background: var(--ivory);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 16px 18px;
+            transition: all 0.2s var(--ease-out);
+        }
+        .stat-box:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        .stat-value {
+            font-family: 'Playfair Display', serif;
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--navy);
+            letter-spacing: -0.5px;
+        }
+        .stat-delta {
+            font-size: 11px;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .delta-up { color: var(--success); }
+        .delta-down { color: var(--danger); }
+
+        .progress-track {
+            height: 4px;
+            background: var(--parchment);
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 2px;
+            background: linear-gradient(90deg, var(--navy), var(--navy-light));
+            transition: width 0.6s ease;
+            position: relative;
+        }
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+            animation: shimmer 2.5s infinite;
+        }
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 18px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .sel {
+            padding: 7px 30px 7px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: white;
+            font-size: 13px;
+            font-family: inherit;
+            color: var(--text-primary);
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%238A8A8F'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            transition: all 0.15s;
+        }
+        .sel:hover { border-color: var(--text-quaternary); }
+        .sel:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px var(--navy-glow); }
+
+        .status-live {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            color: var(--text-quaternary);
+        }
+        .live-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: var(--success);
+            position: relative;
+        }
+        .live-dot::after {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 50%;
+            background: var(--success);
+            opacity: 0;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%,100% { opacity: 0; transform: scale(1); }
+            50% { opacity: 0.25; transform: scale(2); }
+        }
+
+        /* 数据表 */
+        .dtable {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .dtable th {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-tertiary);
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 2px solid var(--navy);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .dtable td {
+            padding: 13px 14px;
+            font-size: 13px;
+            border-bottom: 1px solid var(--border-subtle);
+            vertical-align: middle;
+        }
+        .dtable tbody tr {
+            transition: background 0.15s;
+        }
+        .dtable tbody tr:hover {
+            background: var(--navy-pale);
+        }
+        .dtable tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            padding: 2px 10px;
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 500;
+            line-height: 18px;
+        }
+        .chip-navy { background: var(--navy-pale); color: var(--navy); }
+        .chip-burgundy { background: var(--burgundy-pale); color: var(--burgundy); }
+        .chip-gold { background: var(--gold-pale); color: var(--gold); }
+        .chip-neutral { background: var(--parchment); color: var(--text-secondary); }
+        .chip-success { background: var(--success-pale); color: var(--success); }
+        .chip-danger { background: var(--danger-pale); color: var(--danger); }
+        .chip-warning { background: var(--warning-pale); color: var(--warning); }
+
+        .grade {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px; height: 32px;
+            border-radius: var(--radius-sm);
+            font-family: 'Playfair Display', serif;
+            font-size: 16px;
+            font-weight: 700;
+        }
+        .grade-a { background: var(--success-pale); color: var(--success); }
+        .grade-b { background: var(--warning-pale); color: var(--warning); }
+
+        /* ===== AI话术工坊 ===== */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .form-field.full { grid-column: 1 / -1; }
+        .form-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        .form-label .hint {
+            color: var(--text-quaternary);
+            font-weight: 400;
+            margin-left: 4px;
+        }
+        .form-input,
+        .form-select,
+        .form-textarea {
+            padding: 9px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: white;
+            font-size: 13px;
+            font-family: inherit;
+            color: var(--text-primary);
+            transition: all 0.15s;
+        }
+        .form-select { appearance: none; cursor: pointer; }
+        .form-input:hover, .form-select:hover, .form-textarea:hover {
+            border-color: var(--text-quaternary);
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--navy);
+            box-shadow: 0 0 0 3px var(--navy-glow);
+        }
+        .form-textarea {
+            resize: vertical;
+            min-height: 76px;
+            line-height: 1.6;
+        }
+
+        /* 话术输出 — 信纸感 */
+        .script-output {
+            background: var(--ivory);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        .script-output-head {
+            padding: 16px 24px;
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .script-output-icon {
+            width: 30px; height: 30px;
+            border-radius: var(--radius-sm);
+            background: rgba(255,255,255,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+        }
+        .script-output-title {
+            font-family: 'Playfair Display', 'Noto Sans SC', serif;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+        .script-output-body {
+            padding: 22px 24px;
+        }
+        .script-step {
+            padding: 14px 18px;
+            background: var(--parchment);
+            border-radius: var(--radius-md);
+            margin-bottom: 12px;
+            border-left: 3px solid transparent;
+            transition: all 0.2s var(--ease-standard);
+        }
+        .script-step:hover {
+            border-left-color: var(--navy);
+            background: var(--navy-pale);
+        }
+        .script-step:last-child { margin-bottom: 0; }
+        .script-step-num {
+            font-family: 'Playfair Display', serif;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--navy);
+            letter-spacing: 1px;
+            margin-bottom: 3px;
+        }
+        .script-step-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        .script-step-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+        .script-tip {
+            margin-top: 16px;
+            padding: 14px 18px;
+            border-radius: var(--radius-md);
+            background: var(--gold-pale);
+            border: 1px solid var(--gold-subtle);
+        }
+        .script-tip-head {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--gold);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .script-tip ul {
+            list-style: none;
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 2;
+        }
+        .script-tip ul li::before {
+            content: '→';
+            color: var(--gold);
+            margin-right: 8px;
+            font-size: 11px;
+        }
+
+        /* ===== 九型人格 — 盾徽卡片 ===== */
+        .enneagram-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+        .enneagram-card {
+            background: var(--ivory);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 22px;
+            cursor: pointer;
+            transition: all 0.3s var(--ease-out);
+            position: relative;
+            overflow: hidden;
+        }
+        .enneagram-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--navy), var(--gold));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s var(--ease-out);
+        }
+        .enneagram-card:hover::before { transform: scaleX(1); }
+        .enneagram-card:hover {
+            border-color: var(--navy);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-4px);
+        }
+        .enneagram-card:active { transform: translateY(-1px); }
+        .enneagram-num {
+            font-family: 'Playfair Display', serif;
+            font-size: 42px;
+            font-weight: 700;
+            color: var(--parchment);
+            line-height: 1;
+            transition: color 0.3s;
+        }
+        .enneagram-card:hover .enneagram-num { color: var(--navy-pale); }
+        .enneagram-name {
+            font-family: 'Playfair Display', 'Noto Sans SC', serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-top: 2px;
+        }
+        .enneagram-en {
+            font-family: 'Playfair Display', serif;
+            font-size: 11px;
+            color: var(--text-quaternary);
+            font-style: italic;
+            margin-top: 1px;
+        }
+        .enneagram-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        /* ===== 销售工具箱 ===== */
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        .tool-card {
+            background: var(--ivory);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+            transition: all 0.25s var(--ease-out);
+        }
+        .tool-card:hover {
+            border-color: var(--navy);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        .tool-card:active { transform: translateY(0); }
+        .tool-icon {
+            width: 40px; height: 40px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+            transition: transform 0.25s var(--ease-out);
+        }
+        .tool-card:hover .tool-icon { transform: scale(1.08); }
+        .ti-navy { background: var(--navy-pale); color: var(--navy); }
+        .ti-burgundy { background: var(--burgundy-pale); color: var(--burgundy); }
+        .ti-gold { background: var(--gold-pale); color: var(--gold); }
+        .ti-success { background: var(--success-pale); color: var(--success); }
+        .ti-neutral { background: var(--parchment); color: var(--text-secondary); }
+        .tool-info h4 {
+            font-size: 13.5px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+        .tool-info p {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+        .tool-arrow {
+            margin-left: auto;
+            color: var(--text-quaternary);
+            font-size: 12px;
+            transition: all 0.15s;
+        }
+        .tool-card:hover .tool-arrow {
+            color: var(--navy);
+            transform: translateX(3px);
+        }
+
+        /* ===== 快捷操作 ===== */
+        .quick-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .qaction {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 450;
+            color: var(--text-secondary);
+            background: white;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: inherit;
+        }
+        .qaction:hover {
+            border-color: var(--navy);
+            color: var(--navy);
+            background: var(--navy-pale);
+            box-shadow: var(--shadow-sm);
+        }
+        .qaction i { font-size: 11px; }
+
+        /* ===== 样本说明 ===== */
+        .sample-banner {
+            background: var(--ivory);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 24px 28px;
+            margin-bottom: 32px;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+        .sample-banner::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--navy), var(--gold), var(--burgundy), var(--navy));
+            background-size: 300% 100%;
+            animation: flowGrad 4s ease infinite;
+        }
+        @keyframes flowGrad {
+            0%,100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        .sample-banner h3 {
+            font-family: 'Playfair Display', 'Noto Sans SC', serif;
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .sample-banner h3 i { color: var(--gold); }
+        .sample-banner p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+        .pillars {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+        .pillar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 14px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 450;
+            background: var(--parchment);
+            color: var(--text-secondary);
+            transition: all 0.15s;
+        }
+        .pillar:hover { background: var(--navy-pale); color: var(--navy); }
+        .pillar i { font-size: 11px; }
+        .hint-bar {
+            margin-top: 16px;
+            padding: 10px 16px;
+            border-radius: var(--radius-md);
+            background: var(--navy-pale);
+            border: 1px solid rgba(27,58,92,0.06);
+            font-size: 12px;
+            color: var(--navy);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .hint-bar i { animation: blink 2s ease-in-out infinite; }
+        @keyframes blink {
+            0%,100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* ===== 分隔 ===== */
+        .section-gap { height: 36px; }
+        .section-line {
+            border: none;
+            height: 1px;
+            background: linear-gradient(90deg, var(--gold), var(--divider), transparent);
+            margin: 36px 0;
+        }
+
+        /* ===== Toast ===== */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--ivory);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-xl);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--text-primary);
+            transform: translateY(80px);
+            opacity: 0;
+            transition: all 0.4s var(--ease-out);
+            z-index: 1000;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast-check {
+            width: 24px; height: 24px;
+            border-radius: 50%;
+            background: var(--success-pale);
+            color: var(--success);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 顶栏 -->
+<div class="topbar">
+    <div class="topbar-left">
+        <div class="topbar-logo">
+            <div class="topbar-crest"><i class="fas fa-graduation-cap"></i></div>
+            <div>
+                <div class="topbar-title">销售赋能平台</div>
+                <div class="topbar-title-en">Sales Empowerment · UK & Ireland</div>
+            </div>
+        </div>
+        <div class="topbar-sep"></div>
+        <div class="topbar-greeting">下午好，<strong>Fancy</strong></div>
+    </div>
+    <div class="topbar-right">
+        <button class="topbar-btn" title="搜索"><i class="fas fa-search"></i></button>
+        <button class="topbar-btn" title="通知"><i class="fas fa-bell"></i><span class="dot"></span></button>
+        <button class="topbar-btn" title="设置"><i class="fas fa-cog"></i></button>
+        <div class="topbar-avatar">F</div>
+    </div>
+</div>
+
+<div class="layout">
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+        <div class="sidebar-label">业务</div>
+        <div class="sidebar-item active">
+            <i class="fas fa-shield-alt"></i>
+            <span>竞品情报站</span>
+            <span class="sidebar-badge">3</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-comment-dots"></i>
+            <span>AI话术工坊</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-user-circle"></i>
+            <span>九型人格</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-toolbox"></i>
+            <span>销售工具箱</span>
+        </div>
+        <div style="height:12px"></div>
+        <div class="sidebar-label">管理</div>
+        <div class="sidebar-item">
+            <i class="fas fa-share-alt"></i>
+            <span>分享管理</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-database"></i>
+            <span>院校数据</span>
+        </div>
+        <div class="sidebar-bottom">
+            <div class="sidebar-item">
+                <i class="fas fa-cog"></i>
+                <span>后台设置</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主内容 -->
+    <div class="main">
+
+        <!-- 说明 -->
+        <div class="sample-banner">
+            <h3><i class="fas fa-crown"></i> 英伦精工样本</h3>
+            <p>不是换配色，是把你的行业做进设计。牛津蓝作骨架、剑桥深红作重点、皇室金作细节线——这是英国留学行业自己的视觉语言，不是借来的风格。悬停、点击、切换，试试每一处交互。</p>
+            <div class="pillars">
+                <div class="pillar"><i class="fas fa-landmark"></i> 学院派底色</div>
+                <div class="pillar"><i class="fas fa-hand-pointer"></i> 交互有回应</div>
+                <div class="pillar"><i class="fas fa-feather"></i> 留白有节奏</div>
+                <div class="pillar"><i class="fas fa-gem"></i> 金线点睛</div>
+                <div class="pillar"><i class="fas fa-shield-alt"></i> 盾徽质感</div>
+            </div>
+            <div class="hint-bar">
+                <i class="fas fa-hand-point-up"></i>
+                悬停卡片、按钮、表格行、九型卡片——感受交互细节
+            </div>
+        </div>
+
+        <!-- ═══ 竞品情报站 ═══ -->
+        <div class="page-head">
+            <div class="page-head-row">
+                <div>
+                    <div class="page-title">竞品情报站</div>
+                    <div class="page-desc">近7天竞品动态 · 英国 & 爱尔兰市场</div>
+                </div>
+                <div class="quick-actions">
+                    <button class="qaction"><i class="fas fa-plus"></i> 提交竞品反馈</button>
+                    <button class="qaction"><i class="fas fa-link"></i> 生成分享链接</button>
+                </div>
+            </div>
+            <hr class="page-rule">
+        </div>
+
+        <div class="stat-row">
+            <div class="stat-box">
+                <div class="stat-label">监测机构</div>
+                <div class="stat-value">12</div>
+                <div class="stat-delta delta-up"><i class="fas fa-arrow-up" style="font-size:9px;"></i> 较上月+2</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">本周动态</div>
+                <div class="stat-value">7</div>
+                <div class="stat-delta delta-down"><i class="fas fa-arrow-down" style="font-size:9px;"></i> 较上周-3</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">A评级机构</div>
+                <div class="stat-value">4</div>
+                <div class="stat-delta" style="color:var(--text-quaternary);">持平</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">数据完整度</div>
+                <div class="stat-value">86%</div>
+                <div class="progress-track"><div class="progress-fill" style="width:86%"></div></div>
+            </div>
+        </div>
+
+        <div class="filter-bar">
+            <select class="sel"><option>覆盖国别</option><option>英国</option><option>爱尔兰</option></select>
+            <select class="sel"><option>业务模式</option><option>B2B</option><option>B2C</option></select>
+            <button class="btn btn-secondary" style="padding:7px 14px;"><i class="fas fa-filter" style="font-size:10px;"></i> 筛选</button>
+            <div style="flex:1"></div>
+            <div class="status-live"><span class="live-dot"></span> 3分钟前更新</div>
+        </div>
+
+        <div class="card" style="overflow:hidden;">
+            <table class="dtable">
+                <thead>
+                    <tr>
+                        <th>机构</th>
+                        <th>覆盖国别</th>
+                        <th>优势区域</th>
+                        <th>核心优势</th>
+                        <th>主要劣势</th>
+                        <th>评级</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="font-weight:500;">启德教育</td>
+                        <td>
+                            <span class="chip chip-navy">英国</span>
+                            <span class="chip chip-navy">美国</span>
+                            <span class="chip chip-neutral">+4</span>
+                        </td>
+                        <td>华南、华中</td>
+                        <td style="font-size:12px;">英国院校代理资源全网最全</td>
+                        <td><span class="chip chip-danger">澳洲口碑一般</span></td>
+                        <td><span class="grade grade-a">A</span></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:500;">新通教育</td>
+                        <td>
+                            <span class="chip chip-navy">英国</span>
+                            <span class="chip chip-navy">美国</span>
+                            <span class="chip chip-neutral">+3</span>
+                        </td>
+                        <td>江浙沪</td>
+                        <td style="font-size:12px;">前端BD满意度高，强建联型</td>
+                        <td><span class="chip chip-danger">后期服务一般</span></td>
+                        <td><span class="grade grade-a">A</span></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:500;">小希</td>
+                        <td>
+                            <span class="chip chip-navy">英国</span>
+                            <span class="chip chip-success">澳洲</span>
+                        </td>
+                        <td>线上为主</td>
+                        <td style="font-size:12px;">佣金全返；全系统化对接</td>
+                        <td><span class="chip chip-warning">人工服务少</span></td>
+                        <td><span class="grade grade-b">B</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <hr class="section-line">
+
+        <!-- ═══ AI话术工坊 ═══ -->
+        <div class="page-head">
+            <div class="page-title">AI话术工坊</div>
+            <div class="page-desc">AI辅助关键节点提醒和高频常规问题答复</div>
+            <hr class="page-rule">
+        </div>
+
+        <div class="tabs">
+            <button class="tab active">话术生成</button>
+            <button class="tab">话术收藏</button>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label class="form-label">我方角色</label>
+                        <select class="form-select"><option>B2B留学顾问（销售）</option><option>B2B渠道专员</option></select>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">客户层级</label>
+                        <select class="form-select"><option>C级（中型企业）</option><option>D级（小型企业）</option></select>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">客户身份</label>
+                        <select class="form-select"><option>影响者</option><option>决策者</option></select>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">触达阶段</label>
+                        <select class="form-select"><option>签约阶段</option><option>首次触达</option></select>
+                    </div>
+                    <div class="form-field full">
+                        <label class="form-label">客户背景信息 <span class="hint">越详细，话术越精准</span></label>
+                        <textarea class="form-textarea">合作方在申请旺季出现产能不足，客户需要稳定高效的备选通道来分流和保障申请进度。</textarea>
+                    </div>
+                </div>
+                <div style="display:flex;gap:10px;margin-top:16px;">
+                    <button class="btn btn-primary" onclick="showToast()"><i class="fas fa-wand-magic-sparkles"></i> 一键生成话术</button>
+                    <button class="btn btn-secondary"><i class="fas fa-rotate"></i> 重置</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="script-output">
+            <div class="script-output-head">
+                <div class="script-output-icon"><i class="fas fa-sparkles"></i></div>
+                <div class="script-output-title">匹配框架：价值共鸣 + 低门槛行动</div>
+            </div>
+            <div class="script-output-body">
+                <div class="script-step">
+                    <div class="script-step-num">STEP 01</div>
+                    <div class="script-step-label">破冰并建立价值共鸣</div>
+                    <div class="script-step-text">王总/经理，下午好，之前聊到贵司的英国业务发展挺快的，上的学生量也在增长……</div>
+                </div>
+                <div class="script-step">
+                    <div class="script-step-num">STEP 02</div>
+                    <div class="script-step-label">如果对方询问具体院校或优势</div>
+                    <div class="script-step-text">我们主要做英国和爱尔兰，像KCL、曼大、布里斯托、华威这些前10的热门校，都是我们长期稳定代理、案例丰富的……</div>
+                </div>
+                <div class="script-step">
+                    <div class="script-step-num">STEP 03</div>
+                    <div class="script-step-label">如果对方表示"有合作方了"</div>
+                    <div class="script-step-text">完全理解，稳定的合作肯定是最重要的。我们的建议从来不是替换，而是"新增一个安全通道"。</div>
+                </div>
+                <div class="script-tip">
+                    <div class="script-tip-head"><i class="fas fa-lightbulb"></i> 话术原则</div>
+                    <ul>
+                        <li>推新增不推替换，降低决策压力</li>
+                        <li>只共情问题，不评判对方现有合作方</li>
+                        <li>先体验再决定，用服务说话</li>
+                        <li>发完不追问，等1-2天再换场景钩子触达</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <hr class="section-line">
+
+        <!-- ═══ 九型人格 ═══ -->
+        <div class="page-head">
+            <div class="page-title">九型人格</div>
+            <div class="page-desc">了解性格类型，掌握沟通密码</div>
+            <hr class="page-rule">
+        </div>
+
+        <div class="tabs">
+            <button class="tab active">九型详解</button>
+            <button class="tab">互动测试</button>
+            <button class="tab">团队搭配</button>
+        </div>
+
+        <div class="enneagram-grid">
+            <div class="enneagram-card">
+                <div class="enneagram-num">1</div>
+                <div class="enneagram-name">完美型</div>
+                <div class="enneagram-en">The Reformer</div>
+                <div class="enneagram-tags">
+                    <span class="chip chip-navy">追求卓越</span>
+                    <span class="chip chip-neutral">规范化</span>
+                </div>
+            </div>
+            <div class="enneagram-card">
+                <div class="enneagram-num">2</div>
+                <div class="enneagram-name">助人型</div>
+                <div class="enneagram-en">The Helper</div>
+                <div class="enneagram-tags">
+                    <span class="chip chip-burgundy">利他主义</span>
+                    <span class="chip chip-neutral">关系导向</span>
+                </div>
+            </div>
+            <div class="enneagram-card">
+                <div class="enneagram-num">3</div>
+                <div class="enneagram-name">成就型</div>
+                <div class="enneagram-en">The Achiever</div>
+                <div class="enneagram-tags">
+                    <span class="chip chip-gold">目标驱动</span>
+                    <span class="chip chip-navy">高效执行</span>
+                </div>
+            </div>
+            <div class="enneagram-card">
+                <div class="enneagram-num">4</div>
+                <div class="enneagram-name">独特型</div>
+                <div class="enneagram-en">The Individualist</div>
+                <div class="enneagram-tags">
+                    <span class="chip chip-neutral">追求独特</span>
+                    <span class="chip chip-burgundy">深度感受</span>
+                </div>
+            </div>
+            <div class="enneagram-card">
+                <div class="enneagram-num">5</div>
+                <div class="enneagram-name">理智型</div>
+                <div class="enneagram-en">The Investigator</div>
+                <div class="enneagram-tags">
+                    <span class="chip chip-navy">独立思考</span>
+                    <span class="chip chip-neutral">知识储备</span>
+                </div>
+            </div>
+            <div class="enneagram-card">
+                <div class="enneagram-num">6</div>
+                <div class="enneagram-name">忠诚型</div>
+                <div class="enneagram-en">The Loyalist</div>
+                <div class="enneagram-tags">
+                    <span class="chip chip-gold">风险意识</span>
+                    <span class="chip chip-success">忠诚可靠</span>
+                </div>
+            </div>
+            <div class="enneagram-card">
+                <div class="enneagram-num">7</div>
+                <div class="enneagram-name">活跃型</div>
+                <div class="enneagram-en">The Enthusiast</div>
+                <div class="enneagram-tags">
+                    <span class="chip chip-success">乐观积极</span>
+                    <span class="chip chip-gold">多线并行</span>
+                </div>
+            </div>
+            <div class="enneagram-card">
+                <div class="enneagram-num">8</div>
+                <div class="enneagram-name">领袖型</div>
+                <div class="enneagram-en">The Challenger</div>
+                <div class="enneagram-tags">
+                    <span class="chip chip-burgundy">掌控全局</span>
+                    <span class="chip chip-gold">果断行动</span>
+                </div>
+            </div>
+            <div class="enneagram-card">
+                <div class="enneagram-num">9</div>
+                <div class="enneagram-name">和平型</div>
+                <div class="enneagram-en">The Peacemaker</div>
+                <div class="enneagram-tags">
+                    <span class="chip chip-neutral">和谐稳定</span>
+                    <span class="chip chip-success">包容融合</span>
+                </div>
+            </div>
+        </div>
+
+        <hr class="section-line">
+
+        <!-- ═══ 销售工具箱 ═══ -->
+        <div class="page-head">
+            <div class="page-title">销售工具箱</div>
+            <div class="page-desc">常用参考与操作指引，随时查阅</div>
+            <hr class="page-rule">
+        </div>
+
+        <div class="tool-grid">
+            <div class="tool-card">
+                <div class="tool-icon ti-navy"><i class="fas fa-calendar-alt"></i></div>
+                <div class="tool-info">
+                    <h4>留学时间规划</h4>
+                    <p>英国硕士申请全流程时间节点</p>
+                </div>
+                <div class="tool-arrow"><i class="fas fa-chevron-right"></i></div>
+            </div>
+            <div class="tool-card">
+                <div class="tool-icon ti-gold"><i class="fas fa-plane-departure"></i></div>
+                <div class="tool-info">
+                    <h4>留英行前指南</h4>
+                    <p>签证、体检、换汇、落地指引</p>
+                </div>
+                <div class="tool-arrow"><i class="fas fa-chevron-right"></i></div>
+            </div>
+            <div class="tool-card">
+                <div class="tool-icon ti-burgundy"><i class="fas fa-certificate"></i></div>
+                <div class="tool-info">
+                    <h4>境外学历认证</h4>
+                    <p>学历学位认证全流程操作</p>
+                </div>
+                <div class="tool-arrow"><i class="fas fa-chevron-right"></i></div>
+            </div>
+            <div class="tool-card">
+                <div class="tool-icon ti-success"><i class="fas fa-passport"></i></div>
+                <div class="tool-info">
+                    <h4>英国学生签证</h4>
+                    <p>签证材料、保证金、申请流程</p>
+                </div>
+                <div class="tool-arrow"><i class="fas fa-chevron-right"></i></div>
+            </div>
+            <div class="tool-card">
+                <div class="tool-icon ti-neutral"><i class="fas fa-pound-sign"></i></div>
+                <div class="tool-info">
+                    <h4>留位费退费政策</h4>
+                    <p>13所热门大学退费规则汇总</p>
+                </div>
+                <div class="tool-arrow"><i class="fas fa-chevron-right"></i></div>
+            </div>
+            <div class="tool-card">
+                <div class="tool-icon ti-navy"><i class="fas fa-file-invoice-dollar"></i></div>
+                <div class="tool-info">
+                    <h4>院校报价工具</h4>
+                    <p>合作院校佣金及服务费标准</p>
+                </div>
+                <div class="tool-arrow"><i class="fas fa-chevron-right"></i></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+    <div class="toast-check"><i class="fas fa-check"></i></div>
+    <span>话术生成成功</span>
+</div>
+
+<script>
+function showToast() {
+    const t = document.getElementById('toast');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+}
+document.querySelectorAll('.sidebar-item').forEach(item => {
+    item.addEventListener('click', function() {
+        document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+        this.classList.add('active');
+    });
+});
+document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+        this.parentElement.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+    });
+});
+</script>
+
+</body>
+</html>

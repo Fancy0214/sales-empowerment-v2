@@ -1,0 +1,1588 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>留学销售赋能平台 — 精工样本</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* ══════════════════════════════════════
+           设计理念：精工细作 · 克制而温暖
+           ══════════════════════════════════════
+           不是配色方案，是设计系统。
+           每一个像素都有理由，每一次交互都有回应。
+        */
+
+        :root {
+            /* 核心：暖灰底色 + 深靛蓝 */
+            --bg-root: #F7F6F4;
+            --bg-card: #FFFFFF;
+            --bg-elevated: #FFFFFF;
+            --bg-subtle: #F0EEEB;
+            --bg-hover: #EAE8E4;
+
+            --text-primary: #1D1D1F;
+            --text-secondary: #515154;
+            --text-tertiary: #86868B;
+            --text-quaternary: #AEAEB2;
+
+            --accent: #3B5998;
+            --accent-hover: #4A6BB5;
+            --accent-subtle: #EEF1F8;
+            --accent-glow: rgba(59, 89, 152, 0.12);
+
+            --success: #34A853;
+            --success-subtle: #E6F4EA;
+            --warning: #E8A317;
+            --warning-subtle: #FEF7E0;
+            --danger: #D93025;
+            --danger-subtle: #FCE8E6;
+
+            --border: #E5E5E5;
+            --border-subtle: #F0F0F0;
+            --divider: #EAEAEB;
+
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 2px 8px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+            --shadow-xl: 0 16px 48px rgba(0,0,0,0.10), 0 4px 16px rgba(0,0,0,0.06);
+
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --radius-xl: 20px;
+
+            --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-base: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-smooth: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-root);
+            color: var(--text-primary);
+            min-height: 100vh;
+            font-size: 14px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ===== 顶部栏 — 浮动卡片感 ===== */
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(255,255,255,0.82);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 0 24px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .topbar-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .topbar-logo-mark {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent) 0%, #5B7FC7 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(59, 89, 152, 0.25);
+            transition: transform var(--transition-base), box-shadow var(--transition-base);
+        }
+        .topbar-logo-mark:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(59, 89, 152, 0.35);
+        }
+        .topbar-logo-text {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+        }
+        .topbar-sep {
+            width: 1px;
+            height: 20px;
+            background: var(--border);
+        }
+        .topbar-greeting {
+            font-size: 13px;
+            color: var(--text-tertiary);
+            font-weight: 400;
+        }
+        .topbar-greeting strong {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .topbar-icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            border: none;
+            background: transparent;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            transition: all var(--transition-fast);
+            position: relative;
+        }
+        .topbar-icon-btn:hover {
+            background: var(--bg-subtle);
+            color: var(--text-secondary);
+        }
+        .topbar-icon-btn .badge {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 7px;
+            height: 7px;
+            background: var(--danger);
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        .topbar-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+        }
+        .topbar-avatar:hover {
+            transform: scale(1.08);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        /* ===== 布局 ===== */
+        .app-layout {
+            display: flex;
+            min-height: calc(100vh - 57px);
+        }
+
+        /* ===== 侧边栏 — 呼吸感 ===== */
+        .sidebar {
+            width: 232px;
+            padding: 16px 12px;
+            border-right: 1px solid var(--border-subtle);
+            background: rgba(255,255,255,0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .sidebar-group {
+            margin-bottom: 8px;
+        }
+        .sidebar-group-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-quaternary);
+            letter-spacing: 0.8px;
+            padding: 8px 12px 6px;
+            text-transform: uppercase;
+        }
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            font-size: 13.5px;
+            font-weight: 450;
+            position: relative;
+        }
+        .sidebar-item:hover {
+            background: var(--bg-subtle);
+            color: var(--text-primary);
+        }
+        .sidebar-item.active {
+            background: var(--accent-subtle);
+            color: var(--accent);
+        }
+        .sidebar-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 6px;
+            bottom: 6px;
+            width: 3px;
+            border-radius: 0 3px 3px 0;
+            background: var(--accent);
+        }
+        .sidebar-item i {
+            width: 18px;
+            text-align: center;
+            font-size: 14px;
+            opacity: 0.7;
+        }
+        .sidebar-item.active i { opacity: 1; }
+        .sidebar-item-badge {
+            margin-left: auto;
+            background: var(--accent);
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 1px 7px;
+            border-radius: 10px;
+            line-height: 16px;
+        }
+        .sidebar-bottom {
+            margin-top: auto;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        /* ===== 主内容区 ===== */
+        .main {
+            flex: 1;
+            padding: 28px 36px;
+            overflow-y: auto;
+            max-width: 1080px;
+        }
+
+        /* ===== 页面标题 — 大气留白 ===== */
+        .page-head {
+            margin-bottom: 28px;
+        }
+        .page-head-row {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+        .page-desc {
+            font-size: 14px;
+            color: var(--text-tertiary);
+            margin-top: 4px;
+            line-height: 1.5;
+        }
+
+        /* ===== 交互按钮 ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 18px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            border: none;
+            outline: none;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at var(--ripple-x, 50%) var(--ripple-y, 50%), rgba(255,255,255,0.3) 0%, transparent 60%);
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+        .btn:active::after {
+            opacity: 1;
+        }
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 1px 3px rgba(59, 89, 152, 0.2);
+        }
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            box-shadow: 0 2px 8px rgba(59, 89, 152, 0.3);
+            transform: translateY(-1px);
+        }
+        .btn-primary:active { transform: translateY(0); }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-subtle);
+        }
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-tertiary);
+        }
+        .btn-ghost:hover {
+            background: var(--bg-subtle);
+            color: var(--text-secondary);
+        }
+
+        /* ===== 标签页 — 滑动指示器 ===== */
+        .tabs {
+            display: flex;
+            gap: 0;
+            position: relative;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--divider);
+        }
+        .tab {
+            padding: 10px 16px;
+            font-size: 13px;
+            font-weight: 450;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-family: inherit;
+            transition: color var(--transition-fast);
+            position: relative;
+        }
+        .tab:hover { color: var(--text-secondary); }
+        .tab.active {
+            color: var(--accent);
+            font-weight: 500;
+        }
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            left: 16px;
+            right: 16px;
+            bottom: -1px;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 2px 2px 0 0;
+            animation: tabSlide 0.25s ease-out;
+        }
+        @keyframes tabSlide {
+            from { transform: scaleX(0); }
+            to { transform: scaleX(1); }
+        }
+
+        /* ===== 卡片系统 ===== */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            transition: box-shadow var(--transition-base), transform var(--transition-base);
+        }
+        .card:hover {
+            box-shadow: var(--shadow-md);
+        }
+        .card-body {
+            padding: 20px 24px;
+        }
+        .card-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .card-header-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* ===== 竞品情报站 — 数据表 ===== */
+        .filter-strip {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .select-wrap {
+            position: relative;
+        }
+        .select-wrap select {
+            appearance: none;
+            padding: 7px 32px 7px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: white;
+            font-size: 13px;
+            font-family: inherit;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        .select-wrap select:hover { border-color: var(--text-quaternary); }
+        .select-wrap select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        .select-wrap::after {
+            content: '';
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 4px solid var(--text-quaternary);
+            pointer-events: none;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table th {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-tertiary);
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            letter-spacing: 0.3px;
+        }
+        .data-table td {
+            padding: 14px 14px;
+            font-size: 13px;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-subtle);
+            vertical-align: middle;
+        }
+        .data-table tbody tr {
+            transition: background var(--transition-fast);
+        }
+        .data-table tbody tr:hover {
+            background: var(--accent-subtle);
+        }
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 10px;
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 500;
+            line-height: 18px;
+        }
+        .chip-default {
+            background: var(--bg-subtle);
+            color: var(--text-secondary);
+        }
+        .chip-accent {
+            background: var(--accent-subtle);
+            color: var(--accent);
+        }
+        .chip-success {
+            background: var(--success-subtle);
+            color: var(--success);
+        }
+        .chip-danger {
+            background: var(--danger-subtle);
+            color: var(--danger);
+        }
+        .chip-warning {
+            background: var(--warning-subtle);
+            color: var(--warning);
+        }
+
+        .rating {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 700;
+            font-family: 'Inter', sans-serif;
+        }
+        .rating-a {
+            background: var(--success-subtle);
+            color: var(--success);
+        }
+        .rating-b {
+            background: var(--warning-subtle);
+            color: var(--warning);
+        }
+
+        /* ===== AI话术工坊 ===== */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .form-field.full { grid-column: 1 / -1; }
+        .form-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            letter-spacing: 0.2px;
+        }
+        .form-label .hint {
+            color: var(--text-quaternary);
+            font-weight: 400;
+            margin-left: 4px;
+        }
+        .form-input,
+        .form-select,
+        .form-textarea {
+            padding: 9px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: white;
+            font-size: 13px;
+            font-family: inherit;
+            color: var(--text-primary);
+            transition: all var(--transition-fast);
+        }
+        .form-select { appearance: none; cursor: pointer; }
+        .form-input:hover, .form-select:hover, .form-textarea:hover {
+            border-color: var(--text-quaternary);
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+            line-height: 1.6;
+        }
+        .form-input::placeholder, .form-textarea::placeholder {
+            color: var(--text-quaternary);
+        }
+
+        /* 话术输出 — 渐入动画 */
+        .script-output {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        .script-output-header {
+            padding: 16px 24px;
+            background: linear-gradient(135deg, var(--accent-subtle) 0%, rgba(59,89,152,0.03) 100%);
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .script-output-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: var(--radius-sm);
+            background: var(--accent);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        .script-output-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--accent);
+        }
+        .script-output-body {
+            padding: 20px 24px;
+        }
+        .script-step {
+            padding: 14px 18px;
+            background: var(--bg-root);
+            border-radius: var(--radius-md);
+            margin-bottom: 12px;
+            border-left: 3px solid transparent;
+            transition: all var(--transition-fast);
+        }
+        .script-step:hover {
+            border-left-color: var(--accent);
+            background: var(--accent-subtle);
+        }
+        .script-step:last-child { margin-bottom: 0; }
+        .script-step-num {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--accent);
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+        .script-step-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        .script-step-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+        .script-tip {
+            margin-top: 16px;
+            padding: 14px 18px;
+            border-radius: var(--radius-md);
+            background: var(--warning-subtle);
+            border: 1px solid rgba(232, 163, 23, 0.12);
+        }
+        .script-tip-head {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--warning);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .script-tip ul {
+            list-style: none;
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 2;
+        }
+        .script-tip ul li::before {
+            content: '→';
+            color: var(--warning);
+            margin-right: 8px;
+            font-size: 11px;
+        }
+
+        /* ===== 九型人格 — 交互卡片 ===== */
+        .enneagram-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+        .enneagram-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 22px;
+            cursor: pointer;
+            transition: all var(--transition-base);
+            position: relative;
+            overflow: hidden;
+        }
+        .enneagram-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--accent);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform var(--transition-smooth);
+        }
+        .enneagram-card:hover::before {
+            transform: scaleX(1);
+        }
+        .enneagram-card:hover {
+            border-color: var(--accent);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-3px);
+        }
+        .enneagram-card:active {
+            transform: translateY(-1px);
+        }
+        .enneagram-num {
+            font-family: 'Inter', sans-serif;
+            font-size: 40px;
+            font-weight: 700;
+            color: var(--bg-subtle);
+            line-height: 1;
+            transition: color var(--transition-base);
+        }
+        .enneagram-card:hover .enneagram-num {
+            color: var(--accent-subtle);
+        }
+        .enneagram-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-top: 2px;
+        }
+        .enneagram-en {
+            font-size: 12px;
+            color: var(--text-quaternary);
+            font-style: italic;
+            margin-top: 1px;
+        }
+        .enneagram-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        /* ===== 销售工具箱 — 互动列表 ===== */
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        .tool-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+            transition: all var(--transition-base);
+        }
+        .tool-card:hover {
+            border-color: var(--border);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        .tool-card:active { transform: translateY(0); }
+        .tool-card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+            transition: transform var(--transition-base);
+        }
+        .tool-card:hover .tool-card-icon {
+            transform: scale(1.08);
+        }
+        .tool-icon-blue { background: var(--accent-subtle); color: var(--accent); }
+        .tool-icon-green { background: var(--success-subtle); color: var(--success); }
+        .tool-icon-orange { background: var(--warning-subtle); color: var(--warning); }
+        .tool-icon-red { background: var(--danger-subtle); color: var(--danger); }
+        .tool-icon-gray { background: var(--bg-subtle); color: var(--text-secondary); }
+        .tool-card-text h4 {
+            font-size: 13.5px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+        .tool-card-text p {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+        .tool-card-arrow {
+            margin-left: auto;
+            color: var(--text-quaternary);
+            font-size: 12px;
+            transition: all var(--transition-fast);
+        }
+        .tool-card:hover .tool-card-arrow {
+            color: var(--accent);
+            transform: translateX(3px);
+        }
+
+        /* ===== 状态指示器 — 呼吸灯 ===== */
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            position: relative;
+        }
+        .status-dot.online {
+            background: var(--success);
+        }
+        .status-dot.online::after {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 50%;
+            background: var(--success);
+            opacity: 0;
+            animation: breathe 2s ease-in-out infinite;
+        }
+        @keyframes breathe {
+            0%, 100% { opacity: 0; transform: scale(1); }
+            50% { opacity: 0.3; transform: scale(1.8); }
+        }
+
+        /* ===== 进度条 — 流光 ===== */
+        .progress-bar {
+            height: 4px;
+            background: var(--bg-subtle);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 2px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+            transition: width 0.6s ease;
+            position: relative;
+        }
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* ===== 快捷统计条 ===== */
+        .stat-strip {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .stat-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 16px 18px;
+            transition: all var(--transition-fast);
+        }
+        .stat-item:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            font-weight: 450;
+            margin-bottom: 6px;
+        }
+        .stat-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+            font-family: 'Inter', sans-serif;
+        }
+        .stat-change {
+            font-size: 11px;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .stat-up { color: var(--success); }
+        .stat-down { color: var(--danger); }
+
+        /* ===== 空状态 ===== */
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--text-quaternary);
+        }
+        .empty-state i {
+            font-size: 36px;
+            margin-bottom: 12px;
+            opacity: 0.4;
+        }
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        /* ===== Toast通知 ===== */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-xl);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--text-primary);
+            transform: translateY(80px);
+            opacity: 0;
+            transition: all var(--transition-smooth);
+            z-index: 1000;
+        }
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .toast-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+        }
+        .toast-success .toast-icon { background: var(--success-subtle); color: var(--success); }
+
+        /* ===== 分隔 ===== */
+        .section-gap { height: 36px; }
+        .section-line {
+            border: none;
+            border-top: 1px solid var(--divider);
+            margin: 36px 0;
+        }
+
+        /* ===== 样本说明 ===== */
+        .sample-intro {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 24px 28px;
+            margin-bottom: 32px;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+        .sample-intro::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), #5B7FC7, var(--accent));
+            background-size: 200% 100%;
+            animation: gradientFlow 3s ease infinite;
+        }
+        @keyframes gradientFlow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        .sample-intro h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .sample-intro p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+        .design-pillars {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+        .pillar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 500;
+            background: var(--bg-subtle);
+            color: var(--text-secondary);
+            transition: all var(--transition-fast);
+        }
+        .pillar:hover {
+            background: var(--accent-subtle);
+            color: var(--accent);
+        }
+        .pillar i { font-size: 11px; }
+
+        /* ===== 交互提示 ===== */
+        .interaction-hint {
+            margin-top: 20px;
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            background: var(--accent-subtle);
+            border: 1px solid rgba(59, 89, 152, 0.08);
+            font-size: 12px;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .interaction-hint i {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* ===== 快捷操作栏 ===== */
+        .quick-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .quick-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 450;
+            color: var(--text-secondary);
+            background: white;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        .quick-action:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-subtle);
+            box-shadow: var(--shadow-sm);
+        }
+        .quick-action i { font-size: 11px; }
+    </style>
+</head>
+<body>
+
+<!-- 顶部栏 -->
+<div class="topbar">
+    <div class="topbar-left">
+        <div class="topbar-logo">
+            <div class="topbar-logo-mark"><i class="fas fa-graduation-cap"></i></div>
+            <span class="topbar-logo-text">销售赋能平台</span>
+        </div>
+        <div class="topbar-sep"></div>
+        <div class="topbar-greeting">下午好，<strong>Fancy</strong> 👋</div>
+    </div>
+    <div class="topbar-right">
+        <button class="topbar-icon-btn" title="搜索"><i class="fas fa-search"></i></button>
+        <button class="topbar-icon-btn" title="通知">
+            <i class="fas fa-bell"></i>
+            <span class="badge"></span>
+        </button>
+        <button class="topbar-icon-btn" title="设置"><i class="fas fa-cog"></i></button>
+        <div class="topbar-avatar" title="Fancy">F</div>
+    </div>
+</div>
+
+<div class="app-layout">
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+        <div class="sidebar-group">
+            <div class="sidebar-group-label">业务</div>
+            <div class="sidebar-item active">
+                <i class="fas fa-shield-alt"></i>
+                <span>竞品情报站</span>
+                <span class="sidebar-item-badge">3</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-comment-dots"></i>
+                <span>AI话术工坊</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-user-circle"></i>
+                <span>九型人格</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-toolbox"></i>
+                <span>销售工具箱</span>
+            </div>
+        </div>
+        <div class="sidebar-group">
+            <div class="sidebar-group-label">管理</div>
+            <div class="sidebar-item">
+                <i class="fas fa-share-alt"></i>
+                <span>分享管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-database"></i>
+                <span>院校数据</span>
+            </div>
+        </div>
+        <div class="sidebar-bottom">
+            <div class="sidebar-item">
+                <i class="fas fa-cog"></i>
+                <span>后台设置</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="main">
+
+        <!-- 样本说明 -->
+        <div class="sample-intro">
+            <h3><i class="fas fa-gem" style="color:var(--accent);"></i> 精工设计样本</h3>
+            <p>不是换配色，是换体验。每一个交互都有回应，每一处留白都有节奏。毛玻璃顶栏、卡片悬浮动效、九型卡片顶部渐入线条、进度条流光、状态呼吸灯、Toast弹出通知——试试点亮、悬停、点击。</p>
+            <div class="design-pillars">
+                <div class="pillar"><i class="fas fa-hand-pointer"></i> 交互有回应</div>
+                <div class="pillar"><i class="fas fa-feather"></i> 留白有节奏</div>
+                <div class="pillar"><i class="fas fa-layer-group"></i> 层次有呼吸</div>
+                <div class="pillar"><i class="fas fa-magic"></i> 细节有温度</div>
+                <div class="pillar"><i class="fas fa-eye"></i> 信息不争抢</div>
+            </div>
+            <div class="interaction-hint">
+                <i class="fas fa-hand-point-up"></i>
+                试试悬停在卡片、按钮、表格行、九型卡片上——感受交互细节
+            </div>
+        </div>
+
+        <!-- ========== 竞品情报站 ========== -->
+        <div class="page-head">
+            <div class="page-head-row">
+                <div>
+                    <div class="page-title">竞品情报站</div>
+                    <div class="page-desc">近7天竞品动态监测 · 英国&爱尔兰市场</div>
+                </div>
+                <div class="quick-actions">
+                    <button class="quick-action"><i class="fas fa-plus"></i> 提交竞品反馈</button>
+                    <button class="quick-action"><i class="fas fa-link"></i> 生成分享链接</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 统计条 -->
+        <div class="stat-strip">
+            <div class="stat-item">
+                <div class="stat-label">监测机构</div>
+                <div class="stat-value">12</div>
+                <div class="stat-change stat-up"><i class="fas fa-arrow-up"></i> 较上月+2</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">本周动态</div>
+                <div class="stat-value">7</div>
+                <div class="stat-change stat-down"><i class="fas fa-arrow-down"></i> 较上周-3</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">A评级机构</div>
+                <div class="stat-value">4</div>
+                <div class="stat-change stat-up"><i class="fas fa-arrow-up"></i> 持平</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">数据完整度</div>
+                <div class="stat-value">86%</div>
+                <div class="progress-bar" style="margin-top:8px;">
+                    <div class="progress-fill" style="width:86%"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="filter-strip">
+            <div class="select-wrap">
+                <select><option>覆盖国别</option><option>英国</option><option>爱尔兰</option></select>
+            </div>
+            <div class="select-wrap">
+                <select><option>业务模式</option><option>B2B</option><option>B2C</option></select>
+            </div>
+            <button class="btn btn-secondary"><i class="fas fa-filter" style="font-size:11px;"></i> 筛选</button>
+            <div style="flex:1"></div>
+            <span style="font-size:12px;color:var(--text-quaternary);">最后更新 3分钟前</span>
+            <span class="status-dot online" title="实时同步中"></span>
+        </div>
+
+        <div class="card" style="overflow:hidden;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>机构</th>
+                        <th>覆盖国别</th>
+                        <th>优势区域</th>
+                        <th>核心优势</th>
+                        <th>主要劣势</th>
+                        <th>评级</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="font-weight:500;">启德教育</td>
+                        <td>
+                            <span class="chip chip-accent">英国</span>
+                            <span class="chip chip-accent">美国</span>
+                            <span class="chip chip-default">+4</span>
+                        </td>
+                        <td style="font-size:13px;">华南、华中</td>
+                        <td style="font-size:12px;">英国院校代理资源全网最全</td>
+                        <td style="font-size:12px;"><span class="chip chip-danger">澳洲口碑一般</span></td>
+                        <td><span class="rating rating-a">A</span></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:500;">新通教育</td>
+                        <td>
+                            <span class="chip chip-accent">英国</span>
+                            <span class="chip chip-accent">美国</span>
+                            <span class="chip chip-default">+3</span>
+                        </td>
+                        <td style="font-size:13px;">江浙沪</td>
+                        <td style="font-size:12px;">前端BD满意度高，强建联型</td>
+                        <td style="font-size:12px;"><span class="chip chip-danger">后期服务一般</span></td>
+                        <td><span class="rating rating-a">A</span></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:500;">小希</td>
+                        <td>
+                            <span class="chip chip-accent">英国</span>
+                            <span class="chip chip-success">澳洲</span>
+                        </td>
+                        <td style="font-size:13px;">线上为主</td>
+                        <td style="font-size:12px;">佣金全返；全系统化对接</td>
+                        <td style="font-size:12px;"><span class="chip chip-warning">人工服务少</span></td>
+                        <td><span class="rating rating-b">B</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <hr class="section-line">
+
+        <!-- ========== AI话术工坊 ========== -->
+        <div class="page-head">
+            <div class="page-head-row">
+                <div>
+                    <div class="page-title">AI话术工坊</div>
+                    <div class="page-desc">AI辅助关键节点提醒和高频常规问题答复</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active">话术生成</button>
+            <button class="tab">话术收藏</button>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label class="form-label">我方角色</label>
+                        <select class="form-select"><option>B2B留学顾问（销售）</option><option>B2B渠道专员</option></select>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">客户层级</label>
+                        <select class="form-select"><option>C级（中型企业）</option><option>D级（小型企业）</option></select>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">客户身份</label>
+                        <select class="form-select"><option>影响者</option><option>决策者</option></select>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">触达阶段</label>
+                        <select class="form-select"><option>签约阶段</option><option>首次触达</option></select>
+                    </div>
+                    <div class="form-field full">
+                        <label class="form-label">客户背景信息 <span class="hint">越详细，话术越精准</span></label>
+                        <textarea class="form-textarea">合作方在申请旺季出现产能不足，客户需要稳定高效的备选通道来分流和保障申请进度。</textarea>
+                    </div>
+                </div>
+                <div style="display:flex;gap:10px;margin-top:16px;">
+                    <button class="btn btn-primary" onclick="showToast()"><i class="fas fa-wand-magic-sparkles"></i> 一键生成话术</button>
+                    <button class="btn btn-secondary"><i class="fas fa-rotate"></i> 重置</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 话术输出 -->
+        <div class="script-output">
+            <div class="script-output-header">
+                <div class="script-output-icon"><i class="fas fa-sparkles"></i></div>
+                <div class="script-output-title">匹配沟通框架：价值共鸣 + 低门槛行动</div>
+            </div>
+            <div class="script-output-body">
+                <div class="script-step">
+                    <div class="script-step-num">STEP 01</div>
+                    <div class="script-step-label">破冰并建立价值共鸣</div>
+                    <div class="script-step-text">王总/经理，下午好，之前聊到贵司的英国业务发展挺快的，上的学生量也在增长……</div>
+                </div>
+                <div class="script-step">
+                    <div class="script-step-num">STEP 02</div>
+                    <div class="script-step-label">如果对方询问具体院校或优势</div>
+                    <div class="script-step-text">我们主要做英国和爱尔兰，像KCL、曼大、布里斯托、华威这些前10的热门校，都是我们长期稳定代理、案例丰富的……</div>
+                </div>
+                <div class="script-step">
+                    <div class="script-step-num">STEP 03</div>
+                    <div class="script-step-label">如果对方表示"有合作方了"</div>
+                    <div class="script-step-text">完全理解，稳定的合作肯定是最重要的。我们的建议从来不是替换，而是"新增一个安全通道"。</div>
+                </div>
+                <div class="script-tip">
+                    <div class="script-tip-head"><i class="fas fa-lightbulb"></i> 话术原则</div>
+                    <ul>
+                        <li>推新增不推替换，降低决策压力</li>
+                        <li>只共情问题，不评判对方现有合作方</li>
+                        <li>先体验再决定，用服务说话</li>
+                        <li>发完不追问，等1-2天再换场景钩子触达</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <hr class="section-line">
+
+        <!-- ========== 九型人格 ========== -->
+        <div class="page-head">
+            <div class="page-head-row">
+                <div>
+                    <div class="page-title">九型人格</div>
+                    <div class="page-desc">了解性格类型，掌握沟通密码</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active">九型详解</button>
+            <button class="tab">互动测试</button>
+            <button class="tab">团队搭配</button>
+        </div>
+
+        <div class="enneagram-grid">
+            <div class="enneagram-card">
+                <div class="enneagram-num">1</div>
+                <div class="enneagram-name">完美型</div>
+                <div class="enneagram-en">The Reformer</div>
+                <div class="enneagram-tags">
+                    <span class="chip chip-accent">追求卓越</span>
+                    <span class="chip chip-default">规范化</span>
+                </div>
+            </div>
+            <div class="enneagram-card">
+                <div class="enneagram-num">2</div>
+                <div class="enneagram-name">助人型</div>
+                <div class="enneagram-en">The Helper</div>
+                <div class="enneagram-tags">
+                    <span class="chip chip-success">利他主义</span>
+                    <span class="chip chip-default">关系导向</span>
+                </div>
+            </div>
+            <div class="enneagram-card">
+                <div class="enneagram-num">3</div>
+                <div class="enneagram-name">成就型</div>
+                <div class="enneagram-en">The Achiever</div>
+                <div class="enneagram-tags">
+                    <span class="chip chip-warning">目标驱动</span>
+                    <span class="chip chip-accent">高效执行</span>
+                </div>
+            </div>
+            <div class="enneagram-card">
+                <div class="enneagram-num">4</div>
+                <div class="enneagram-name">独特型</div>
+                <div class="enneagram-en">The Individualist</div>
+                <div class="enneagram-tags">
+                    <span class="chip chip-default">追求独特</span>
+                    <span class="chip chip-danger">深度感受</span>
+                </div>
+            </div>
+            <div class="enneagram-card">
+                <div class="enneagram-num">5</div>
+                <div class="enneagram-name">理智型</div>
+                <div class="enneagram-en">The Investigator</div>
+                <div class="enneagram-tags">
+                    <span class="chip chip-accent">独立思考</span>
+                    <span class="chip chip-default">知识储备</span>
+                </div>
+            </div>
+            <div class="enneagram-card">
+                <div class="enneagram-num">6</div>
+                <div class="enneagram-name">忠诚型</div>
+                <div class="enneagram-en">The Loyalist</div>
+                <div class="enneagram-tags">
+                    <span class="chip chip-warning">风险意识</span>
+                    <span class="chip chip-success">忠诚可靠</span>
+                </div>
+            </div>
+            <div class="enneagram-card">
+                <div class="enneagram-num">7</div>
+                <div class="enneagram-name">活跃型</div>
+                <div class="enneagram-en">The Enthusiast</div>
+                <div class="enneagram-tags">
+                    <span class="chip chip-success">乐观积极</span>
+                    <span class="chip chip-warning">多线并行</span>
+                </div>
+            </div>
+            <div class="enneagram-card">
+                <div class="enneagram-num">8</div>
+                <div class="enneagram-name">领袖型</div>
+                <div class="enneagram-en">The Challenger</div>
+                <div class="enneagram-tags">
+                    <span class="chip chip-danger">掌控全局</span>
+                    <span class="chip chip-warning">果断行动</span>
+                </div>
+            </div>
+            <div class="enneagram-card">
+                <div class="enneagram-num">9</div>
+                <div class="enneagram-name">和平型</div>
+                <div class="enneagram-en">The Peacemaker</div>
+                <div class="enneagram-tags">
+                    <span class="chip chip-default">和谐稳定</span>
+                    <span class="chip chip-success">包容融合</span>
+                </div>
+            </div>
+        </div>
+
+        <hr class="section-line">
+
+        <!-- ========== 销售工具箱 ========== -->
+        <div class="page-head">
+            <div class="page-head-row">
+                <div>
+                    <div class="page-title">销售工具箱</div>
+                    <div class="page-desc">常用参考与操作指引，随时查阅</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tool-grid">
+            <div class="tool-card">
+                <div class="tool-card-icon tool-icon-blue"><i class="fas fa-calendar-alt"></i></div>
+                <div class="tool-card-text">
+                    <h4>留学时间规划</h4>
+                    <p>英国硕士申请全流程时间节点</p>
+                </div>
+                <div class="tool-card-arrow"><i class="fas fa-chevron-right"></i></div>
+            </div>
+            <div class="tool-card">
+                <div class="tool-card-icon tool-icon-green"><i class="fas fa-plane-departure"></i></div>
+                <div class="tool-card-text">
+                    <h4>留英行前指南</h4>
+                    <p>签证、体检、换汇、落地指引</p>
+                </div>
+                <div class="tool-card-arrow"><i class="fas fa-chevron-right"></i></div>
+            </div>
+            <div class="tool-card">
+                <div class="tool-card-icon tool-icon-orange"><i class="fas fa-certificate"></i></div>
+                <div class="tool-card-text">
+                    <h4>境外学历认证</h4>
+                    <p>学历学位认证全流程操作</p>
+                </div>
+                <div class="tool-card-arrow"><i class="fas fa-chevron-right"></i></div>
+            </div>
+            <div class="tool-card">
+                <div class="tool-card-icon tool-icon-red"><i class="fas fa-passport"></i></div>
+                <div class="tool-card-text">
+                    <h4>英国学生签证</h4>
+                    <p>签证材料、保证金、申请流程</p>
+                </div>
+                <div class="tool-card-arrow"><i class="fas fa-chevron-right"></i></div>
+            </div>
+            <div class="tool-card">
+                <div class="tool-card-icon tool-icon-gray"><i class="fas fa-pound-sign"></i></div>
+                <div class="tool-card-text">
+                    <h4>留位费退费政策</h4>
+                    <p>13所热门大学退费规则汇总</p>
+                </div>
+                <div class="tool-card-arrow"><i class="fas fa-chevron-right"></i></div>
+            </div>
+            <div class="tool-card">
+                <div class="tool-card-icon tool-icon-blue"><i class="fas fa-file-invoice-dollar"></i></div>
+                <div class="tool-card-text">
+                    <h4>院校报价工具</h4>
+                    <p>合作院校佣金及服务费标准</p>
+                </div>
+                <div class="tool-card-arrow"><i class="fas fa-chevron-right"></i></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Toast 通知 -->
+<div class="toast toast-success" id="toast">
+    <div class="toast-icon"><i class="fas fa-check"></i></div>
+    <span>话术生成成功</span>
+</div>
+
+<script>
+// Toast
+function showToast() {
+    const t = document.getElementById('toast');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// 按钮涟漪效果
+document.querySelectorAll('.btn').forEach(btn => {
+    btn.addEventListener('mousedown', e => {
+        const rect = btn.getBoundingClientRect();
+        btn.style.setProperty('--ripple-x', ((e.clientX - rect.left) / rect.width * 100) + '%');
+        btn.style.setProperty('--ripple-y', ((e.clientY - rect.top) / rect.height * 100) + '%');
+    });
+});
+
+// 侧边栏点击
+document.querySelectorAll('.sidebar-item').forEach(item => {
+    item.addEventListener('click', function() {
+        document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+        this.classList.add('active');
+    });
+});
+
+// 标签页点击
+document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+        this.parentElement.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+    });
+});
+</script>
+
+</body>
+</html>
