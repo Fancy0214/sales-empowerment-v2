@@ -6615,6 +6615,18 @@ function toggleStudioSubOptions() {
     }
 }
 
+function toggleEnneagramSubOptions() {
+    const enneagramChecked = document.querySelector('input[name="shareSection"][value="enneagram"]').checked;
+    const subOptions = document.getElementById('enneagramSubOptions');
+    if (enneagramChecked) {
+        subOptions.style.display = 'block';
+        // 默认三个都勾选
+        document.querySelectorAll('input[name="shareSubEnneagram"]').forEach(cb => cb.checked = true);
+    } else {
+        subOptions.style.display = 'none';
+    }
+}
+
 // 生成8位随机 token
 function generateToken() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
@@ -6785,9 +6797,26 @@ function openEditShareLink(id) {
             } else {
                 subOptions.style.display = 'none';
                 document.querySelectorAll('input[name="shareSubStudio"]').forEach(cb => cb.checked = false);
-    const enneagramSubOptions = document.getElementById('enneagramSubOptions');
-    if (enneagramSubOptions) enneagramSubOptions.style.display = 'none';
-    document.querySelectorAll('input[name="shareSubEnneagram"]').forEach(cb => cb.checked = false);
+            }
+            
+            // 处理九型人格子板块
+            const hasFullEnneagram = sections.includes('enneagram');
+            const hasTypes = sections.includes('enneagram:types');
+            const hasTest = sections.includes('enneagram:test');
+            const hasTeam = sections.includes('enneagram:team');
+            
+            const enneagramSubOptions = document.getElementById('enneagramSubOptions');
+            const enneagramCheckbox = document.querySelector('input[name="shareSection"][value="enneagram"]');
+            
+            if (hasFullEnneagram || hasTypes || hasTest || hasTeam) {
+                enneagramCheckbox.checked = true;
+                enneagramSubOptions.style.display = 'block';
+                document.querySelector('input[name="shareSubEnneagram"][value="types"]').checked = hasFullEnneagram || hasTypes;
+                document.querySelector('input[name="shareSubEnneagram"][value="test"]').checked = hasFullEnneagram || hasTest;
+                document.querySelector('input[name="shareSubEnneagram"][value="team"]').checked = hasFullEnneagram || hasTeam;
+            } else {
+                enneagramSubOptions.style.display = 'none';
+                document.querySelectorAll('input[name="shareSubEnneagram"]').forEach(cb => cb.checked = false);
             }
             
             // 更新弹窗标题和按钮
