@@ -4127,3 +4127,330 @@ html.share-loading .share-loading-mask {
     margin-left: auto;
     white-space: nowrap;
 }
+
+/* ==================== 销售陪练样式 ==================== */
+.practice-setup .card {
+    max-width: 680px;
+    margin: 0 auto;
+}
+
+/* 对话面板 */
+.practice-chat {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 200px);
+    min-height: 500px;
+    max-height: 800px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #fff;
+    overflow: hidden;
+}
+
+.practice-chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    background: var(--primary);
+    color: #fff;
+    border-bottom: 2px solid var(--accent);
+}
+
+.practice-chat-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.practice-chat-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.practice-chat-actions .btn-outline {
+    color: #fff;
+    border-color: rgba(255,255,255,0.4);
+    font-size: 12px;
+}
+
+.practice-chat-actions .btn-outline:hover {
+    background: rgba(255,255,255,0.15);
+    border-color: rgba(255,255,255,0.6);
+}
+
+.practice-chat-actions .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.practice-chat-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* 消息气泡 */
+.practice-msg {
+    display: flex;
+    gap: 10px;
+    max-width: 85%;
+    animation: msgFadeIn 0.3s ease;
+}
+
+@keyframes msgFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.practice-msg.user {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.practice-msg.system {
+    align-self: center;
+    max-width: 100%;
+}
+
+.practice-msg-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    font-weight: 600;
+}
+
+.practice-msg.client .practice-msg-avatar {
+    background: linear-gradient(135deg, var(--primary), var(--primary-mid));
+    color: #fff;
+}
+
+.practice-msg.user .practice-msg-avatar {
+    background: linear-gradient(135deg, var(--accent), #d4a84a);
+    color: #fff;
+}
+
+.practice-msg-bubble {
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.6;
+    word-break: break-word;
+    white-space: pre-wrap;
+}
+
+.practice-msg.client .practice-msg-bubble {
+    background: #fff;
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    border-top-left-radius: 4px;
+}
+
+.practice-msg.user .practice-msg-bubble {
+    background: var(--primary);
+    color: #fff;
+    border-top-right-radius: 4px;
+}
+
+.practice-msg.system .practice-msg-bubble {
+    background: rgba(196, 150, 60, 0.1);
+    color: var(--text-secondary);
+    font-size: 12px;
+    text-align: center;
+    border-radius: 20px;
+    padding: 6px 16px;
+}
+
+/* 打字中动画 */
+.practice-typing {
+    display: flex;
+    gap: 4px;
+    padding: 4px 0;
+}
+
+.practice-typing span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--text-secondary);
+    animation: typingDot 1.2s infinite;
+}
+
+.practice-typing span:nth-child(2) { animation-delay: 0.2s; }
+.practice-typing span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingDot {
+    0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+    30% { opacity: 1; transform: translateY(-4px); }
+}
+
+/* 底部输入区 */
+.practice-chat-footer {
+    border-top: 1px solid var(--border);
+    background: #fff;
+    padding: 12px 16px;
+}
+
+.practice-input-wrapper {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+.practice-input-wrapper textarea {
+    flex: 1;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+    resize: none;
+    outline: none;
+    transition: border-color 0.2s;
+    font-family: inherit;
+    line-height: 1.5;
+}
+
+.practice-input-wrapper textarea:focus {
+    border-color: var(--accent);
+}
+
+.practice-input-wrapper .btn {
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 8px;
+    white-space: nowrap;
+}
+
+.practice-tips {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 8px;
+    padding: 0 4px;
+}
+
+/* 报告样式 */
+.practice-report .card {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.report-score-card {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 24px;
+    padding: 20px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-mid));
+    border-radius: 12px;
+    color: #fff;
+}
+
+.report-total-score {
+    text-align: center;
+    min-width: 120px;
+}
+
+.report-total-score .score-number {
+    font-size: 48px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--accent);
+}
+
+.report-total-score .score-label {
+    font-size: 13px;
+    opacity: 0.8;
+    margin-top: 4px;
+}
+
+.report-dimension-scores {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 20px;
+}
+
+.report-dimension-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.report-dimension-item .dim-score {
+    font-weight: 600;
+    color: var(--accent);
+    font-size: 15px;
+}
+
+.report-section {
+    margin-bottom: 20px;
+}
+
+.report-section h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.report-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.report-section li {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.report-section li:last-child {
+    border-bottom: none;
+}
+
+.report-highlight {
+    color: var(--success);
+}
+
+.report-improve {
+    color: var(--danger);
+}
+
+.report-reference {
+    background: #f8f6f0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-top: 8px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text-primary);
+}
+
+.report-reference-label {
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 4px;
+}

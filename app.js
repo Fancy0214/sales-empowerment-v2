@@ -4430,6 +4430,493 @@ function showStudioTab(tab) {
     document.querySelector(`#page-ai-studio [onclick="showStudioTab('${tab}')"]`).classList.add('active');
 }
 
+
+// ==================== 销售陪练功能 ====================
+let practiceSession = null; // { config, messages[], startedAt }
+
+function startPracticeSession() {
+    const config = getStudioConfig();
+    if (!config.cozeToken || !config.botId) {
+        alert('请先在设置中配置 Coze Bot');
+        openStudioSettings();
+        return;
+    }
+    
+    const level = document.getElementById('practiceLevel').value;
+    const identity = document.getElementById('practiceIdentity').value;
+    const stage = document.getElementById('practiceStage').value;
+    const personality = document.getElementById('practicePersonality').value;
+    const background = document.getElementById('practiceBackground').value.trim();
+    
+    practiceSession = {
+        config,
+        messages: [],
+        startedAt: new Date(),
+        scenario: {
+            level: level || 'C级（中型企业）',
+            identity: identity || '业务经理',
+            stage,
+            personality: personality || '',
+            background
+        }
+    };
+    
+    // 显示聊天面板，隐藏配置面板
+    document.getElementById('practiceSetup').style.display = 'none';
+    document.getElementById('practiceChat').style.display = 'flex';
+    document.getElementById('practiceReport').style.display = 'none';
+    
+    // 设置场景标签
+    document.getElementById('practiceScenarioLabel').textContent = 
+        `${practiceSession.scenario.stage} | ${practiceSession.scenario.level} | ${practiceSession.scenario.identity}`;
+    
+    // 清空聊天区域
+    document.getElementById('practiceChatBody').innerHTML = '';
+    
+    // 添加系统提示消息
+    addPracticeMessage('system', `陪练开始 — AI正在扮演${practiceSession.scenario.level}的${practiceSession.scenario.identity}，场景：${practiceSession.scenario.stage}`);
+    
+    // 发送开场消息给AI，让它先以客户身份说第一句话
+    const practiceSystemPrompt = buildPracticeSystemPrompt();
+    const openingMsg = `请现在开始扮演客户，按照上述设定，以客户的身份说第一句话。记住：你是在微信上跟一个一代BD聊天，不是电话，所以简短自然，像真人发微信一样。`;
+    
+    callPracticeAPI(practiceSystemPrompt, openingMsg, true);
+}
+
+function buildPracticeSystemPrompt() {
+    const s = practiceSession.scenario;
+    return `你现在要扮演一个英国/爱尔兰留学行业的B2B客户（二代机构），与一位一代留学机构的BD进行微信对话练习。
+
+【你扮演的角色】
+- 公司层级：${s.level}
+- 你的身份：${s.identity}
+- 当前沟通阶段：${s.stage}
+${s.personality ? `- 你的性格特点：${s.personality}` : '- 性格随机：根据场景自然表现'}
+${s.background ? `- 补充背景：${s.background}` : ''}
+
+【扮演要求】
+1. 你是客户，不是BD。你要从客户的角度出发，提出真实的问题、顾虑和需求。
+2. 说话风格要像微信聊天——短句、口语化、自然。不要用大段书面语。
+3. 不要太容易被打动。作为客户，你有自己的考量：现有合作方可能用得还行、换人有风险、佣金结算方式你关心但不会马上信、你会试探对方是不是专业。
+4. 根据场景阶段，表现出对应阶段的态度：
+   - 首次触达：有戒心，不太想理，可能已有一代合作
+   - 二次触达：稍微松一点但仍观望
+   - 需求挖掘：会说出一些痛点但需要引导
+   - 方案呈现：会追问细节，挑刺
+   - 异议处理：提出具体异议（佣金低、服务不确定、已有合作方等）
+   - 逼单签约：还有最后顾虑需要突破
+   - 售后维护：已合作，有具体问题需要解决
+5. 每次回复控制在1-3句话，像真人微信聊天。
+6. 不要主动帮BD解决问题，也不要太配合。要真实。
+7. 绝对不要说"我是一代"或暴露你是AI扮演的事实。
+
+【禁止事项】
+- 不要扮演BD或帮BD说话
+- 不要一次说太多（超过3句）
+- 不要太快同意合作
+- 不要透露你是AI或在模拟`;
+}
+
+function addPracticeMessage(role, text) {
+    const body = document.getElementById('practiceChatBody');
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `practice-msg ${role}`;
+    
+    if (role === 'system') {
+        msgDiv.innerHTML = `<div class="practice-msg-bubble">${text}</div>`;
+    } else {
+        const avatar = role === 'client' ? '🏢' : '👤';
+        msgDiv.innerHTML = `
+            <div class="practice-msg-avatar">${avatar}</div>
+            <div class="practice-msg-bubble">${text}</div>
+        `;
+    }
+    
+    body.appendChild(msgDiv);
+    body.scrollTop = body.scrollHeight;
+    
+    // 记录到session
+    if (role !== 'system') {
+        practiceSession.messages.push({ role, text, time: new Date() });
+    }
+}
+
+function showTypingIndicator() {
+    const body = document.getElementById('practiceChatBody');
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'practice-msg client';
+    typingDiv.id = 'practiceTyping';
+    typingDiv.innerHTML = `
+        <div class="practice-msg-avatar">🏢</div>
+        <div class="practice-msg-bubble">
+            <div class="practice-typing"><span></span><span></span><span></span></div>
+        </div>
+    `;
+    body.appendChild(typingDiv);
+    body.scrollTop = body.scrollHeight;
+}
+
+function removeTypingIndicator() {
+    const el = document.getElementById('practiceTyping');
+    if (el) el.remove();
+}
+
+async function callPracticeAPI(systemPrompt, userMessage, isClient) {
+    const config = practiceSession.config;
+    showTypingIndicator();
+    
+    try {
+        const response = await fetch('https://api.coze.cn/v3/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + config.cozeToken
+            },
+            body: JSON.stringify({
+                bot_id: config.botId,
+                user_id: 'practice_user_' + Math.random().toString(36).substring(2, 8),
+                stream: true,
+                auto_save_history: false,
+                additional_messages: [
+                    {
+                        role: 'system',
+                        content: systemPrompt,
+                        content_type: 'text'
+                    },
+                    {
+                        role: 'user',
+                        content: userMessage,
+                        content_type: 'text'
+                    }
+                ]
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('API返回错误: ' + response.status);
+        }
+        
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let fullText = '';
+        let buffer = '';
+        
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+            
+            let currentEvent = '';
+            for (const line of lines) {
+                const trimmed = line.trim();
+                if (!trimmed) continue;
+                if (trimmed.startsWith('event:')) {
+                    currentEvent = trimmed.slice(6).trim();
+                    continue;
+                }
+                if (trimmed.startsWith('data:') && currentEvent === 'conversation.message.delta') {
+                    const data = trimmed.slice(5).trim();
+                    try {
+                        const json = JSON.parse(data);
+                        if (json.type === 'answer' && json.content) {
+                            fullText += json.content;
+                            // 更新typing indicator为正在生成的文字
+                            const typingEl = document.getElementById('practiceTyping');
+                            if (typingEl) {
+                                const bubble = typingEl.querySelector('.practice-msg-bubble');
+                                bubble.textContent = fullText;
+                            }
+                            const body = document.getElementById('practiceChatBody');
+                            body.scrollTop = body.scrollHeight;
+                        }
+                    } catch(e) {}
+                }
+            }
+        }
+        
+        removeTypingIndicator();
+        
+        if (fullText.trim()) {
+            addPracticeMessage('client', fullText.trim());
+        }
+    } catch(err) {
+        removeTypingIndicator();
+        addPracticeMessage('system', '⚠️ AI响应失败: ' + err.message + '，请重试');
+    }
+}
+
+async function sendPracticeMessage() {
+    if (!practiceSession) return;
+    
+    const input = document.getElementById('practiceInput');
+    const text = input.value.trim();
+    if (!text) return;
+    
+    // 禁用发送按钮
+    const sendBtn = document.getElementById('practiceSendBtn');
+    sendBtn.disabled = true;
+    
+    // 显示用户消息
+    addPracticeMessage('user', text);
+    input.value = '';
+    
+    // 构建带历史的消息
+    const historyContext = practiceSession.messages
+        .map((m, i) => `[对话第${i+1}轮] ${m.role === 'client' ? '客户' : 'BD'}: ${m.text}`)
+        .join('\n');
+    
+    const systemPrompt = buildPracticeSystemPrompt();
+    const userMsg = `以下是你们的完整对话历史：
+${historyContext}
+
+请继续扮演客户，对BD刚刚说的话做出回应。保持角色一致性，简短自然。`;
+    
+    await callPracticeAPI(systemPrompt, userMsg, true);
+    
+    sendBtn.disabled = false;
+    input.focus();
+}
+
+function handlePracticeKeydown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendPracticeMessage();
+    }
+}
+
+async function endPracticeAndReport() {
+    if (!practiceSession || practiceSession.messages.length < 2) {
+        alert('至少需要完成1轮对话才能生成报告');
+        return;
+    }
+    
+    const config = practiceSession.config;
+    const reportArea = document.getElementById('practiceReportContent');
+    reportArea.innerHTML = '<div class="studio-loading"><div class="studio-dots"><span></span><span></span><span></span></div><p>正在生成复盘报告...</p></div>';
+    
+    // 隐藏聊天面板，显示报告面板
+    document.getElementById('practiceChat').style.display = 'none';
+    document.getElementById('practiceReport').style.display = 'block';
+    
+    const historyText = practiceSession.messages
+        .map((m, i) => `第${i+1}轮 | ${m.role === 'client' ? '【客户】' : '【BD】'} ${m.text}`)
+        .join('\n');
+    
+    const reportPrompt = `你是一位资深B2B留学行业销售教练，请根据以下陪练对话记录，对BD的表现进行全面复盘评估。
+
+【陪练场景】
+- 客户层级：${practiceSession.scenario.level}
+- 客户身份：${practiceSession.scenario.identity}
+- 沟通阶段：${practiceSession.scenario.stage}
+${practiceSession.scenario.personity ? '- 客户性格：' + practiceSession.scenario.personality : ''}
+${practiceSession.scenario.background ? '- 补充背景：' + practiceSession.scenario.background : ''}
+
+【对话记录】
+${historyText}
+
+【评估要求】
+请按以下维度评分（每项10分制）并给出详细分析：
+
+1. 总分（综合评分，10分制）
+2. 各维度得分：
+   - 破冰能力：开场是否有效、是否有钩子吸引客户
+   - 需求挖掘：是否有效了解客户痛点和真实需求
+   - 价值传递：是否清晰传达我司核心优势（佣金到账实时结算、人工服务为主、院校资源互补等）
+   - 异议处理：面对客户质疑的应对是否得当
+   - 节奏把控：是否遵循"推新增不推替换"原则，不过度推销
+   - 专业度：是否体现27年行业经验、对院校/政策的了解
+   - 沟通风格：是否像微信聊天一样自然，不书面化
+
+3. 亮点（3-5条，具体指出哪些话术/表现做得好）
+4. 改进建议（3-5条，具体指出哪里可以更好，给出改进方向）
+5. 参考话术（针对最关键的2-3个场景节点，给出更优的话术示范）
+
+【输出格式】
+请严格按照以下JSON格式输出（不要输出其他内容）：
+{
+    "totalScore": 7.5,
+    "dimensions": [
+        {"name": "破冰能力", "score": 8},
+        {"name": "需求挖掘", "score": 7},
+        {"name": "价值传递", "score": 7},
+        {"name": "异议处理", "score": 8},
+        {"name": "节奏把控", "score": 7},
+        {"name": "专业度", "score": 8},
+        {"name": "沟通风格", "score": 7}
+    ],
+    "highlights": ["亮点1描述", "亮点2描述", "亮点3描述"],
+    "improvements": ["改进建议1", "改进建议2", "改进建议3"],
+    "references": [
+        {"scenario": "场景描述", "original": "BD原话", "improved": "更优话术示范"},
+        {"scenario": "场景描述", "original": "BD原话", "improved": "更优话术示范"}
+    ]
+}`;
+    
+    try {
+        const response = await fetch('https://api.coze.cn/v3/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + config.cozeToken
+            },
+            body: JSON.stringify({
+                bot_id: config.botId,
+                user_id: 'practice_report_' + Math.random().toString(36).substring(2, 8),
+                stream: false,
+                auto_save_history: false,
+                additional_messages: [
+                    {
+                        role: 'user',
+                        content: reportPrompt,
+                        content_type: 'text'
+                    }
+                ]
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('API返回错误: ' + response.status);
+        }
+        
+        const data = await response.json();
+        let reportText = '';
+        
+        // 从Coze非流式响应中提取内容
+        if (data.data && data.data.length > 0) {
+            for (const msg of data.data) {
+                if (msg.type === 'answer' && msg.content) {
+                    reportText = msg.content;
+                    break;
+                }
+            }
+        }
+        
+        if (!reportText) {
+            throw new Error('未获取到报告内容');
+        }
+        
+        // 尝试解析JSON
+        renderPracticeReport(reportText);
+        
+    } catch(err) {
+        reportArea.innerHTML = `<div class="studio-error"><i class="fas fa-exclamation-circle"></i> 报告生成失败: ${err.message}</div>
+        <button class="btn btn-outline" onclick="endPracticeAndReport()" style="margin-top:12px;"><i class="fas fa-redo"></i> 重新生成</button>`;
+    }
+}
+
+function renderPracticeReport(rawText) {
+    const reportArea = document.getElementById('practiceReportContent');
+    let report;
+    
+    try {
+        // 尝试从文本中提取JSON
+        const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            report = JSON.parse(jsonMatch[0]);
+        } else {
+            throw new Error('no json');
+        }
+    } catch(e) {
+        // JSON解析失败，直接显示原文
+        reportArea.innerHTML = `<div class="report-raw">${rawText.replace(/\n/g, '<br>')}</div>`;
+        return;
+    }
+    
+    let html = '';
+    
+    // 评分卡片
+    html += `<div class="report-score-card">
+        <div class="report-total-score">
+            <div class="score-number">${report.totalScore || '-'}</div>
+            <div class="score-label">综合评分 / 10</div>
+        </div>
+        <div class="report-dimension-scores">`;
+    
+    if (report.dimensions) {
+        for (const dim of report.dimensions) {
+            html += `<div class="report-dimension-item">
+                <span>${dim.name}</span>
+                <span class="dim-score">${dim.score}/10</span>
+            </div>`;
+        }
+    }
+    
+    html += `</div></div>`;
+    
+    // 亮点
+    if (report.highlights && report.highlights.length > 0) {
+        html += `<div class="report-section">
+            <h4><i class="fas fa-star" style="color:var(--accent);"></i> 表现亮点</h4>
+            <ul>`;
+        for (const h of report.highlights) {
+            html += `<li><span class="report-highlight">✅</span> ${h}</li>`;
+        }
+        html += `</ul></div>`;
+    }
+    
+    // 改进建议
+    if (report.improvements && report.improvements.length > 0) {
+        html += `<div class="report-section">
+            <h4><i class="fas fa-lightbulb" style="color:var(--warning);"></i> 改进建议</h4>
+            <ul>`;
+        for (const imp of report.improvements) {
+            html += `<li><span class="report-improve">⚡</span> ${imp}</li>`;
+        }
+        html += `</ul></div>`;
+    }
+    
+    // 参考话术
+    if (report.references && report.references.length > 0) {
+        html += `<div class="report-section">
+            <h4><i class="fas fa-quote-left" style="color:var(--secondary);"></i> 参考话术示范</h4>`;
+        for (const ref of report.references) {
+            html += `<div style="margin-bottom:16px;">
+                <div style="font-weight:600;font-size:13px;color:var(--primary);margin-bottom:6px;">📌 ${ref.scenario}</div>
+                <div class="report-reference">
+                    <div class="report-reference-label">原话术：</div>
+                    <div style="color:var(--text-secondary);margin-bottom:8px;">${ref.original}</div>
+                    <div class="report-reference-label">更优示范：</div>
+                    <div>${ref.improved}</div>
+                </div>
+            </div>`;
+        }
+        html += `</div>`;
+    }
+    
+    // 对话回放
+    html += `<div class="report-section">
+        <h4><i class="fas fa-history" style="color:var(--text-secondary);"></i> 对话回放</h4>
+        <div style="background:#f8f6f0;border-radius:8px;padding:16px;max-height:300px;overflow-y:auto;">`;
+    for (const msg of practiceSession.messages) {
+        const label = msg.role === 'client' ? '🏢 客户' : '👤 BD';
+        const color = msg.role === 'client' ? 'var(--primary)' : 'var(--accent)';
+        html += `<div style="margin-bottom:8px;"><span style="color:${color};font-weight:600;">${label}：</span>${msg.text}</div>`;
+    }
+    html += `</div></div>`;
+    
+    reportArea.innerHTML = html;
+}
+
+function resetPracticeSession() {
+    if (practiceSession && practiceSession.messages.length > 0) {
+        if (!confirm('确定要重新开始陪练吗？当前对话记录将清空。')) return;
+    }
+    practiceSession = null;
+    document.getElementById('practiceSetup').style.display = 'block';
+    document.getElementById('practiceChat').style.display = 'none';
+    document.getElementById('practiceReport').style.display = 'none';
+}
+
+function backToPracticeSetup() {
+    practiceSession = null;
+    document.getElementById('practiceSetup').style.display = 'block';
+    document.getElementById('practiceChat').style.display = 'none';
+    document.getElementById('practiceReport').style.display = 'none';
+}
+
 // 展开/收起我司情况
 function toggleCompanyInfo() {
     const wrapper = document.getElementById('companyInfoWrapper');

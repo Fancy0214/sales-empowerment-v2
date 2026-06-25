@@ -446,6 +446,9 @@
                 <button class="tab-btn" onclick="showStudioTab('library')">
                     <i class="fas fa-book"></i> 话术库
                 </button>
+                <button class="tab-btn" onclick="showStudioTab('practice')">
+                    <i class="fas fa-comments"></i> 销售陪练
+                </button>
             </div>
 
             <!-- Tab A: AI话术工坊 -->
@@ -615,6 +618,125 @@
 
                 <!-- 话术卡片列表 -->
                 <div class="script-cards" id="scriptCards">
+                </div>
+            </div>
+
+            <!-- Tab C: 销售陪练 -->
+            <div class="studio-content" id="practice-tab">
+                <!-- 陪练配置面板 -->
+                <div class="practice-setup" id="practiceSetup">
+                    <div class="card">
+                        <h3><i class="fas fa-robot"></i> 陪练场景配置</h3>
+                        <p style="color:var(--text-secondary);font-size:14px;margin:-4px 0 16px;">AI将扮演你的客户，模拟真实销售场景进行对练</p>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>客户层级</label>
+                                <select id="practiceLevel">
+                                    <option value="">请选择</option>
+                                    <option value="A级（头部企业）">A级（头部企业）</option>
+                                    <option value="B级（大型企业）">B级（大型企业）</option>
+                                    <option value="C级（中型企业）">C级（中型企业）</option>
+                                    <option value="D级（小型企业）">D级（小型企业）</option>
+                                    <option value="E级（个人工作室）">E级（个人工作室）</option>
+                                    <option value="F级（个人代理）">F级（个人代理）</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>对方身份</label>
+                                <select id="practiceIdentity">
+                                    <option value="">请选择</option>
+                                    <option value="老板/总经理">老板/总经理</option>
+                                    <option value="销售总监">销售总监</option>
+                                    <option value="业务经理">业务经理</option>
+                                    <option value="一线销售/顾问">一线销售/顾问</option>
+                                    <option value="外联/市场">外联/市场</option>
+                                    <option value="后期/申请老师">后期/申请老师</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>沟通场景</label>
+                            <select id="practiceStage">
+                                <option value="首次触达">首次触达（冷启动）</option>
+                                <option value="二次触达">二次触达（跟进）</option>
+                                <option value="需求挖掘">需求挖掘</option>
+                                <option value="方案呈现">方案呈现</option>
+                                <option value="异议处理">异议处理</option>
+                                <option value="逼单签约">逼单签约</option>
+                                <option value="售后维护">售后维护</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>对方性格/特点（可选）</label>
+                            <select id="practicePersonality">
+                                <option value="">随机性格</option>
+                                <option value="谨慎多疑型">谨慎多疑型 — 不容易信任，会反复质疑</option>
+                                <option value="直爽高效型">直爽高效型 — 说话直接，不喜欢废话</option>
+                                <option value="价格敏感型">价格敏感型 — 最关心佣金和费用</option>
+                                <option value="关系导向型">关系导向型 — 看重关系和面子</option>
+                                <option value="专业挑剔型">专业挑剔型 — 对行业很了解，要求高</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>补充背景（可选）</label>
+                            <textarea id="practiceBackground" rows="2" placeholder="如：对方已有合作一代，对切换有顾虑；或对方主做澳洲想拓展英国..."></textarea>
+                        </div>
+                        
+                        <button class="btn btn-primary btn-lg" onclick="startPracticeSession()" style="width:100%;font-size:16px;padding:14px;">
+                            <i class="fas fa-play-circle"></i> 开始陪练
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 陪练对话面板 -->
+                <div class="practice-chat" id="practiceChat" style="display:none;">
+                    <div class="practice-chat-header">
+                        <div class="practice-chat-title">
+                            <i class="fas fa-comments"></i>
+                            <span id="practiceScenarioLabel">陪练进行中</span>
+                        </div>
+                        <div class="practice-chat-actions">
+                            <button class="btn btn-outline btn-sm" onclick="resetPracticeSession()" title="重新开始">
+                                <i class="fas fa-redo"></i> 重开
+                            </button>
+                            <button class="btn btn-primary btn-sm" onclick="endPracticeAndReport()" id="endPracticeBtn">
+                                <i class="fas fa-flag-checkered"></i> 结束并出报告
+                            </button>
+                        </div>
+                    </div>
+                    <div class="practice-chat-body" id="practiceChatBody">
+                        <!-- 对话消息会在这里动态生成 -->
+                    </div>
+                    <div class="practice-chat-footer">
+                        <div class="practice-input-wrapper">
+                            <textarea id="practiceInput" rows="2" placeholder="输入你的回复... (Enter发送, Shift+Enter换行)" onkeydown="handlePracticeKeydown(event)"></textarea>
+                            <button class="btn btn-primary" onclick="sendPracticeMessage()" id="practiceSendBtn">
+                                <i class="fas fa-paper-plane"></i> 发送
+                            </button>
+                        </div>
+                        <div class="practice-tips">
+                            💡 像真实销售一样对话，AI会扮演客户回应你。结束后点击「结束并出报告」获取评分和改进建议。
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 陪练报告面板 -->
+                <div class="practice-report" id="practiceReport" style="display:none;">
+                    <div class="card">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                            <h3 style="margin:0;"><i class="fas fa-chart-bar"></i> 陪练复盘报告</h3>
+                            <button class="btn btn-outline btn-sm" onclick="backToPracticeSetup()">
+                                <i class="fas fa-arrow-left"></i> 新一轮陪练
+                            </button>
+                        </div>
+                        <div id="practiceReportContent">
+                            <!-- 报告内容动态生成 -->
+                        </div>
+                    </div>
                 </div>
             </div>
 
