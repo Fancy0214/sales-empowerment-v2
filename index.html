@@ -463,7 +463,63 @@
                         <!-- 我方角色 -->
                         <div class="form-group">
                             <label>我方角色</label>
-                            <input type="text" id="myRole" value="B2B留学顾问（销售）" placeholder="例如：B2B留学顾问（销售）">
+                            <input type="text" id="myRole" value="九型3号·成就者——高情商的沟通、谈判专家" placeholder="例如：B2B留学顾问（销售）">
+                        </div>
+
+                        <!-- 素质辞典（胜任力等级） -->
+                        <div class="form-group">
+                            <label class="collapsible-label" onclick="toggleCompetency()">
+                                <span>素质辞典（胜任力等级）</span>
+                                <i class="fas fa-minus-circle collapsible-icon" id="competencyIcon"></i>
+                            </label>
+                            <div id="competencyWrapper" class="collapsible-content">
+                                <div class="competency-grid">
+                                    <div class="competency-item">
+                                        <span class="competency-name">沟通能力</span>
+                                        <div class="competency-level" id="comp_communication">
+                                            <span class="comp-dot active" data-level="1"></span>
+                                            <span class="comp-dot active" data-level="2"></span>
+                                            <span class="comp-dot active" data-level="3"></span>
+                                            <span class="comp-dot active" data-level="4"></span>
+                                            <span class="comp-dot active" data-level="5"></span>
+                                        </div>
+                                        <span class="competency-desc" title="五级·设计策略：预见到他人的需要和关注点，根据不同对象采取相应的沟通策略">5级·设计策略</span>
+                                    </div>
+                                    <div class="competency-item">
+                                        <span class="competency-name">成就动机</span>
+                                        <div class="competency-level" id="comp_achievement">
+                                            <span class="comp-dot active" data-level="1"></span>
+                                            <span class="comp-dot active" data-level="2"></span>
+                                            <span class="comp-dot active" data-level="3"></span>
+                                            <span class="comp-dot active" data-level="4"></span>
+                                            <span class="comp-dot active" data-level="5"></span>
+                                        </div>
+                                        <span class="competency-desc" title="五级·挑战目标：为自己制定具有挑战性的目标并采取具体行动去实现目标">5级·挑战目标</span>
+                                    </div>
+                                    <div class="competency-item">
+                                        <span class="competency-name">客户导向</span>
+                                        <div class="competency-level" id="comp_customer">
+                                            <span class="comp-dot active" data-level="1"></span>
+                                            <span class="comp-dot active" data-level="2"></span>
+                                            <span class="comp-dot active" data-level="3"></span>
+                                            <span class="comp-dot active" data-level="4"></span>
+                                            <span class="comp-dot active" data-level="5"></span>
+                                        </div>
+                                        <span class="competency-desc" title="五级·重视长远利益：担任客户的顾问角色，为客户寻找长期利益，提供增值服务">5级·重视长远利益</span>
+                                    </div>
+                                    <div class="competency-item">
+                                        <span class="competency-name">学习能力</span>
+                                        <div class="competency-level" id="comp_learning">
+                                            <span class="comp-dot active" data-level="1"></span>
+                                            <span class="comp-dot active" data-level="2"></span>
+                                            <span class="comp-dot active" data-level="3"></span>
+                                            <span class="comp-dot active" data-level="4"></span>
+                                            <span class="comp-dot active" data-level="5"></span>
+                                        </div>
+                                        <span class="competency-desc" title="五级·提炼升华：从经历的偶发体验或事件中，亲自总结出解决问题的方法并加以运用">5级·提炼升华</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- 我司情况（默认隐藏，点击展开） -->

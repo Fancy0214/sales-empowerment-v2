@@ -4072,3 +4072,58 @@ html.share-loading .share-loading-mask {
 .uni-detail-meta a:hover {
     text-decoration: underline;
 }
+
+/* ==================== 素质辞典（胜任力等级） ==================== */
+.competency-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.competency-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: rgba(196, 150, 60, 0.04);
+    border-radius: 8px;
+    border: 1px solid rgba(196, 150, 60, 0.12);
+}
+
+.competency-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    min-width: 60px;
+}
+
+.competency-level {
+    display: flex;
+    gap: 5px;
+}
+
+.comp-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: #fff;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.comp-dot:hover {
+    border-color: var(--accent);
+}
+
+.comp-dot.active {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+.competency-desc {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-left: auto;
+    white-space: nowrap;
+}

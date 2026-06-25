@@ -4387,6 +4387,122 @@ function toggleCompanyInfo() {
     }
 }
 
+
+function toggleCompetency() {
+    const wrapper = document.getElementById('competencyWrapper');
+    const icon = document.getElementById('competencyIcon');
+    if (wrapper.style.display === 'none') {
+        wrapper.style.display = 'block';
+        icon.className = 'fas fa-minus-circle collapsible-icon';
+    } else {
+        wrapper.style.display = 'none';
+        icon.className = 'fas fa-plus-circle collapsible-icon';
+    }
+}
+
+// 素质辞典胜任力等级描述
+const COMPETENCY_LEVELS = {
+    communication: {
+        name: '沟通能力',
+        levels: {
+            1: '愿意沟通',
+            2: '准确表达',
+            3: '高效沟通',
+            4: '注重技巧',
+            5: '设计策略'
+        },
+        level5Desc: '预见到他人的需要和关注点，根据不同对象采取相应的沟通策略。对不同对象和情境所要求的沟通方式有系统和深入的认识，并能自如地运用和进行灵活调整。'
+    },
+    achievement: {
+        name: '成就动机',
+        levels: {
+            1: '表达意愿',
+            2: '符合标准',
+            3: '制定标准',
+            4: '改善绩效',
+            5: '挑战目标'
+        },
+        level5Desc: '为自己制定具有挑战性的目标并采取具体行动去实现目标（"挑战性"是指尽了很大努力后，成功的可能性为80%左右的目标，如同类人员中的优秀标准）。'
+    },
+    customer: {
+        name: '客户导向',
+        levels: {
+            1: '及时回应',
+            2: '保持沟通',
+            3: '个性化服务',
+            4: '挖掘潜在需求',
+            5: '重视长远利益'
+        },
+        level5Desc: '担任客户的顾问角色，针对客户的需求、问题提出自己独立的观点，并采取行动解决问题。为客户寻找长期利益，能够采取具体的措施为客户提供增值服务，并借此成功取信于客户。'
+    },
+    learning: {
+        name: '学习能力',
+        levels: {
+            1: '学习积累',
+            2: '直接运用',
+            3: '举一反三',
+            4: '融会贯通',
+            5: '提炼升华'
+        },
+        level5Desc: '从经历的偶发体验或事件中，亲自总结出解决问题的方法并加以运用。'
+    }
+};
+
+// 点击圆点切换等级
+function initCompetencyDots() {
+    document.querySelectorAll('.competency-level').forEach(levelDiv => {
+        const id = levelDiv.id; // comp_communication, comp_achievement, etc.
+        const dots = levelDiv.querySelectorAll('.comp-dot');
+        dots.forEach(dot => {
+            dot.addEventListener('click', function() {
+                const clickedLevel = parseInt(this.dataset.level);
+                dots.forEach(d => {
+                    const dl = parseInt(d.dataset.level);
+                    if (dl <= clickedLevel) {
+                        d.classList.add('active');
+                    } else {
+                        d.classList.remove('active');
+                    }
+                });
+                // Update description text
+                const compKey = id.replace('comp_', '');
+                const item = levelDiv.closest('.competency-item');
+                const descSpan = item.querySelector('.competency-desc');
+                const levelName = COMPETENCY_LEVELS[compKey].levels[clickedLevel];
+                descSpan.textContent = clickedLevel + '级·' + levelName;
+                if (clickedLevel === 5) {
+                    descSpan.title = '五级·' + levelName + '：' + COMPETENCY_LEVELS[compKey].level5Desc;
+                } else {
+                    descSpan.title = clickedLevel + '级·' + levelName;
+                }
+            });
+        });
+    });
+}
+
+// 获取当前胜任力配置文本（注入prompt用）
+function getCompetencyPromptText() {
+    const compMap = {
+        'comp_communication': 'communication',
+        'comp_achievement': 'achievement',
+        'comp_customer': 'customer',
+        'comp_learning': 'learning'
+    };
+    let lines = [];
+    for (const [elemId, key] of Object.entries(compMap)) {
+        const levelDiv = document.getElementById(elemId);
+        if (!levelDiv) continue;
+        const activeDots = levelDiv.querySelectorAll('.comp-dot.active');
+        const level = activeDots.length;
+        const info = COMPETENCY_LEVELS[key];
+        const levelName = info.levels[level] || '';
+        let desc = '';
+        if (level === 5) desc = '（' + info.level5Desc + '）';
+        lines.push(`- ${info.name}${level}级（${levelName}）${desc}`);
+    }
+    return lines.join('\n');
+}
+
 // 九型人格沟通策略映射
 const enneagramStrategies = {
     '1号完美型': '用数据、标准和合规性打动；强调我司27年行业规范、佣金透明安全',
@@ -4498,7 +4614,8 @@ async function generateScript() {
     
     // 构建用户消息（将系统Prompt拼入，确保Bot端无论是否配Prompt都能输出正确格式）
     const { text: fileText, images: fileImages } = buildStudioMessage();
-    let userContent = `[系统指令]\n${STUDIO_SYSTEM_PROMPT}\n\n[用户输入]\n我方角色：${myRole}\n`;
+    let competencyText = getCompetencyPromptText();
+    let userContent = `[系统指令]\n${STUDIO_SYSTEM_PROMPT}\n\n[用户输入]\n我方角色：${myRole}\n\n[胜任力画像]\n${competencyText}\n`;
     if (companyInfo) userContent += `我司情况：${companyInfo}\n`;
     if (clientLevel) userContent += `客户层级：${clientLevel}\n`;
     if (clientIdentity) userContent += `客户身份：${clientIdentity}\n`;
@@ -6212,6 +6329,7 @@ document.addEventListener('DOMContentLoaded', function() {
     renderRadarChart();
     renderScripts();
     renderEnneagramCards();
+    initCompetencyDots();
     
     // 初始化工具附件 Storage Bucket
     initToolFilesBucket();
