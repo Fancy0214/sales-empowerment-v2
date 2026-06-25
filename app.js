@@ -4615,7 +4615,9 @@ async function generateScript() {
     // 构建用户消息（将系统Prompt拼入，确保Bot端无论是否配Prompt都能输出正确格式）
     const { text: fileText, images: fileImages } = buildStudioMessage();
     let competencyText = getCompetencyPromptText();
-    let userContent = `[系统指令]\n${STUDIO_SYSTEM_PROMPT}\n\n[用户输入]\n我方角色：${myRole}\n\n[胜任力画像]\n${competencyText}\n`;
+    // 后台追加九型3号定位
+    const enneagram3Profile = '九型定位：3号·成就者——高情商的沟通、谈判专家。该角色具备强烈的目标导向和成就驱动力，善于高效沟通和谈判，能根据不同对象灵活调整沟通策略，为客户创造长期价值。';
+    let userContent = `[系统指令]\n${STUDIO_SYSTEM_PROMPT}\n\n[用户输入]\n我方角色：${myRole}\n\n[角色画像]\n${enneagram3Profile}\n\n[胜任力画像]\n${competencyText}\n`;
     if (companyInfo) userContent += `我司情况：${companyInfo}\n`;
     if (clientLevel) userContent += `客户层级：${clientLevel}\n`;
     if (clientIdentity) userContent += `客户身份：${clientIdentity}\n`;
