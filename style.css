@@ -1,23 +1,33 @@
-/* ==================== 基础变量 ==================== */
+/* ==================== 基础变量 — Oxbridge Modern ==================== */
 :root {
-    --primary: #1a2332;
-    --primary-mid: #3b5998;
-    --accent: #4a90d9;
-    --secondary: #0EA5E9;
-    --success: #10B981;
-    --warning: #F59E0B;
-    --danger: #EF4444;
-    --purple: #8B5CF6;
-    --text-primary: #1F2937;
-    --text-secondary: #6B7280;
-    --bg-primary: #F3F4F6;
+    --primary: #1B2B4B;
+    --primary-mid: #2D4A7A;
+    --accent: #C4963C;
+    --secondary: #6B8DAD;
+    --success: #5A9E6F;
+    --warning: #C4963C;
+    --danger: #8B3A4A;
+    --purple: #7B6B8D;
+    --text-primary: #2D3748;
+    --text-secondary: #6B8DAD;
+    --bg-primary: #F8F6F0;
     --bg-white: #FFFFFF;
-    --border: #E5E7EB;
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --border: #E8E4DD;
+    --shadow: 0 2px 12px rgba(27,43,75,0.06);
+    --shadow-lg: 0 6px 24px rgba(27,43,75,0.12);
     --radius: 12px;
     --radius-sm: 8px;
     --transition: all 0.3s ease;
+    --font-display: 'Playfair Display', 'Noto Serif SC', Georgia, serif;
+    --font-body: 'DM Sans', 'Noto Sans SC', -apple-system, sans-serif;
+}
+
+/* ===== 全局字体 ===== */
+body {
+    font-family: var(--font-body);
+}
+h1, h2, h3, .page-title, .login-title {
+    font-family: var(--font-display);
 }
 
 /* ==================== 登录门禁 ==================== */
@@ -35,7 +45,7 @@ html.not-logged-in .share-loading-mask {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
     z-index: 99999;
-    background: linear-gradient(135deg, #1a2332 0%, #2d3e50 50%, #1a2332 100%);
+    background: linear-gradient(135deg, #1B2B4B 0%, #2D4A7A 50%, #1B2B4B 100%);
     justify-content: center;
     align-items: center;
 }
@@ -47,26 +57,27 @@ html.not-logged-in .login-gate {
 .login-card {
     background: rgba(255,255,255,0.06);
     backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid rgba(196,150,60,0.25);
     border-radius: 20px;
     padding: 48px 40px;
     width: 380px;
     max-width: 90vw;
     text-align: center;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    box-shadow: 0 20px 60px rgba(27,43,75,0.3);
 }
 
 .login-logo {
     width: 72px;
     height: 72px;
     margin: 0 auto 24px;
-    background: linear-gradient(135deg, #4a90d9, #0EA5E9);
-    border-radius: 20px;
+    background: rgba(196,150,60,0.12);
+    border: 2px solid var(--accent);
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 32px;
-    color: #fff;
+    color: var(--accent);
 }
 
 .login-title {
@@ -80,7 +91,15 @@ html.not-logged-in .login-gate {
 .login-subtitle {
     font-size: 14px;
     color: rgba(255,255,255,0.5);
+    margin-bottom: 8px;
+}
+
+.login-sub {
+    font-size: 12px;
+    color: rgba(196,150,60,0.7);
     margin-bottom: 32px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
 }
 
 .login-form {
@@ -94,14 +113,14 @@ html.not-logged-in .login-gate {
     align-items: center;
     gap: 12px;
     background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.12);
+    border: 1px solid rgba(196,150,60,0.15);
     border-radius: 12px;
     padding: 0 16px;
     transition: border-color 0.3s;
 }
 
 .login-field:focus-within {
-    border-color: #4a90d9;
+    border-color: var(--accent);
 }
 
 .login-field i {
@@ -125,7 +144,7 @@ html.not-logged-in .login-gate {
 }
 
 .login-btn {
-    background: linear-gradient(135deg, #4a90d9, #0EA5E9);
+    background: var(--primary);
     color: #fff;
     border: none;
     border-radius: 12px;
@@ -147,7 +166,7 @@ html.not-logged-in .login-gate {
 }
 
 .login-error {
-    color: #EF4444;
+    color: var(--danger);
     font-size: 13px;
     margin: 0;
     animation: shake 0.4s;
