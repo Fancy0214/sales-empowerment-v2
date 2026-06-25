@@ -92,6 +92,7 @@ html.not-logged-in .login-gate {
     font-size: 14px;
     color: rgba(255,255,255,0.5);
     margin-bottom: 8px;
+    display: none;
 }
 
 .login-sub {
@@ -108,14 +109,29 @@ html.not-logged-in .login-gate {
     gap: 16px;
 }
 
-.login-field {
+.login-field-group {
     display: flex;
     align-items: center;
     gap: 12px;
+}
+
+.login-label {
+    color: rgba(255,255,255,0.6);
+    font-size: 13px;
+    white-space: nowrap;
+    min-width: 56px;
+    text-align: right;
+}
+
+.login-field {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
     background: rgba(255,255,255,0.08);
     border: 1px solid rgba(196,150,60,0.15);
-    border-radius: 12px;
-    padding: 0 16px;
+    border-radius: 10px;
+    padding: 0 14px;
     transition: border-color 0.3s;
 }
 
@@ -125,7 +141,7 @@ html.not-logged-in .login-gate {
 
 .login-field i {
     color: rgba(255,255,255,0.4);
-    font-size: 16px;
+    font-size: 14px;
 }
 
 .login-field input {
@@ -134,8 +150,8 @@ html.not-logged-in .login-gate {
     border: none;
     outline: none;
     color: #fff;
-    font-size: 15px;
-    padding: 14px 0;
+    font-size: 14px;
+    padding: 12px 0;
     font-family: inherit;
 }
 
@@ -426,24 +442,36 @@ body {
     left: 0;
     width: 220px;
     height: calc(100vh - 60px);
-    background: var(--bg-white);
-    border-right: 1px solid var(--border);
+    background: var(--primary);
+    border-right: none;
     padding: 20px 0;
     z-index: 998;
     overflow-y: auto;
-    box-shadow: 2px 0 8px rgba(0,0,0,0.05);
+    box-shadow: 2px 0 8px rgba(0,0,0,0.15);
 }
 
 .sidebar-header {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 0 20px 20px;
-    border-bottom: 1px solid var(--border);
+    padding: 0 20px 16px;
+    border-bottom: 1px solid rgba(196,150,60,0.3);
     margin-bottom: 10px;
     font-size: 1.1rem;
     font-weight: 600;
-    color: var(--primary);
+    color: #fff;
+    position: relative;
+}
+
+.sidebar-header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 20px;
+    width: 40px;
+    height: 2px;
+    background: var(--accent);
+    border-radius: 1px;
 }
 
 .sidebar-header i {
@@ -460,7 +488,7 @@ body {
     align-items: center;
     gap: 12px;
     padding: 14px 20px;
-    color: var(--text-secondary);
+    color: rgba(255,255,255,0.65);
     cursor: pointer;
     transition: var(--transition);
     border-left: 3px solid transparent;
@@ -468,13 +496,13 @@ body {
 }
 
 .nav-item:hover {
-    background: var(--bg-primary);
-    color: var(--primary-mid);
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.9);
 }
 
 .nav-item.active {
-    background: rgba(59, 89, 152, 0.1);
-    color: var(--primary-mid);
+    background: rgba(196,150,60,0.12);
+    color: #fff;
     border-left-color: var(--accent);
     font-weight: 500;
 }
@@ -1015,21 +1043,22 @@ body {
     cursor: pointer;
     font-size: 0.95rem;
     color: var(--text-secondary);
-    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    border-radius: 0;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
     transition: var(--transition);
 }
 
 .tab-btn:hover {
-    color: var(--primary-mid);
-    background: rgba(59, 89, 152, 0.05);
+    color: var(--accent);
+    background: rgba(196,150,60,0.05);
 }
 
 .tab-btn.active {
-    color: white;
-    font-weight: 500;
-    background: linear-gradient(135deg, var(--primary-mid) 0%, var(--accent) 100%);
+    color: var(--primary);
+    font-weight: 600;
+    background: none;
     border-bottom: 2px solid var(--accent);
-    margin-bottom: -10px;
 }
 
 .studio-content {
@@ -1760,6 +1789,7 @@ body {
     overflow-y: auto;
     position: relative;
     animation: modalSlide 0.3s ease;
+    border-top: 3px solid var(--accent);
 }
 
 .modal-lg {
@@ -2188,7 +2218,7 @@ body {
 
 .admin-section-tab:hover {
     color: var(--accent);
-    background: rgba(74, 144, 217, 0.05);
+    background: rgba(196,150,60,0.05);
 }
 
 .admin-section-tab.active {
