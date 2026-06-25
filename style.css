@@ -1492,19 +1492,21 @@ body {
 
 .enneagram-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 20px;
 }
 
 .enneagram-card {
     background: var(--bg-white);
     border-radius: var(--radius);
-    padding: 24px;
+    padding: 28px 24px;
     text-align: center;
     cursor: pointer;
     transition: var(--transition);
     box-shadow: var(--shadow);
-    border: 2px solid transparent;
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
 }
 
 .enneagram-card:hover {
@@ -1513,28 +1515,43 @@ body {
     border-color: var(--accent);
 }
 
+.enneagram-card:nth-child(1) { background: linear-gradient(135deg, #FDF6EC 0%, #F8F0E0 100%); }
+.enneagram-card:nth-child(2) { background: linear-gradient(135deg, #F0EDE8 0%, #E8E2D8 100%); }
+.enneagram-card:nth-child(3) { background: linear-gradient(135deg, #EDE8F0 0%, #E4DDE8 100%); }
+.enneagram-card:nth-child(4) { background: linear-gradient(135deg, #E8EDF3 0%, #DDE4EE 100%); }
+.enneagram-card:nth-child(5) { background: linear-gradient(135deg, #E6EEF0 0%, #DCE8EA 100%); }
+.enneagram-card:nth-child(6) { background: linear-gradient(135deg, #F0E8E8 0%, #E8DEDE 100%); }
+.enneagram-card:nth-child(7) { background: linear-gradient(135deg, #F2F0E6 0%, #EBE8D8 100%); }
+.enneagram-card:nth-child(8) { background: linear-gradient(135deg, #EDE6EC 0%, #E4DCE2 100%); }
+.enneagram-card:nth-child(9) { background: linear-gradient(135deg, #E8F0E8 0%, #DDE8DD 100%); }
+
 .enneagram-num {
-    width: 60px;
-    height: 60px;
-    background: linear-gradient(135deg, var(--primary-mid) 0%, var(--accent) 100%);
+    width: 56px;
+    height: 56px;
+    background: rgba(27,43,75,0.08);
+    border: 2px solid var(--accent);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
-    font-size: 1.5rem;
+    color: var(--primary);
+    font-size: 1.4rem;
     font-weight: 700;
-    margin: 0 auto 12px;
+    margin: 0 auto 14px;
+    font-family: var(--font-display);
 }
 
 .enneagram-name {
     font-weight: 600;
+    font-size: 1.05rem;
     margin-bottom: 8px;
+    color: var(--primary);
 }
 
 .enneagram-subtitle {
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     color: var(--text-secondary);
+    line-height: 1.5;
 }
 
 /* 测试 */
@@ -1861,7 +1878,13 @@ body {
         grid-template-columns: 1fr;
     }
     .enneagram-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .enneagram-grid {
+        grid-template-columns: 1fr;
     }
 }
 
