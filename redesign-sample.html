@@ -1,0 +1,1795 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>销售赋能平台 — Oxbridge Modern</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Noto+Sans+SC:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+/* ===== CSS Variables ===== */
+:root {
+  --oxford-navy: #1B2B4B;
+  --parchment: #F8F6F0;
+  --cambridge-crimson: #8B3A4A;
+  --antique-gold: #C4963C;
+  --steel-blue: #6B8DAD;
+  --card-white: #FFFFFF;
+  --warm-gray: #E8E4DD;
+  --ink: #2D3748;
+  --navy-light: #E8EDF3;
+  --hover-beige: #FBF8F2;
+  --sidebar-w: 260px;
+  --topbar-h: 64px;
+  --radius-card: 12px;
+  --radius-btn: 8px;
+  --radius-tag: 20px;
+  --shadow-card: 0 2px 12px rgba(27,43,75,0.06);
+  --shadow-card-hover: 0 6px 24px rgba(27,43,75,0.12);
+  --transition-base: 0.2s ease;
+  --transition-slow: 0.3s ease;
+  --font-display: 'Playfair Display', 'Noto Serif SC', Georgia, serif;
+  --font-body: 'DM Sans', 'Noto Sans SC', -apple-system, sans-serif;
+}
+
+/* ===== Reset ===== */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 15px; scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--parchment);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; border: none; background: none; font-family: inherit; }
+input, select, textarea { font-family: inherit; font-size: inherit; }
+ul, ol { list-style: none; }
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--warm-gray); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--steel-blue); }
+
+/* ===== LOGIN PAGE ===== */
+.login-page {
+  position: fixed; inset: 0; z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #1B2B4B 0%, #2A3F6A 40%, #1B2B4B 70%, #0F1A30 100%);
+}
+.login-page::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 30% 20%, rgba(196,150,60,0.08) 0%, transparent 60%),
+              radial-gradient(ellipse at 70% 80%, rgba(107,141,173,0.06) 0%, transparent 50%);
+}
+.login-card {
+  position: relative;
+  width: 420px; max-width: 92vw;
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
+  padding: 48px 40px;
+  text-align: center;
+  color: #fff;
+}
+.login-icon-circle {
+  width: 72px; height: 72px; margin: 0 auto 24px;
+  border-radius: 50%;
+  border: 2px solid var(--antique-gold);
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(196,150,60,0.1);
+}
+.login-icon-circle i { font-size: 28px; color: var(--antique-gold); }
+.login-card h1 {
+  font-family: var(--font-display);
+  font-size: 1.7rem; font-weight: 600;
+  margin-bottom: 8px; letter-spacing: 0.5px;
+}
+.login-card .login-sub {
+  font-size: 0.85rem; color: rgba(255,255,255,0.55);
+  margin-bottom: 32px;
+}
+.login-field {
+  margin-bottom: 18px; text-align: left;
+}
+.login-field label {
+  display: block; font-size: 0.78rem; font-weight: 500;
+  color: rgba(255,255,255,0.6); margin-bottom: 6px; letter-spacing: 0.3px;
+}
+.login-field input {
+  width: 100%; padding: 12px 16px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px; color: #fff; font-size: 0.95rem;
+  transition: var(--transition-base);
+}
+.login-field input::placeholder { color: rgba(255,255,255,0.35); }
+.login-field input:focus {
+  outline: none;
+  border-color: var(--antique-gold);
+  background: rgba(255,255,255,0.14);
+  box-shadow: 0 0 0 3px rgba(196,150,60,0.15);
+}
+.login-btn {
+  width: 100%; padding: 13px; margin-top: 10px;
+  background: var(--oxford-navy);
+  color: #fff; font-size: 0.95rem; font-weight: 600;
+  border-radius: 8px; letter-spacing: 0.5px;
+  transition: var(--transition-base);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.login-btn:hover { background: #24365C; }
+.login-footer {
+  margin-top: 24px; font-size: 0.75rem;
+  color: rgba(255,255,255,0.35);
+}
+
+/* ===== APP SHELL ===== */
+.app-shell { display: none; min-height: 100vh; }
+.app-shell.active { display: flex; }
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  width: var(--sidebar-w);
+  min-height: 100vh;
+  background: var(--oxford-navy);
+  color: rgba(255,255,255,0.7);
+  display: flex; flex-direction: column;
+  position: fixed; left: 0; top: 0; bottom: 0;
+  z-index: 100;
+  transition: transform var(--transition-slow);
+}
+.sidebar::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 200px;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(255,255,255,0.012) 10px,
+    rgba(255,255,255,0.012) 11px
+  );
+  pointer-events: none;
+}
+.sidebar-logo {
+  padding: 28px 24px 20px;
+  text-align: center;
+  position: relative;
+}
+.sidebar-logo h2 {
+  font-family: var(--font-display);
+  font-size: 1.15rem; font-weight: 600;
+  color: #fff; letter-spacing: 0.5px;
+}
+.sidebar-logo::after {
+  content: '';
+  display: block; width: 40px; height: 2px;
+  background: var(--antique-gold);
+  margin: 14px auto 0;
+}
+.sidebar-nav { flex: 1; padding: 16px 0; position: relative; }
+.nav-item {
+  display: flex; align-items: center;
+  padding: 13px 24px;
+  font-size: 0.88rem; font-weight: 500;
+  color: rgba(255,255,255,0.6);
+  transition: var(--transition-base);
+  position: relative;
+  cursor: pointer;
+}
+.nav-item i { width: 22px; margin-right: 14px; font-size: 0.95rem; text-align: center; }
+.nav-item:hover {
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.9);
+}
+.nav-item.active {
+  color: #fff;
+  background: rgba(255,255,255,0.06);
+}
+.nav-item.active::before {
+  content: '';
+  position: absolute; left: 0; top: 8px; bottom: 8px;
+  width: 3px; border-radius: 0 3px 3px 0;
+  background: var(--antique-gold);
+  transition: top var(--transition-slow), bottom var(--transition-slow);
+}
+.sidebar-bottom {
+  padding: 20px 24px;
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.25);
+  text-align: center;
+  position: relative; z-index: 1;
+}
+
+/* ===== TOPBAR ===== */
+.topbar {
+  height: var(--topbar-h);
+  background: var(--card-white);
+  border-bottom: 1px solid var(--warm-gray);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 32px;
+  position: sticky; top: 0; z-index: 50;
+}
+.topbar-left {
+  display: flex; align-items: center; gap: 16px;
+}
+.hamburger {
+  display: none; font-size: 1.2rem; color: var(--ink);
+  padding: 8px;
+}
+.topbar-title {
+  font-family: var(--font-display);
+  font-size: 1.2rem; font-weight: 600;
+  color: var(--oxford-navy);
+}
+.topbar-right {
+  display: flex; align-items: center; gap: 20px;
+}
+.topbar-datetime {
+  font-size: 0.82rem; color: var(--steel-blue);
+}
+.topbar-avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--oxford-navy), #2A3F6A);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 0.82rem; font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+.topbar-avatar:hover {
+  box-shadow: 0 4px 16px rgba(27,43,75,0.2);
+  transform: scale(1.05);
+}
+
+/* ===== MAIN CONTENT ===== */
+.main-content {
+  flex: 1; margin-left: var(--sidebar-w);
+  min-height: 100vh;
+  padding: 32px;
+}
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== CARDS ===== */
+.card {
+  background: var(--card-white);
+  border: 1px solid var(--warm-gray);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 24px;
+  margin-bottom: 24px;
+  transition: var(--transition-slow);
+  position: relative;
+}
+.card:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+}
+.card-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem; font-weight: 600;
+  color: var(--oxford-navy);
+  padding-left: 14px;
+  margin-bottom: 18px;
+  position: relative;
+}
+.card-title::before {
+  content: '';
+  position: absolute; left: 0; top: 2px; bottom: 2px;
+  width: 3px; border-radius: 2px;
+  background: var(--antique-gold);
+}
+
+/* ===== BUTTONS ===== */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px 22px;
+  font-size: 0.85rem; font-weight: 500;
+  border-radius: var(--radius-btn);
+  transition: var(--transition-base);
+  white-space: nowrap;
+}
+.btn-primary {
+  background: var(--oxford-navy); color: #fff;
+}
+.btn-primary:hover { background: #24365C; }
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--oxford-navy);
+  color: var(--oxford-navy);
+}
+.btn-secondary:hover { background: rgba(27,43,75,0.04); }
+.btn-danger {
+  background: var(--cambridge-crimson); color: #fff;
+}
+.btn-danger:hover { background: #7A3242; }
+.btn-gold {
+  background: var(--antique-gold); color: #fff;
+}
+.btn-gold:hover { background: #B38830; }
+.btn-sm { padding: 7px 14px; font-size: 0.78rem; }
+
+/* ===== TAGS / FILTER PILLS ===== */
+.tag-group {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin-bottom: 20px;
+}
+.tag {
+  padding: 6px 18px;
+  border-radius: var(--radius-tag);
+  font-size: 0.8rem; font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-base);
+  background: var(--parchment);
+  color: var(--steel-blue);
+  border: 1px solid transparent;
+}
+.tag:hover { border-color: var(--warm-gray); }
+.tag.active {
+  background: var(--oxford-navy);
+  color: #fff;
+}
+
+/* ===== TABLES ===== */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.data-table thead th {
+  background: var(--navy-light);
+  font-family: var(--font-display);
+  font-weight: 600; font-size: 0.82rem;
+  color: var(--oxford-navy);
+  padding: 12px 16px; text-align: left;
+  white-space: nowrap;
+}
+.data-table thead th:first-child { border-radius: 8px 0 0 0; }
+.data-table thead th:last-child { border-radius: 0 8px 0 0; }
+.data-table tbody tr {
+  transition: background var(--transition-base);
+}
+.data-table tbody tr:hover { background: var(--hover-beige); }
+.data-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--warm-gray);
+  vertical-align: middle;
+}
+.score-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--antique-gold);
+  color: #fff; font-weight: 700; font-size: 0.82rem;
+}
+
+/* ===== FORM ELEMENTS ===== */
+.form-group { margin-bottom: 18px; }
+.form-group label {
+  display: block;
+  font-size: 0.8rem; font-weight: 500;
+  color: var(--steel-blue);
+  margin-bottom: 6px;
+}
+.form-control {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--warm-gray);
+  border-radius: 8px;
+  background: var(--card-white);
+  color: var(--ink);
+  font-size: 0.88rem;
+  transition: var(--transition-base);
+}
+.form-control:focus {
+  outline: none;
+  border-color: var(--antique-gold);
+  box-shadow: 0 0 0 3px rgba(196,150,60,0.1);
+}
+select.form-control { cursor: pointer; }
+textarea.form-control { resize: vertical; min-height: 80px; }
+
+/* ===== TABS ===== */
+.tabs {
+  display: flex; gap: 0;
+  border-bottom: 2px solid var(--warm-gray);
+  margin-bottom: 24px;
+}
+.tab-btn {
+  padding: 12px 24px;
+  font-size: 0.88rem; font-weight: 500;
+  color: var(--steel-blue);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: var(--transition-base);
+}
+.tab-btn:hover { color: var(--oxford-navy); }
+.tab-btn.active {
+  color: var(--oxford-navy);
+  border-bottom-color: var(--antique-gold);
+  font-weight: 600;
+}
+.tab-panel { display: none; }
+.tab-panel.active { display: block; animation: fadeIn 0.3s ease; }
+
+/* ===== MODAL ===== */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(27,43,75,0.35);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  align-items: center; justify-content: center;
+}
+.modal-overlay.active { display: flex; }
+.modal-card {
+  background: var(--card-white);
+  border-radius: var(--radius-card);
+  width: 560px; max-width: 92vw;
+  max-height: 88vh; overflow-y: auto;
+  box-shadow: 0 16px 48px rgba(27,43,75,0.18);
+  position: relative;
+}
+.modal-card::before {
+  content: '';
+  display: block;
+  height: 3px;
+  background: var(--antique-gold);
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
+}
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--warm-gray);
+}
+.modal-header h3 {
+  font-family: var(--font-display);
+  font-size: 1.08rem; font-weight: 600;
+  color: var(--oxford-navy);
+}
+.modal-close {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--steel-blue);
+  transition: var(--transition-base);
+}
+.modal-close:hover { background: #FDE8E8; color: var(--cambridge-crimson); }
+.modal-body { padding: 24px; }
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--warm-gray);
+  display: flex; justify-content: flex-end; gap: 10px;
+}
+
+/* ===== SEARCH BAR ===== */
+.search-bar {
+  position: relative;
+  max-width: 400px;
+  margin-bottom: 20px;
+}
+.search-bar input {
+  width: 100%;
+  padding: 10px 16px 10px 42px;
+  border: 1px solid var(--warm-gray);
+  border-radius: 8px;
+  background: var(--card-white);
+  font-size: 0.88rem;
+  color: var(--ink);
+  transition: var(--transition-base);
+}
+.search-bar input:focus {
+  outline: none;
+  border-color: var(--antique-gold);
+  box-shadow: 0 0 0 3px rgba(196,150,60,0.1);
+}
+.search-bar i {
+  position: absolute; left: 14px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--steel-blue); font-size: 0.9rem;
+}
+
+/* ===== ENNEAGRAM GRID ===== */
+.enneagram-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.enneagram-card {
+  background: var(--card-white);
+  border: 1px solid var(--warm-gray);
+  border-radius: var(--radius-card);
+  padding: 28px 22px;
+  text-align: center;
+  transition: var(--transition-slow);
+  position: relative;
+  overflow: hidden;
+}
+.enneagram-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  opacity: 0.35;
+  border-radius: var(--radius-card);
+  z-index: 0;
+}
+.enneagram-card:nth-child(1)::before { background: linear-gradient(135deg, #F5E6D3 0%, #EDE0D4 100%); }
+.enneagram-card:nth-child(2)::before { background: linear-gradient(135deg, #E3DDE8 0%, #DDD6E4 100%); }
+.enneagram-card:nth-child(3)::before { background: linear-gradient(135deg, #D9E4D7 0%, #D3DFD1 100%); }
+.enneagram-card:nth-child(4)::before { background: linear-gradient(135deg, #D6DDE8 0%, #CFD8E4 100%); }
+.enneagram-card:nth-child(5)::before { background: linear-gradient(135deg, #E4DCD4 0%, #DDD5CC 100%); }
+.enneagram-card:nth-child(6)::before { background: linear-gradient(135deg, #E8DFDB 0%, #E0D6D2 100%); }
+.enneagram-card:nth-child(7)::before { background: linear-gradient(135deg, #DCDEE4 0%, #D5D8DE 100%); }
+.enneagram-card:nth-child(8)::before { background: linear-gradient(135deg, #E0DBD6 0%, #D9D4CF 100%); }
+.enneagram-card:nth-child(9)::before { background: linear-gradient(135deg, #D8E2D9 0%, #D1DCD3 100%); }
+.enneagram-card > * { position: relative; z-index: 1; }
+.enneagram-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-card-hover);
+}
+.enneagram-num {
+  font-family: var(--font-display);
+  font-size: 2.5rem; font-weight: 700;
+  color: var(--antique-gold);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.enneagram-name {
+  font-size: 1rem; font-weight: 600;
+  color: var(--oxford-navy);
+  margin-bottom: 10px;
+}
+.enneagram-desc {
+  font-size: 0.78rem;
+  color: var(--steel-blue);
+  line-height: 1.5;
+}
+
+/* ===== TOOL GRID ===== */
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+.tool-card {
+  background: var(--card-white);
+  border: 1px solid var(--warm-gray);
+  border-radius: var(--radius-card);
+  padding: 24px;
+  transition: var(--transition-slow);
+  position: relative;
+}
+.tool-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover);
+}
+.tool-icon-circle {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  border: 2px solid var(--antique-gold);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 16px;
+  transition: var(--transition-base);
+  background: transparent;
+}
+.tool-icon-circle i { color: var(--antique-gold); font-size: 1.1rem; transition: var(--transition-base); }
+.tool-card:hover .tool-icon-circle {
+  background: var(--antique-gold);
+}
+.tool-card:hover .tool-icon-circle i { color: #fff; }
+.tool-card h4 {
+  font-size: 0.95rem; font-weight: 600;
+  color: var(--oxford-navy);
+  margin-bottom: 6px;
+}
+.tool-card p {
+  font-size: 0.78rem;
+  color: var(--steel-blue);
+  line-height: 1.5;
+}
+
+/* ===== SCRIPT WORKSHOP ===== */
+.workshop-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.workshop-input { }
+.workshop-result {
+  border-left: 1px solid var(--warm-gray);
+  padding-left: 24px;
+}
+.input-label-tag {
+  display: inline-block;
+  background: var(--parchment);
+  color: var(--steel-blue);
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem; font-weight: 500;
+  margin-bottom: 6px;
+}
+.script-card {
+  background: var(--parchment);
+  border: 1px solid var(--warm-gray);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.script-card h5 {
+  font-size: 0.88rem; font-weight: 600;
+  color: var(--oxford-navy);
+  margin-bottom: 8px;
+}
+.script-card p {
+  font-size: 0.8rem; color: var(--ink);
+  line-height: 1.65;
+}
+.script-tags { display: flex; gap: 6px; margin-top: 8px; }
+.script-tags span {
+  padding: 3px 10px; border-radius: 12px;
+  font-size: 0.7rem; font-weight: 500;
+  background: var(--navy-light);
+  color: var(--oxford-navy);
+}
+.script-reminder {
+  background: rgba(196,150,60,0.08);
+  border: 1px solid rgba(196,150,60,0.2);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-top: 16px;
+  font-size: 0.78rem;
+  color: #8B7232;
+  line-height: 1.6;
+}
+.script-reminder i { color: var(--antique-gold); margin-right: 6px; }
+
+/* ===== RADAR CHART AREA ===== */
+.radar-placeholder {
+  width: 100%; height: 320px;
+  background: var(--parchment);
+  border: 1px dashed var(--warm-gray);
+  border-radius: var(--radius-card);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--steel-blue); font-size: 0.85rem;
+}
+
+/* ===== TIMELINE ===== */
+.timeline { padding: 12px 0; }
+.timeline-item {
+  display: flex; gap: 16px;
+  padding-bottom: 20px;
+  position: relative;
+}
+.timeline-item:not(:last-child)::before {
+  content: '';
+  position: absolute; left: 15px; top: 32px; bottom: 0;
+  width: 1px; background: var(--warm-gray);
+}
+.timeline-dot {
+  width: 32px; height: 32px; flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--navy-light);
+  border: 2px solid var(--antique-gold);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; color: var(--oxford-navy); font-weight: 600;
+  z-index: 1;
+}
+.timeline-content h5 {
+  font-size: 0.85rem; font-weight: 600; color: var(--oxford-navy);
+  margin-bottom: 2px;
+}
+.timeline-content p {
+  font-size: 0.78rem; color: var(--steel-blue);
+}
+.timeline-content .time {
+  font-size: 0.72rem; color: rgba(107,141,173,0.7);
+  margin-top: 2px;
+}
+
+/* ===== PROGRESS BAR ===== */
+.progress-bar {
+  width: 100%; height: 8px;
+  background: var(--warm-gray);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--antique-gold), var(--oxford-navy));
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+/* ===== QUIZ OPTIONS ===== */
+.quiz-question {
+  font-family: var(--font-display);
+  font-size: 1.05rem; font-weight: 600;
+  color: var(--oxford-navy);
+  margin-bottom: 20px;
+}
+.quiz-options { display: flex; flex-direction: column; gap: 10px; }
+.quiz-opt {
+  padding: 14px 18px;
+  border: 1px solid var(--warm-gray);
+  border-radius: 8px;
+  font-size: 0.88rem;
+  color: var(--ink);
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+.quiz-opt:hover {
+  border-color: var(--antique-gold);
+  background: rgba(196,150,60,0.04);
+}
+
+/* ===== TEAM MATCH ===== */
+.team-select { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+.team-member {
+  padding: 8px 18px;
+  border: 1px solid var(--warm-gray);
+  border-radius: 20px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+.team-member:hover { border-color: var(--antique-gold); }
+.team-member.selected {
+  background: var(--oxford-navy);
+  color: #fff;
+  border-color: var(--oxford-navy);
+}
+
+/* ===== FILE UPLOAD ===== */
+.file-upload-zone {
+  border: 2px dashed var(--warm-gray);
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+  color: var(--steel-blue);
+  font-size: 0.82rem;
+  transition: var(--transition-base);
+  cursor: pointer;
+}
+.file-upload-zone:hover {
+  border-color: var(--antique-gold);
+  background: rgba(196,150,60,0.03);
+}
+.file-upload-zone i { font-size: 1.5rem; margin-bottom: 8px; display: block; color: var(--antique-gold); }
+
+/* ===== STAT CARDS ===== */
+.stat-row {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 16px; margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--card-white);
+  border: 1px solid var(--warm-gray);
+  border-radius: var(--radius-card);
+  padding: 20px;
+  text-align: center;
+}
+.stat-card .stat-num {
+  font-family: var(--font-display);
+  font-size: 2rem; font-weight: 700;
+  color: var(--oxford-navy);
+}
+.stat-card .stat-label {
+  font-size: 0.78rem; color: var(--steel-blue);
+  margin-top: 4px;
+}
+.stat-card.pending .stat-num { color: var(--antique-gold); }
+.stat-card.rejected .stat-num { color: var(--cambridge-crimson); }
+
+/* ===== ADMIN VERIFY ===== */
+.admin-verify {
+  max-width: 480px; margin: 60px auto;
+  text-align: center;
+}
+.admin-verify h3 {
+  font-family: var(--font-display);
+  font-size: 1.3rem; color: var(--oxford-navy);
+  margin-bottom: 8px;
+}
+.admin-verify p {
+  font-size: 0.85rem; color: var(--steel-blue);
+  margin-bottom: 24px;
+}
+
+/* ===== SECTION HEADERS ===== */
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px;
+}
+.section-header h3 {
+  font-family: var(--font-display);
+  font-size: 1.1rem; font-weight: 600;
+  color: var(--oxford-navy);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .main-content { margin-left: 0; padding: 20px; }
+  .hamburger { display: block; }
+  .workshop-layout { grid-template-columns: 1fr; }
+  .workshop-result { border-left: none; padding-left: 0; border-top: 1px solid var(--warm-gray); padding-top: 24px; }
+  .enneagram-grid { grid-template-columns: repeat(2, 1fr); }
+  .tool-grid { grid-template-columns: 1fr; }
+  .stat-row { grid-template-columns: 1fr; }
+  .data-table { font-size: 0.75rem; }
+  .data-table th, .data-table td { padding: 8px 10px; }
+}
+@media (max-width: 480px) {
+  .enneagram-grid { grid-template-columns: 1fr; }
+  .login-card { padding: 32px 24px; }
+}
+
+/* ===== MOBILE OVERLAY ===== */
+.sidebar-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(27,43,75,0.3);
+  z-index: 99;
+}
+.sidebar-overlay.active { display: block; }
+
+/* ===== SHARE LINK ROW ===== */
+.share-link-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--warm-gray);
+}
+.share-link-item:last-child { border-bottom: none; }
+.share-link-item .link-info { flex: 1; }
+.share-link-item .link-url { font-size: 0.82rem; color: var(--oxford-navy); font-weight: 500; }
+.share-link-item .link-meta { font-size: 0.72rem; color: var(--steel-blue); margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN PAGE ===== -->
+<div class="login-page" id="loginPage">
+  <div class="login-card">
+    <div class="login-icon-circle">
+      <i class="fas fa-graduation-cap"></i>
+    </div>
+    <h1>销售赋能平台</h1>
+    <p class="login-sub">Sales Empowerment · Oxbridge Modern</p>
+    <div class="login-field">
+      <label>邮箱地址</label>
+      <input type="email" placeholder="请输入邮箱">
+    </div>
+    <div class="login-field">
+      <label>登录密码</label>
+      <input type="password" placeholder="请输入密码">
+    </div>
+    <button class="login-btn" onclick="doLogin()">登 录</button>
+    <div class="login-footer">© 2026 Sales Empowerment Platform</div>
+  </div>
+</div>
+
+<!-- ===== APP SHELL ===== -->
+<div class="app-shell" id="appShell">
+
+  <!-- Sidebar Overlay (mobile) -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <h2>销售赋能</h2>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item active" data-page="page-intel" onclick="switchPage(this)">
+        <i class="fas fa-binoculars"></i>竞品情报站
+      </div>
+      <div class="nav-item" data-page="page-workshop" onclick="switchPage(this)">
+        <i class="fas fa-wand-magic-sparkles"></i>AI话术工坊
+      </div>
+      <div class="nav-item" data-page="page-toolbox" onclick="switchPage(this)">
+        <i class="fas fa-toolbox"></i>销售工具箱
+      </div>
+      <div class="nav-item" data-page="page-enneagram" onclick="switchPage(this)">
+        <i class="fas fa-shapes"></i>九型人格
+      </div>
+      <div class="nav-item" data-page="page-solution" onclick="switchPage(this)">
+        <i class="fas fa-file-lines"></i>方案生成
+      </div>
+      <div class="nav-item" data-page="page-admin" onclick="switchPage(this)">
+        <i class="fas fa-gear"></i>后台管理
+      </div>
+    </nav>
+    <div class="sidebar-bottom">v2.0 · Oxbridge Modern</div>
+  </aside>
+
+  <!-- Main Area -->
+  <div style="flex:1; display:flex; flex-direction:column;">
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
+        <div class="topbar-title" id="topbarTitle">竞品情报站</div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-datetime" id="topbarDatetime"></div>
+        <div class="topbar-avatar" title="用户">U</div>
+      </div>
+    </header>
+
+    <!-- Pages -->
+    <div class="main-content">
+
+      <!-- ===== PAGE 1: 竞品情报站 ===== -->
+      <div class="page active" id="page-intel">
+
+        <!-- 筛选器栏 -->
+        <div class="card">
+          <div style="display:flex; flex-wrap:wrap; align-items:center; gap:12px;">
+            <select class="form-control" style="width:auto; min-width:140px;">
+              <option>覆盖国别</option>
+              <option>英国</option>
+              <option>爱尔兰</option>
+              <option>澳洲</option>
+              <option>加拿大</option>
+              <option>新西兰</option>
+            </select>
+            <select class="form-control" style="width:auto; min-width:140px;">
+              <option>业务模式</option>
+              <option>B2B</option>
+              <option>B2C</option>
+              <option>混合</option>
+            </select>
+            <button class="btn btn-secondary btn-sm"><i class="fas fa-filter"></i> 应用筛选</button>
+            <button class="btn btn-secondary btn-sm"><i class="fas fa-link"></i> 生成分享链接</button>
+            <div style="flex:1;"></div>
+            <button class="btn btn-primary btn-sm" onclick="openModal('addCompetitorModal')"><i class="fas fa-plus"></i> 新增竞品</button>
+          </div>
+        </div>
+
+        <!-- 竞品总览表格 -->
+        <div class="card">
+          <div class="card-title">竞品总览</div>
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>机构</th>
+                  <th>覆盖国别</th>
+                  <th>B2B</th>
+                  <th>优势区域</th>
+                  <th>核心优势</th>
+                  <th>主要劣势</th>
+                  <th>综合评分</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>新东方前途出国</strong></td>
+                  <td>英/澳/加/美</td>
+                  <td>✓</td>
+                  <td>华东、华南</td>
+                  <td>品牌知名度高，院校资源丰富</td>
+                  <td>服务价格偏高，个性化不足</td>
+                  <td><span class="score-badge">8.5</span></td>
+                  <td><button class="btn btn-secondary btn-sm" onclick="openModal('addCompetitorModal')"><i class="fas fa-pen"></i></button></td>
+                </tr>
+                <tr>
+                  <td><strong>启德教育</strong></td>
+                  <td>英/澳/加</td>
+                  <td>✓</td>
+                  <td>华北、华中</td>
+                  <td>顾问团队专业，服务流程规范</td>
+                  <td>获客成本高，线上能力弱</td>
+                  <td><span class="score-badge">7.8</span></td>
+                  <td><button class="btn btn-secondary btn-sm" onclick="openModal('addCompetitorModal')"><i class="fas fa-pen"></i></button></td>
+                </tr>
+                <tr>
+                  <td><strong>IDP教育</strong></td>
+                  <td>英/澳/爱/新</td>
+                  <td>✗</td>
+                  <td>华南、西南</td>
+                  <td>海外院校直连，信息更新快</td>
+                  <td>中国市场渗透率低</td>
+                  <td><span class="score-badge">7.2</span></td>
+                  <td><button class="btn btn-secondary btn-sm" onclick="openModal('addCompetitorModal')"><i class="fas fa-pen"></i></button></td>
+                </tr>
+                <tr>
+                  <td><strong>金吉列留学</strong></td>
+                  <td>英/澳/加/美</td>
+                  <td>✓</td>
+                  <td>东北、华北</td>
+                  <td>线下门店网络广</td>
+                  <td>数字化程度低，年轻客群吸引力弱</td>
+                  <td><span class="score-badge">6.9</span></td>
+                  <td><button class="btn btn-secondary btn-sm" onclick="openModal('addCompetitorModal')"><i class="fas fa-pen"></i></button></td>
+                </tr>
+                <tr>
+                  <td><strong>新通教育</strong></td>
+                  <td>英/澳/加/欧</td>
+                  <td>✓</td>
+                  <td>华东</td>
+                  <td>语培+留学一体化服务</td>
+                  <td>跨区域拓展能力有限</td>
+                  <td><span class="score-badge">7.0</span></td>
+                  <td><button class="btn btn-secondary btn-sm" onclick="openModal('addCompetitorModal')"><i class="fas fa-pen"></i></button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 多维度能力对比 -->
+        <div class="card">
+          <div class="card-title">多维度能力对比</div>
+          <div class="radar-placeholder">
+            <div style="text-align:center;">
+              <i class="fas fa-chart-radar" style="font-size:2rem; color:var(--antique-gold); margin-bottom:10px; display:block;"></i>
+              雷达图 · 多维度竞品能力对比分析
+            </div>
+          </div>
+        </div>
+
+        <!-- 竞品动态时间线 -->
+        <div class="card">
+          <div class="card-title">竞品动态时间线</div>
+          <div class="timeline">
+            <div class="timeline-item">
+              <div class="timeline-dot">1</div>
+              <div class="timeline-content">
+                <h5>新东方前途出国 — 英国院校合作签约</h5>
+                <p>与5所罗素集团大学达成2026年度官方合作，覆盖G5中2所。</p>
+                <div class="time">2026年6月20日</div>
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-dot">2</div>
+              <div class="timeline-content">
+                <h5>启德教育 — 推出AI选校助手</h5>
+                <p>上线基于大模型的智能选校工具，覆盖英澳加三国500+院校。</p>
+                <div class="time">2026年6月15日</div>
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-dot">3</div>
+              <div class="timeline-content">
+                <h5>IDP教育 — 爱尔兰留学专项推广</h5>
+                <p>启动爱尔兰留学季活动，联合20所院校提供奖学金信息。</p>
+                <div class="time">2026年6月10日</div>
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-dot">4</div>
+              <div class="timeline-content">
+                <h5>金吉列留学 — 华南区域扩张</h5>
+                <p>在深圳、广州新开3家线下体验中心，主打O2O服务模式。</p>
+                <div class="time">2026年6月5日</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 收集模式说明 -->
+        <div class="card">
+          <div class="card-title">收集模式说明</div>
+          <p style="font-size:0.85rem; color:var(--steel-blue); line-height:1.7;">
+            本平台竞品信息采用「人工核实 + 公开数据 + 访客反馈」三源交叉验证模式。所有数据均标注来源与更新时间，确保信息可溯源。综合评分基于品牌力、服务力、数字化力、价格竞争力、院校资源5个维度加权计算，权重可由管理员自定义调整。
+          </p>
+        </div>
+
+        <!-- 访客反馈表单 -->
+        <div class="card">
+          <div class="card-title">访客反馈</div>
+          <div style="max-width:600px;">
+            <div class="form-group">
+              <label>反馈类型</label>
+              <select class="form-control">
+                <option>数据纠错</option>
+                <option>新增竞品线索</option>
+                <option>竞品动态</option>
+                <option>其他</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>相关机构</label>
+              <input class="form-control" placeholder="请输入机构名称">
+            </div>
+            <div class="form-group">
+              <label>反馈内容</label>
+              <textarea class="form-control" rows="4" placeholder="请详细描述您的反馈内容..."></textarea>
+            </div>
+            <div class="form-group">
+              <label>联系方式（选填）</label>
+              <input class="form-control" placeholder="邮箱或手机号">
+            </div>
+            <button class="btn btn-primary"><i class="fas fa-paper-plane"></i> 提交反馈</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== PAGE 2: AI话术工坊 ===== -->
+      <div class="page" id="page-workshop">
+
+        <!-- Tab切换 -->
+        <div class="tabs">
+          <div class="tab-btn active" data-tab="tab-workshop-main" onclick="switchTab(this)">AI话术工坊</div>
+          <div class="tab-btn" data-tab="tab-script-lib" onclick="switchTab(this)">话术库</div>
+        </div>
+
+        <!-- 话术工坊Tab -->
+        <div class="tab-panel active" id="tab-workshop-main">
+          <div class="workshop-layout">
+            <!-- 左侧：输入配置 -->
+            <div class="workshop-input">
+              <div class="card" style="margin-bottom:0;">
+                <div class="card-title">话术配置</div>
+
+                <div class="form-group">
+                  <span class="input-label-tag">我方角色</span>
+                  <select class="form-control">
+                    <option>请选择角色</option>
+                    <option>留学顾问</option>
+                    <option>高级顾问</option>
+                    <option>咨询总监</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <span class="input-label-tag">我司情况</span>
+                  <input class="form-control" placeholder="简要描述公司优势与定位">
+                </div>
+                <div class="form-group">
+                  <span class="input-label-tag">客户层级</span>
+                  <select class="form-control">
+                    <option>请选择客户层级</option>
+                    <option>高意向</option>
+                    <option>中意向</option>
+                    <option>低意向</option>
+                    <option>未知</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <span class="input-label-tag">客户身份</span>
+                  <select class="form-control">
+                    <option>请选择客户身份</option>
+                    <option>学生本人</option>
+                    <option>学生家长</option>
+                    <option>学校老师</option>
+                    <option>企业HR</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <span class="input-label-tag">触达阶段</span>
+                  <select class="form-control">
+                    <option>请选择触达阶段</option>
+                    <option>首次触达</option>
+                    <option>跟进升温</option>
+                    <option>异议拆解</option>
+                    <option>临门促单</option>
+                    <option>长期培育</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <span class="input-label-tag">客户背景信息</span>
+                  <textarea class="form-control" rows="3" placeholder="学历背景、家庭情况、留学动机等..."></textarea>
+                </div>
+                <div class="form-group">
+                  <span class="input-label-tag">客户需求描述</span>
+                  <textarea class="form-control" rows="3" placeholder="目标国家、专业方向、预算范围等..."></textarea>
+                </div>
+                <div class="form-group">
+                  <span class="input-label-tag">附件资料</span>
+                  <div class="file-upload-zone">
+                    <i class="fas fa-cloud-arrow-up"></i>
+                    拖拽文件到此处或点击上传<br>
+                    <span style="font-size:0.72rem; color:rgba(107,141,173,0.6);">支持 PDF / DOCX / TXT，最大10MB</span>
+                  </div>
+                </div>
+                <button class="btn btn-primary" style="width:100%; padding:14px; font-size:0.95rem;"><i class="fas fa-wand-magic-sparkles"></i> 一键生成话术</button>
+              </div>
+            </div>
+
+            <!-- 右侧：生成结果 -->
+            <div class="workshop-result">
+              <div class="card" style="margin-bottom:0;">
+                <div class="card-title">生成结果</div>
+                <div style="color:var(--steel-blue); font-size:0.85rem; text-align:center; padding:40px 0;">
+                  <i class="fas fa-sparkles" style="font-size:2rem; color:var(--antique-gold); margin-bottom:12px; display:block;"></i>
+                  配置左侧参数后点击生成，话术将在此展示
+                </div>
+
+                <div class="script-reminder">
+                  <i class="fas fa-lightbulb"></i>
+                  <strong>话术使用原则：</strong>生成的话术为参考模板，请根据实际沟通场景灵活调整。注意保护客户隐私，避免使用过于模板化的表达。真诚的沟通永远优于技巧的堆砌。
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 话术库Tab -->
+        <div class="tab-panel" id="tab-script-lib">
+          <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="搜索话术...">
+          </div>
+          <div class="tag-group">
+            <span class="tag active">全部</span>
+            <span class="tag">AI生成</span>
+            <span class="tag">冷触达</span>
+            <span class="tag">跟进升温</span>
+            <span class="tag">异议拆解</span>
+            <span class="tag">临门促单</span>
+            <span class="tag">长期培育</span>
+            <span class="tag">首次触达</span>
+            <span class="tag">索要申请</span>
+            <span class="tag">奖励发放</span>
+          </div>
+
+          <div class="script-card">
+            <h5><i class="fas fa-phone" style="color:var(--antique-gold); margin-right:8px;"></i>冷触达 — 英国硕士咨询首次通话</h5>
+            <p>您好，我是XX教育的留学顾问小王。了解到您对英国硕士留学有兴趣，我们近期刚好有几位和您背景相似的同学拿到了G5的offer，想跟您分享一下他们的申请经验，大概5分钟可以吗？</p>
+            <div class="script-tags">
+              <span>冷触达</span>
+              <span>英国</span>
+              <span>硕士</span>
+            </div>
+          </div>
+          <div class="script-card">
+            <h5><i class="fas fa-handshake" style="color:var(--antique-gold); margin-right:8px;"></i>跟进升温 — 推动犹豫客户签约</h5>
+            <p>您好，上次聊完之后我帮您仔细对比了三个方案，结合今年的申请时间线，如果本月签约的话还能赶上第一轮投递。而且目前我们有个限时优惠，可以为您节省……</p>
+            <div class="script-tags">
+              <span>跟进升温</span>
+              <span>促单</span>
+            </div>
+          </div>
+          <div class="script-card">
+            <h5><i class="fas fa-shield-halved" style="color:var(--antique-gold); margin-right:8px;"></i>异议拆解 — "别的机构更便宜"</h5>
+            <p>我完全理解您的顾虑，价格确实是重要考量。不过留学服务跟一般消费品不同，真正拉开差距的是院校资源和后续支持。我们和英国XX所大学有直接合作……</p>
+            <div class="script-tags">
+              <span>异议拆解</span>
+              <span>价格</span>
+            </div>
+          </div>
+          <div class="script-card">
+            <h5><i class="fas fa-trophy" style="color:var(--antique-gold); margin-right:8px;"></i>临门促单 — 限时名额策略</h5>
+            <p>跟您同步一个消息，您心仪的XX大学今年中国区名额比去年缩减了30%，目前我们手上还剩2个保录取名额。如果这两天能确定的话，我可以帮您锁住一个……</p>
+            <div class="script-tags">
+              <span>临门促单</span>
+              <span>名额</span>
+            </div>
+          </div>
+          <div class="script-card">
+            <h5><i class="fas fa-envelope" style="color:var(--antique-gold); margin-right:8px;"></i>首次触达 — 微信加好友话术</h5>
+            <p>您好～我是XX教育的留学顾问，在小红书上看到您对英国留学很感兴趣。我这边刚好整理了一份2026年英国留学最新政策解读，可以免费分享给您，方便通过一下吗？</p>
+            <div class="script-tags">
+              <span>首次触达</span>
+              <span>微信</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== PAGE 3: 销售工具箱 ===== -->
+      <div class="page" id="page-toolbox">
+        <div class="search-bar">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="搜索工具...">
+        </div>
+        <div class="tag-group">
+          <span class="tag active">全部</span>
+          <span class="tag">规划</span>
+          <span class="tag">行前</span>
+          <span class="tag">认证</span>
+          <span class="tag">申请</span>
+          <span class="tag">签证</span>
+          <span class="tag">换校</span>
+          <span class="tag">报价</span>
+        </div>
+
+        <div class="tool-grid">
+          <div class="tool-card">
+            <div class="tool-icon-circle"><i class="fas fa-calendar-days"></i></div>
+            <h4>留学时间规划</h4>
+            <p>根据目标国家和入学时间，自动生成详细的时间节点规划表，涵盖备考、申请、签证等全流程。</p>
+          </div>
+          <div class="tool-card">
+            <div class="tool-icon-circle"><i class="fas fa-plane-departure"></i></div>
+            <h4>留英行前指南</h4>
+            <p>英国留学行前准备全攻略，包含行李清单、住宿安排、银行开户、手机卡办理等实用信息。</p>
+          </div>
+          <div class="tool-card">
+            <div class="tool-icon-circle"><i class="fas fa-certificate"></i></div>
+            <h4>境外学历认证指南</h4>
+            <p>回国学历认证全流程说明，材料清单、办理步骤、常见问题一网打尽。</p>
+          </div>
+          <div class="tool-card">
+            <div class="tool-icon-circle"><i class="fas fa-clover"></i></div>
+            <h4>爱尔兰行前指南</h4>
+            <p>爱尔兰留学行前必备信息，签证、住宿、交通、生活成本等全方位指南。</p>
+          </div>
+          <div class="tool-card">
+            <div class="tool-icon-circle"><i class="fas fa-file-pen"></i></div>
+            <h4>UCAS申请说明</h4>
+            <p>英国大学统一申请系统UCAS详细操作指南，注册、填表、提交、追踪全流程。</p>
+          </div>
+          <div class="tool-card">
+            <div class="tool-icon-circle"><i class="fas fa-passport"></i></div>
+            <h4>英国学生签证指南</h4>
+            <p>英国Tier 4学生签证申请全攻略，材料清单、在线填写、预约递签、生物信息采集。</p>
+          </div>
+          <div class="tool-card">
+            <div class="tool-icon-circle"><i class="fas fa-right-left"></i></div>
+            <h4>紧急换校指南</h4>
+            <p>在英留学生紧急换校流程、注意事项及常见问题，包含CAS更换、签证更新等关键步骤。</p>
+          </div>
+          <div class="tool-card">
+            <div class="tool-icon-circle"><i class="fas fa-receipt"></i></div>
+            <h4>文书外售服务报价</h4>
+            <p>各类文书服务价格一览：个人陈述、推荐信、简历、套磁信等，明码标价透明收费。</p>
+          </div>
+          <div class="tool-card">
+            <div class="tool-icon-circle"><i class="fas fa-list-check"></i></div>
+            <h4>英国申请材料清单</h4>
+            <p>英国本科/硕士/博士申请所需材料完整清单，按学历层次分类，方便逐项核对。</p>
+          </div>
+          <div class="tool-card">
+            <div class="tool-icon-circle"><i class="fas fa-graduation-cap"></i></div>
+            <h4>毕业材料办理温馨提示</h4>
+            <p>留学毕业后各类材料办理提醒：成绩单认证、学位证翻译、归国证明、档案转移等。</p>
+          </div>
+          <div class="tool-card">
+            <div class="tool-icon-circle"><i class="fas fa-coins"></i></div>
+            <h4>留位费退费政策</h4>
+            <p>各大学留位费/占位费退费政策汇总，包含退费条件、截止日期、申请流程及注意事项。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== PAGE 4: 九型人格 ===== -->
+      <div class="page" id="page-enneagram">
+        <div class="tabs">
+          <div class="tab-btn active" data-tab="tab-enneagram-detail" onclick="switchTab(this)">九型详解</div>
+          <div class="tab-btn" data-tab="tab-enneagram-quiz" onclick="switchTab(this)">互动测试</div>
+          <div class="tab-btn" data-tab="tab-enneagram-team" onclick="switchTab(this)">团队搭配</div>
+        </div>
+
+        <!-- 九型详解 -->
+        <div class="tab-panel active" id="tab-enneagram-detail">
+          <div class="enneagram-grid">
+            <div class="enneagram-card">
+              <div class="enneagram-num">1</div>
+              <div class="enneagram-name">完美主义者</div>
+              <div class="enneagram-desc">追求正确与完美，注重细节与规则，有强烈的内在标准，善于发现问题和改进空间。</div>
+            </div>
+            <div class="enneagram-card">
+              <div class="enneagram-num">2</div>
+              <div class="enneagram-name">助人者</div>
+              <div class="enneagram-desc">关注他人需求，善于建立人际关系，通过帮助他人获得价值感，温暖而有同理心。</div>
+            </div>
+            <div class="enneagram-card">
+              <div class="enneagram-num">3</div>
+              <div class="enneagram-name">成就者</div>
+              <div class="enneagram-desc">目标导向，追求成功与认可，高效执行力强，善于展现自我，适应力出色。</div>
+            </div>
+            <div class="enneagram-card">
+              <div class="enneagram-num">4</div>
+              <div class="enneagram-name">个人主义者</div>
+              <div class="enneagram-desc">追求独特与真实，情感丰富细腻，富有创造力和审美能力，渴望深层连接。</div>
+            </div>
+            <div class="enneagram-card">
+              <div class="enneagram-num">5</div>
+              <div class="enneagram-name">探索者</div>
+              <div class="enneagram-desc">追求知识与理解，善于观察和分析，独立思考，注重隐私和个人空间。</div>
+            </div>
+            <div class="enneagram-card">
+              <div class="enneagram-num">6</div>
+              <div class="enneagram-name">忠诚者</div>
+              <div class="enneagram-desc">注重安全与确定性，善于预见风险，忠诚可靠，在团队中是稳定的支持力量。</div>
+            </div>
+            <div class="enneagram-card">
+              <div class="enneagram-num">7</div>
+              <div class="enneagram-name">热情者</div>
+              <div class="enneagram-desc">追求体验与快乐，思维活跃，善于发现机会，乐观积极，讨厌被束缚。</div>
+            </div>
+            <div class="enneagram-card">
+              <div class="enneagram-num">8</div>
+              <div class="enneagram-name">挑战者</div>
+              <div class="enneagram-desc">追求力量与控制，果断直接，保护弱者，有强烈的正义感和领导力。</div>
+            </div>
+            <div class="enneagram-card">
+              <div class="enneagram-num">9</div>
+              <div class="enneagram-name">和平者</div>
+              <div class="enneagram-desc">追求和谐与平静，善于调解冲突，包容性强，能站在多方角度看问题。</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 互动测试 -->
+        <div class="tab-panel" id="tab-enneagram-quiz">
+          <div class="card" style="max-width:680px; margin:0 auto;">
+            <div class="card-title">九型人格测试</div>
+            <div class="progress-bar"><div class="progress-fill" style="width:30%;"></div></div>
+            <div class="quiz-question">3 / 10　在团队讨论中，你通常会：</div>
+            <div class="quiz-options">
+              <div class="quiz-opt">A. 主动发言，推动讨论走向结论</div>
+              <div class="quiz-opt">B. 先倾听他人观点，再慎重表达自己的看法</div>
+              <div class="quiz-opt">C. 关注团队成员的情绪状态，确保气氛和谐</div>
+              <div class="quiz-opt">D. 深入分析问题本质，提供独到的见解</div>
+            </div>
+            <div style="margin-top:20px; display:flex; justify-content:space-between;">
+              <button class="btn btn-secondary"><i class="fas fa-arrow-left"></i> 上一题</button>
+              <button class="btn btn-primary">下一题 <i class="fas fa-arrow-right"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 团队搭配 -->
+        <div class="tab-panel" id="tab-enneagram-team">
+          <div class="card" style="max-width:780px; margin:0 auto;">
+            <div class="card-title">团队搭配分析</div>
+            <p style="font-size:0.85rem; color:var(--steel-blue); margin-bottom:16px;">选择团队成员的人格类型，生成最佳搭配建议与协作提示。</p>
+            <div class="team-select">
+              <div class="team-member" onclick="this.classList.toggle('selected')">1型 · 完美主义者</div>
+              <div class="team-member selected">3型 · 成就者</div>
+              <div class="team-member" onclick="this.classList.toggle('selected')">6型 · 忠诚者</div>
+              <div class="team-member" onclick="this.classList.toggle('selected')">7型 · 热情者</div>
+              <div class="team-member selected">9型 · 和平者</div>
+              <div class="team-member" onclick="this.classList.toggle('selected')">2型 · 助人者</div>
+              <div class="team-member" onclick="this.classList.toggle('selected')">4型 · 个人主义者</div>
+              <div class="team-member" onclick="this.classList.toggle('selected')">5型 · 探索者</div>
+              <div class="team-member" onclick="this.classList.toggle('selected')">8型 · 挑战者</div>
+            </div>
+            <button class="btn btn-primary"><i class="fas fa-users-gear"></i> 生成搭配建议</button>
+
+            <div style="margin-top:24px; padding:20px; background:var(--parchment); border-radius:8px;">
+              <h4 style="font-family:var(--font-display); font-size:0.95rem; color:var(--oxford-navy); margin-bottom:10px;">搭配分析预览</h4>
+              <p style="font-size:0.82rem; color:var(--ink); line-height:1.7;">
+                <strong>3型（成就者）+ 9型（和平者）</strong> — 这是一个经典的「驱动+调和」组合。3型负责推动目标达成和对外展示，9型负责内部关系维护和冲突缓冲。注意3型可能忽视9型的感受，建议定期进行一对一沟通。
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== PAGE 5: 方案生成 ===== -->
+      <div class="page" id="page-solution">
+        <div class="card" style="max-width:720px;">
+          <div class="card-title">方案生成</div>
+          <p style="font-size:0.85rem; color:var(--steel-blue); margin-bottom:24px;">根据客户需求快速生成定制化留学方案，提升咨询效率。</p>
+
+          <div class="form-group">
+            <label>意向国家</label>
+            <select class="form-control">
+              <option>请选择</option>
+              <option>英国</option>
+              <option>爱尔兰</option>
+              <option>澳大利亚</option>
+              <option>加拿大</option>
+              <option>新西兰</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>学历层次</label>
+            <select class="form-control">
+              <option>请选择</option>
+              <option>本科</option>
+              <option>硕士</option>
+              <option>博士</option>
+              <option>预科</option>
+              <option>语言班</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>专业方向</label>
+            <input class="form-control" placeholder="如：商科、计算机、教育、艺术...">
+          </div>
+          <div class="form-group">
+            <label>预算范围</label>
+            <select class="form-control">
+              <option>请选择</option>
+              <option>30万以内/年</option>
+              <option>30-50万/年</option>
+              <option>50万以上/年</option>
+              <option>待定</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>语言成绩</label>
+            <input class="form-control" placeholder="雅思/托福分数，如：IELTS 6.5">
+          </div>
+          <div class="form-group">
+            <label>GPA / 均分</label>
+            <input class="form-control" placeholder="如：3.2/4.0 或 82/100">
+          </div>
+          <div class="form-group">
+            <label>其他需求</label>
+            <textarea class="form-control" rows="3" placeholder="奖学金、实习机会、移民倾向等特殊需求..."></textarea>
+          </div>
+          <button class="btn btn-primary" style="width:100%; padding:14px; font-size:0.95rem;"><i class="fas fa-wand-magic-sparkles"></i> 生成方案</button>
+        </div>
+      </div>
+
+      <!-- ===== PAGE 6: 后台管理 ===== -->
+      <div class="page" id="page-admin">
+
+        <!-- 管理员验证 -->
+        <div class="admin-verify" id="adminVerify">
+          <i class="fas fa-shield-halved" style="font-size:2.5rem; color:var(--antique-gold); margin-bottom:16px;"></i>
+          <h3>管理员验证</h3>
+          <p>请输入管理员密码以访问后台管理功能</p>
+          <div class="form-group" style="text-align:left;">
+            <label>管理员密码</label>
+            <input class="form-control" type="password" placeholder="请输入密码">
+          </div>
+          <button class="btn btn-primary" style="width:100%;" onclick="document.getElementById('adminVerify').style.display='none'; document.getElementById('adminContent').style.display='block';">验 证</button>
+        </div>
+
+        <!-- 管理内容 -->
+        <div id="adminContent" style="display:none;">
+
+          <!-- 竞品信息管理 -->
+          <div class="section-header">
+            <h3>竞品信息管理</h3>
+            <button class="btn btn-primary btn-sm" onclick="openModal('addCompetitorModal')"><i class="fas fa-plus"></i> 新增竞品</button>
+          </div>
+          <div class="stat-row">
+            <div class="stat-card pending">
+              <div class="stat-num">3</div>
+              <div class="stat-label">待审核</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-num">47</div>
+              <div class="stat-label">已发布</div>
+            </div>
+            <div class="stat-card rejected">
+              <div class="stat-num">5</div>
+              <div class="stat-label">已拒绝</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">待审核列表</div>
+            <div style="overflow-x:auto;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>机构名称</th>
+                    <th>提交人</th>
+                    <th>提交时间</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>琥珀教育</strong></td>
+                    <td>张明</td>
+                    <td>2026-06-24 14:30</td>
+                    <td><span style="color:var(--antique-gold); font-weight:600;">待审核</span></td>
+                    <td>
+                      <button class="btn btn-primary btn-sm"><i class="fas fa-check"></i></button>
+                      <button class="btn btn-danger btn-sm"><i class="fas fa-xmark"></i></button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>优越教育</strong></td>
+                    <td>李华</td>
+                    <td>2026-06-23 10:15</td>
+                    <td><span style="color:var(--antique-gold); font-weight:600;">待审核</span></td>
+                    <td>
+                      <button class="btn btn-primary btn-sm"><i class="fas fa-check"></i></button>
+                      <button class="btn btn-danger btn-sm"><i class="fas fa-xmark"></i></button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>学您留学</strong></td>
+                    <td>王芳</td>
+                    <td>2026-06-22 16:45</td>
+                    <td><span style="color:var(--antique-gold); font-weight:600;">待审核</span></td>
+                    <td>
+                      <button class="btn btn-primary btn-sm"><i class="fas fa-check"></i></button>
+                      <button class="btn btn-danger btn-sm"><i class="fas fa-xmark"></i></button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 分享链接管理 -->
+          <div class="card">
+            <div class="card-title">分享链接管理</div>
+            <div>
+              <div class="share-link-item">
+                <div class="link-info">
+                  <div class="link-url">https://empower.example.com/share/abc123</div>
+                  <div class="link-meta">竞品总览 · 创建于 2026-06-20 · 已访问 23 次</div>
+                </div>
+                <div style="display:flex; gap:8px;">
+                  <button class="btn btn-secondary btn-sm"><i class="fas fa-copy"></i> 复制</button>
+                  <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                </div>
+              </div>
+              <div class="share-link-item">
+                <div class="link-info">
+                  <div class="link-url">https://empower.example.com/share/def456</div>
+                  <div class="link-meta">能力对比 · 创建于 2026-06-18 · 已访问 15 次</div>
+                </div>
+                <div style="display:flex; gap:8px;">
+                  <button class="btn btn-secondary btn-sm"><i class="fas fa-copy"></i> 复制</button>
+                  <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                </div>
+              </div>
+              <div class="share-link-item">
+                <div class="link-info">
+                  <div class="link-url">https://empower.example.com/share/ghi789</div>
+                  <div class="link-meta">竞品动态 · 创建于 2026-06-15 · 已访问 8 次</div>
+                </div>
+                <div style="display:flex; gap:8px;">
+                  <button class="btn btn-secondary btn-sm"><i class="fas fa-copy"></i> 复制</button>
+                  <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /main-content -->
+  </div><!-- /main area -->
+</div><!-- /app-shell -->
+
+
+<!-- ===== MODAL: 新增/编辑竞品 ===== -->
+<div class="modal-overlay" id="addCompetitorModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>新增竞品</h3>
+      <button class="modal-close" onclick="closeModal('addCompetitorModal')"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>机构名称</label>
+        <input class="form-control" placeholder="请输入机构名称">
+      </div>
+      <div class="form-group">
+        <label>覆盖国别</label>
+        <input class="form-control" placeholder="如：英/澳/加/美">
+      </div>
+      <div class="form-group">
+        <label>是否B2B</label>
+        <select class="form-control">
+          <option>是</option>
+          <option>否</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>优势区域</label>
+        <input class="form-control" placeholder="如：华东、华南">
+      </div>
+      <div class="form-group">
+        <label>核心优势</label>
+        <textarea class="form-control" rows="2" placeholder="请描述核心优势..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>主要劣势</label>
+        <textarea class="form-control" rows="2" placeholder="请描述主要劣势..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>综合评分</label>
+        <input class="form-control" type="number" min="0" max="10" step="0.1" placeholder="0.0 - 10.0">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('addCompetitorModal')">取消</button>
+      <button class="btn btn-primary" onclick="closeModal('addCompetitorModal')">保存</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+// Login
+function doLogin() {
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('appShell').classList.add('active');
+}
+
+// Page switching
+const pageTitles = {
+  'page-intel': '竞品情报站',
+  'page-workshop': 'AI话术工坊',
+  'page-toolbox': '销售工具箱',
+  'page-enneagram': '九型人格',
+  'page-solution': '方案生成',
+  'page-admin': '后台管理'
+};
+
+function switchPage(el) {
+  const pageId = el.dataset.page;
+  // Nav
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  // Page
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(pageId).classList.add('active');
+  // Topbar title
+  document.getElementById('topbarTitle').textContent = pageTitles[pageId] || '';
+  // Close mobile sidebar
+  closeSidebar();
+}
+
+// Tab switching
+function switchTab(el) {
+  const tabId = el.dataset.tab;
+  const parent = el.closest('.tabs').parentElement;
+  // Tab buttons
+  el.closest('.tabs').querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  // Tab panels
+  parent.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+}
+
+// Modal
+function openModal(id) {
+  document.getElementById(id).classList.add('active');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('active');
+  });
+});
+
+// Mobile sidebar
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('active');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('active');
+}
+
+// Datetime
+function updateDateTime() {
+  const now = new Date();
+  const opts = { year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short', hour: '2-digit', minute: '2-digit' };
+  document.getElementById('topbarDatetime').textContent = now.toLocaleString('zh-CN', opts);
+}
+updateDateTime();
+setInterval(updateDateTime, 30000);
+
+// Tag filter click
+document.querySelectorAll('.tag-group').forEach(group => {
+  group.querySelectorAll('.tag').forEach(tag => {
+    tag.addEventListener('click', function() {
+      group.querySelectorAll('.tag').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+});
+</script>
+
+</body>
+</html>
