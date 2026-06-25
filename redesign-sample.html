@@ -871,13 +871,14 @@ textarea.form-control { resize: vertical; min-height: 80px; }
     <h1>销售赋能平台</h1>
     <p class="login-sub">Sales Empowerment · Oxbridge Modern</p>
     <div class="login-field">
-      <label>邮箱地址</label>
-      <input type="email" placeholder="请输入邮箱">
+      <label>用户名</label>
+      <input type="text" id="loginUsername" placeholder="请输入用户名">
     </div>
     <div class="login-field">
       <label>登录密码</label>
-      <input type="password" placeholder="请输入密码">
+      <input type="password" id="loginPassword" placeholder="请输入密码" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
+    <p class="login-error" id="loginError" style="display:none;color:#8B3A4A;font-size:13px;margin-top:-8px;margin-bottom:8px;">用户名或密码错误，请重试</p>
     <button class="login-btn" onclick="doLogin()">登 录</button>
     <div class="login-footer">© 2026 Sales Empowerment Platform</div>
   </div>
@@ -1707,8 +1708,17 @@ textarea.form-control { resize: vertical; min-height: 80px; }
 <script>
 // Login
 function doLogin() {
-  document.getElementById('loginPage').style.display = 'none';
-  document.getElementById('appShell').classList.add('active');
+  const username = document.getElementById('loginUsername').value.trim();
+  const pwd = document.getElementById('loginPassword').value;
+  const errEl = document.getElementById('loginError');
+  if (username === 'fancy' && pwd === 'fancy2024') {
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('appShell').classList.add('active');
+    errEl.style.display = 'none';
+  } else {
+    errEl.style.display = 'block';
+    document.getElementById('loginPassword').value = '';
+  }
 }
 
 // Page switching
