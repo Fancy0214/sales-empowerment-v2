@@ -1555,32 +1555,25 @@ body {
 .enneagram-card:nth-child(9) { background: linear-gradient(135deg, #E8F0E8 0%, #DDE8DD 100%); }
 
 .enneagram-num {
-    width: 56px;
-    height: 56px;
-    background: rgba(27,43,75,0.08);
-    border: 2px solid var(--accent);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--primary);
-    font-size: 1.4rem;
+    color: var(--accent);
+    font-size: 2.2rem;
     font-weight: 700;
-    margin: 0 auto 14px;
+    margin: 0 auto 10px;
     font-family: var(--font-display);
+    line-height: 1;
 }
 
 .enneagram-name {
     font-weight: 600;
     font-size: 1.05rem;
-    margin-bottom: 8px;
-    color: var(--primary);
+    margin-bottom: 10px;
+    color: var(--text-primary);
 }
 
-.enneagram-subtitle {
+.enneagram-desc {
     font-size: 0.82rem;
     color: var(--text-secondary);
-    line-height: 1.5;
+    line-height: 1.6;
 }
 
 /* 测试 */
