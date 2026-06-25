@@ -216,14 +216,15 @@ html.not-logged-in .login-gate {
 .share-password-icon {
     width: 64px;
     height: 64px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 16px;
+    background: #fff;
+    border: 2px solid var(--accent);
+    border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
     margin: 0 auto 24px;
     font-size: 1.5rem;
-    color: #fff;
+    color: var(--accent);
 }
 .share-password-title {
     font-size: 1.25rem;
@@ -268,7 +269,7 @@ html.not-logged-in .login-gate {
     color: #1e293b;
 }
 .share-password-btn {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--primary);
     color: #fff;
     border: none;
     border-radius: 10px;
@@ -319,7 +320,7 @@ body {
     left: 0;
     right: 0;
     height: 60px;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-mid) 100%);
+    background: var(--primary);
     color: white;
     display: flex;
     justify-content: space-between;
@@ -414,7 +415,7 @@ body {
     top: 60px;
     left: 0;
     right: 0;
-    background: linear-gradient(135deg, var(--accent) 0%, var(--primary-mid) 100%);
+    background: var(--primary);
     color: white;
     display: flex;
     justify-content: space-between;
@@ -601,7 +602,7 @@ body {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--primary-mid) 0%, var(--accent) 100%);
+    background: var(--primary);
     color: white;
 }
 
@@ -784,7 +785,7 @@ body {
     top: 0;
     bottom: 0;
     width: 2px;
-    background: linear-gradient(to bottom, var(--accent), var(--primary-mid));
+    background: var(--primary);
 }
 
 .timeline-item {
@@ -1220,7 +1221,7 @@ body {
 
 .script-tags .tag:hover,
 .script-tags .tag.active {
-    background: linear-gradient(135deg, var(--primary-mid) 0%, var(--accent) 100%);
+    background: var(--primary);
     color: white;
     border-color: var(--accent);
 }
@@ -1431,7 +1432,7 @@ body {
 }
 
 .tools-tag-filter.active {
-    background: linear-gradient(135deg, var(--primary-mid) 0%, var(--accent) 100%);
+    background: var(--primary);
     color: #fff;
     border-color: transparent;
 }
@@ -1478,36 +1479,42 @@ body {
 }
 
 .tool-icon {
-    width: 64px;
-    height: 64px;
-    background: linear-gradient(135deg, var(--primary-mid) 0%, var(--accent) 100%);
-    border-radius: 16px;
+    width: 56px;
+    height: 56px;
+    background: #fff;
+    border-radius: 50%;
+    border: 2px solid var(--accent);
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto 16px;
-    font-size: 1.75rem;
-    color: white;
+    font-size: 1.4rem;
+    color: var(--accent);
 }
 
 .tool-card h4 {
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: var(--font-body);
 }
 
 .tool-card p {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
+    font-size: 0.82rem;
+    color: #8A9AB5;
     margin-bottom: 12px;
+    line-height: 1.5;
 }
 
 .tool-tag {
     display: inline-block;
-    padding: 4px 12px;
-    background: linear-gradient(135deg, rgba(74, 144, 217, 0.1) 0%, rgba(59, 89, 152, 0.1) 100%);
-    color: var(--primary-mid);
+    padding: 3px 10px;
+    background: rgba(196, 150, 60, 0.08);
+    color: var(--accent);
     border-radius: 20px;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
+    font-weight: 500;
 }
 
 /* ==================== 九型人格 ==================== */
@@ -1601,7 +1608,7 @@ body {
 
 .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--primary-mid), var(--accent));
+    background: var(--primary);
     transition: width 0.3s ease;
     width: 11%;
 }
@@ -1643,7 +1650,7 @@ body {
 .result-type {
     font-size: 2rem;
     font-weight: 700;
-    background: linear-gradient(135deg, var(--primary-mid), var(--accent));
+    background: var(--primary);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -1707,7 +1714,7 @@ body {
 }
 
 .team-btn.selected {
-    background: linear-gradient(135deg, var(--primary-mid) 0%, var(--accent) 100%);
+    background: var(--primary);
     color: white;
     border-color: var(--accent);
 }
@@ -2070,7 +2077,7 @@ body {
 }
 
 .admin-tab.active {
-    background: linear-gradient(135deg, var(--primary-mid), var(--accent));
+    background: var(--primary);
     color: white;
     border-color: transparent;
 }
@@ -2511,15 +2518,16 @@ html.share-loading .share-loading-mask {
 .st-tool-header-icon {
     width: 52px;
     height: 52px;
-    background: linear-gradient(135deg, #4a7fc4, #6b9ce0);
-    border-radius: 16px;
+    background: #fff;
+    border: 2px solid var(--accent);
+    border-radius: 50%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     margin-bottom: 14px;
-    color: white;
+    color: var(--accent);
     font-size: 1.4rem;
-    box-shadow: 0 4px 16px rgba(74,127,196,0.25);
+    box-shadow: 0 2px 8px rgba(196,150,60,0.15);
 }
 .st-tool-header h1 {
     font-size: 1.5rem;
@@ -2530,7 +2538,7 @@ html.share-loading .share-loading-mask {
 }
 .st-tool-header .st-tag {
     display: inline-block;
-    background: linear-gradient(135deg, #4a7fc4, #6b9ce0);
+    background: var(--primary);
     color: white;
     padding: 4px 14px;
     border-radius: 20px;
@@ -2548,7 +2556,7 @@ html.share-loading .share-loading-mask {
     border: 1px solid rgba(0,0,0,0.04);
 }
 .st-card-header {
-    background: linear-gradient(90deg, #4a7fc4 0%, #6b9ce0 100%);
+    background: var(--primary);
     padding: 11px 20px;
     display: flex;
     align-items: center;
@@ -2585,7 +2593,7 @@ html.share-loading .share-loading-mask {
     top: 4px;
     bottom: 4px;
     width: 2px;
-    background: linear-gradient(to bottom, #4a7fc4, #a8c8f0);
+    background: var(--primary);
     border-radius: 1px;
 }
 .st-tl-node {
@@ -2673,7 +2681,7 @@ html.share-loading .share-loading-mask {
     margin: 8px 0;
 }
 .st-flow-step {
-    background: linear-gradient(135deg, #4a7fc4, #6b9ce0);
+    background: var(--primary);
     color: #fff;
     border-radius: 10px;
     padding: 8px 18px;
@@ -2699,7 +2707,7 @@ html.share-loading .share-loading-mask {
     font-size: 0.84rem;
 }
 .st-compare-table th {
-    background: linear-gradient(135deg, #4a7fc4, #6b9ce0);
+    background: var(--primary);
     color: #fff;
     padding: 10px 14px;
     text-align: left;
@@ -2917,7 +2925,7 @@ html.share-loading .share-loading-mask {
     height: 20px;
     padding: 0 6px;
     border-radius: 10px;
-    background: linear-gradient(135deg, #4a7fc4, #6b9ce0);
+    background: var(--primary);
     color: #fff;
     font-size: 0.72rem;
     font-weight: 600;
@@ -3120,7 +3128,7 @@ html.share-loading .share-loading-mask {
 }
 .st-upload-progress-bar {
     height: 100%;
-    background: linear-gradient(90deg, #4a7fc4, #6b9ce0);
+    background: var(--primary);
     border-radius: 2px;
     animation: st-upload-progress-animation 2s ease-in-out infinite;
     width: 60%;
@@ -3357,7 +3365,7 @@ html.share-loading .share-loading-mask {
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #4a7fc4, #6b9ce0);
+    background: var(--primary);
     color: #fff;
     font-size: 0.76rem;
     font-weight: 600;
@@ -3941,7 +3949,7 @@ html.share-loading .share-loading-mask {
     transform: translateY(-2px);
 }
 .uni-card-rank {
-    background: linear-gradient(135deg, #3b5998, #4a6fb5);
+    background: var(--primary);
     color: white;
     padding: 10px 16px;
     font-size: 0.92rem;
