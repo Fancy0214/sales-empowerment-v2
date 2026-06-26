@@ -4454,3 +4454,485 @@ html.share-loading .share-loading-mask {
     color: var(--primary);
     margin-bottom: 4px;
 }
+
+/* ==================== 成长天地 ==================== */
+.growth-content { display: none; }
+.growth-content.active { display: block; }
+
+.growth-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.growth-header h3 {
+    font-size: 18px;
+    color: var(--primary);
+    font-weight: 600;
+}
+
+/* 培养计划卡片 */
+.growth-plan-list { display: flex; flex-direction: column; gap: 16px; }
+.growth-plan-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    transition: box-shadow 0.2s;
+    cursor: pointer;
+}
+.growth-plan-card:hover { box-shadow: 0 4px 16px rgba(27,43,75,0.08); }
+.growth-plan-card .plan-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+.growth-plan-card .plan-card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--primary);
+}
+.growth-plan-card .plan-card-meta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+.growth-plan-card .plan-card-meta span {
+    font-size: 12px;
+    color: var(--text-secondary);
+    background: var(--bg-primary);
+    padding: 3px 10px;
+    border-radius: 20px;
+}
+.growth-plan-card .plan-card-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+.growth-plan-card .plan-card-phases {
+    display: flex;
+    gap: 6px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+.growth-plan-card .phase-tag {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(107,141,173,0.1);
+    color: var(--secondary);
+}
+.growth-plan-card .plan-card-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+.growth-plan-card .plan-card-actions button {
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.growth-plan-card .plan-card-actions button:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+.growth-plan-card .plan-card-actions button.danger:hover {
+    border-color: #e53e3e;
+    color: #e53e3e;
+}
+
+/* 员工卡片 */
+.growth-employee-list { display: flex; flex-direction: column; gap: 16px; }
+.growth-employee-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    transition: box-shadow 0.2s;
+    cursor: pointer;
+}
+.growth-employee-card:hover { box-shadow: 0 4px 16px rgba(27,43,75,0.08); }
+.growth-employee-card .emp-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+.growth-employee-card .emp-card-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--primary);
+}
+.growth-employee-card .emp-card-status {
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 20px;
+}
+.growth-employee-card .emp-card-status.probation {
+    background: rgba(196,150,60,0.15);
+    color: #b8860b;
+}
+.growth-employee-card .emp-card-status.passed {
+    background: rgba(72,187,120,0.15);
+    color: #2f855a;
+}
+.growth-employee-card .emp-card-info {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+}
+.growth-employee-card .emp-progress-bar {
+    height: 8px;
+    background: var(--bg-primary);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 8px;
+}
+.growth-employee-card .emp-progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent), #d4a84c);
+    transition: width 0.3s;
+}
+.growth-employee-card .emp-card-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+.growth-employee-card .emp-card-actions button {
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.growth-employee-card .emp-card-actions button:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+/* 考试卡片 */
+.growth-exam-list { display: flex; flex-direction: column; gap: 16px; }
+.growth-exam-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    transition: box-shadow 0.2s;
+}
+.growth-exam-card:hover { box-shadow: 0 4px 16px rgba(27,43,75,0.08); }
+.growth-exam-card .exam-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+}
+.growth-exam-card .exam-card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--primary);
+}
+.growth-exam-card .exam-card-meta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+}
+.growth-exam-card .exam-card-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+.growth-exam-card .exam-card-actions button {
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.growth-exam-card .exam-card-actions button:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+/* 计划详情 - 阶段时间线 */
+.plan-timeline {
+    position: relative;
+    padding-left: 30px;
+    margin-top: 20px;
+}
+.plan-timeline::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--border);
+}
+.plan-phase-item {
+    position: relative;
+    margin-bottom: 24px;
+    padding: 16px;
+    background: var(--bg-primary);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+}
+.plan-phase-item::before {
+    content: '';
+    position: absolute;
+    left: -24px;
+    top: 20px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px var(--accent);
+}
+.plan-phase-item .phase-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 6px;
+}
+.plan-phase-item .phase-time {
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+.plan-phase-item .phase-section {
+    margin-bottom: 8px;
+}
+.plan-phase-item .phase-section-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 2px;
+}
+.plan-phase-item .phase-section-content {
+    font-size: 13px;
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+/* 员工详情 - 阶段进度 */
+.emp-phase-progress {
+    margin-top: 16px;
+}
+.emp-phase-row {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    background: #fff;
+}
+.emp-phase-row .phase-status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+.emp-phase-row .phase-status-dot.not_started { background: #cbd5e0; }
+.emp-phase-row .phase-status-dot.in_progress { background: var(--accent); }
+.emp-phase-row .phase-status-dot.completed { background: #48bb78; }
+.emp-phase-row .phase-info { flex: 1; }
+.emp-phase-row .phase-info .phase-name { font-size: 14px; font-weight: 600; color: var(--primary); }
+.emp-phase-row .phase-info .phase-time { font-size: 12px; color: var(--text-secondary); }
+.emp-phase-row .phase-actions { display: flex; gap: 6px; }
+.emp-phase-row .phase-actions button {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+.emp-phase-row .phase-actions button:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+/* 考试题 */
+.question-item {
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 12px;
+}
+.question-item .question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+.question-item .question-type-badge {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(107,141,173,0.15);
+    color: var(--secondary);
+}
+.question-item .question-text {
+    font-size: 14px;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+.question-item .question-options {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.8;
+}
+.question-item .question-remove {
+    font-size: 12px;
+    color: #e53e3e;
+    cursor: pointer;
+    background: none;
+    border: none;
+}
+
+/* 考试作答 */
+.exam-question-block {
+    margin-bottom: 24px;
+    padding: 16px;
+    background: var(--bg-primary);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+}
+.exam-question-block .exam-q-num {
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+.exam-question-block .exam-q-text {
+    font-size: 14px;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    line-height: 1.5;
+}
+.exam-question-block .exam-option-item {
+    display: flex;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 14px;
+    cursor: pointer;
+}
+.exam-question-block .exam-option-item input {
+    margin-right: 8px;
+}
+.exam-question-block textarea {
+    width: 100%;
+    min-height: 80px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 14px;
+    resize: vertical;
+}
+
+/* 考试结果 */
+.exam-result-header {
+    text-align: center;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+}
+.exam-result-score {
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--primary);
+}
+.exam-result-score.pass { color: #48bb78; }
+.exam-result-score.fail { color: #e53e3e; }
+.exam-result-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+/* 阶段编辑表单 */
+.phase-edit-block {
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 12px;
+}
+.phase-edit-block .phase-edit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+.phase-edit-block .phase-edit-header span {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--primary);
+}
+.phase-edit-block .phase-edit-header button {
+    font-size: 12px;
+    color: #e53e3e;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+.phase-edit-block .form-group { margin-bottom: 10px; }
+.phase-edit-block .form-group label { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; display: block; }
+.phase-edit-block .form-group input,
+.phase-edit-block .form-group textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 13px;
+    box-sizing: border-box;
+}
+
+/* 空状态 */
+.growth-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-secondary);
+}
+.growth-empty i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.3;
+}
+.growth-empty p {
+    font-size: 14px;
+}
+
+/* modal-xl 更大弹窗 */
+.modal-xl {
+    max-width: 900px;
+    width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
+}

@@ -3560,6 +3560,8 @@ function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
+function escHtml(str) { return escapeHtml(str); }
+function escAttr(str) { return escapeHtml(str); }
 
 function copyStudioScript(id, btn) {
     const el = document.getElementById(id);
@@ -6290,6 +6292,10 @@ function generateTeamAdvice() {
 
 // ==================== 弹窗功能 ====================
 
+function openModal(modalId) {
+    document.getElementById(modalId).classList.add('active');
+}
+
 function closeModal(modalId) {
     document.getElementById(modalId).classList.remove('active');
 }
@@ -7954,6 +7960,935 @@ function formatFileSize(bytes) {
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
     return (bytes / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 1) + ' ' + units[i];
 }
+
+// ==================== 成长天地功能 ====================
+
+// --- 数据管理 ---
+let growthPlans = [];
+let growthEmployees = [];
+let growthExams = [];
+let growthExamResults = [];
+let editingPlanId = null;
+let editingEmployeeId = null;
+let editingExamId = null;
+let currentExamQuestions = [];
+
+function loadGrowthData() {
+    try {
+        growthPlans = JSON.parse(localStorage.getItem('growth_plans') || '[]');
+        growthEmployees = JSON.parse(localStorage.getItem('growth_employees') || '[]');
+        growthExams = JSON.parse(localStorage.getItem('growth_exams') || '[]');
+        growthExamResults = JSON.parse(localStorage.getItem('growth_exam_results') || '[]');
+    } catch(e) {
+        console.warn('加载成长天地数据失败:', e);
+        growthPlans = [];
+        growthEmployees = [];
+        growthExams = [];
+        growthExamResults = [];
+    }
+}
+
+function saveGrowthPlans() { localStorage.setItem('growth_plans', JSON.stringify(growthPlans)); }
+function saveGrowthEmployees() { localStorage.setItem('growth_employees', JSON.stringify(growthEmployees)); }
+function saveGrowthExams() { localStorage.setItem('growth_exams', JSON.stringify(growthExams)); }
+function saveGrowthExamResults() { localStorage.setItem('growth_exam_results', JSON.stringify(growthExamResults)); }
+
+function genGrowthId() { return 'g_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6); }
+
+// --- Tab 切换 ---
+function showGrowthTab(tab) {
+    document.querySelectorAll('.growth-content').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('#page-growth .tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('growth-' + tab).classList.add('active');
+    document.querySelector('#page-growth [onclick="showGrowthTab(\'' + tab + '\')"]').classList.add('active');
+    if (tab === 'plans') renderPlanList();
+    else if (tab === 'employees') renderEmployeeList();
+    else if (tab === 'exams') renderExamList();
+}
+
+// ==================== 培养计划 ====================
+
+function renderPlanList() {
+    const container = document.getElementById('growthPlanList');
+    if (growthPlans.length === 0) {
+        container.innerHTML = '<div class="growth-empty"><i class="fas fa-clipboard-list"></i><p>还没有培养计划，点击上方"新建计划"开始创建</p></div>';
+        return;
+    }
+    let html = '';
+    for (const plan of growthPlans) {
+        const empCount = growthEmployees.filter(e => e.planId === plan.id).length;
+        html += `<div class="growth-plan-card">
+            <div class="plan-card-header">
+                <div class="plan-card-title">${escHtml(plan.name)}</div>
+            </div>
+            <div class="plan-card-meta">
+                <span><i class="fas fa-briefcase"></i> ${escHtml(plan.position || '未指定')}</span>
+                <span><i class="fas fa-clock"></i> ${escHtml(plan.duration || '未指定')}</span>
+                <span><i class="fas fa-layer-group"></i> ${plan.phases ? plan.phases.length : 0} 个阶段</span>
+                <span><i class="fas fa-users"></i> ${empCount} 人使用中</span>
+            </div>
+            ${plan.description ? '<div class="plan-card-desc">' + escHtml(plan.description) + '</div>' : ''}
+            <div class="plan-card-phases">
+                ${(plan.phases || []).map(p => '<span class="phase-tag">' + escHtml(p.name) + '</span>').join('')}
+            </div>
+            <div class="plan-card-actions">
+                <button onclick="event.stopPropagation();viewPlanDetail('${plan.id}')"><i class="fas fa-eye"></i> 查看</button>
+                <button onclick="event.stopPropagation();editPlan('${plan.id}')"><i class="fas fa-edit"></i> 编辑</button>
+                <button class="danger" onclick="event.stopPropagation();deletePlan('${plan.id}')"><i class="fas fa-trash"></i> 删除</button>
+            </div>
+        </div>`;
+    }
+    container.innerHTML = html;
+}
+
+function showCreatePlanModal() {
+    editingPlanId = null;
+    document.getElementById('planModalTitle').textContent = '新建培养计划';
+    document.getElementById('planName').value = '';
+    document.getElementById('planPosition').value = '';
+    document.getElementById('planDuration').value = '';
+    document.getElementById('planDesc').value = '';
+    document.getElementById('phaseList').innerHTML = '';
+    addPhaseField();
+    openModal('createPlanModal');
+}
+
+function editPlan(planId) {
+    const plan = growthPlans.find(p => p.id === planId);
+    if (!plan) return;
+    editingPlanId = planId;
+    document.getElementById('planModalTitle').textContent = '编辑培养计划';
+    document.getElementById('planName').value = plan.name;
+    document.getElementById('planPosition').value = plan.position || '';
+    document.getElementById('planDuration').value = plan.duration || '';
+    document.getElementById('planDesc').value = plan.description || '';
+    document.getElementById('phaseList').innerHTML = '';
+    (plan.phases || []).forEach(p => addPhaseField(p));
+    openModal('createPlanModal');
+}
+
+function addPhaseField(phaseData) {
+    const container = document.getElementById('phaseList');
+    const idx = container.children.length;
+    const div = document.createElement('div');
+    div.className = 'phase-edit-block';
+    div.innerHTML = `
+        <div class="phase-edit-header">
+            <span>阶段 ${idx + 1}</span>
+            <button onclick="this.closest('.phase-edit-block').remove();renumberPhases();"><i class="fas fa-times"></i> 删除</button>
+        </div>
+        <div class="form-group">
+            <label>阶段名称</label>
+            <input type="text" class="phase-name" value="${escHtml(phaseData?.name || '')}" placeholder="如：第1周：入职适应">
+        </div>
+        <div class="form-group">
+            <label>时间节点</label>
+            <input type="text" class="phase-timeline" value="${escHtml(phaseData?.timeline || '')}" placeholder="如：Day 1-7 / 第1-2周">
+        </div>
+        <div class="form-group">
+            <label>培养目标</label>
+            <textarea class="phase-goals" rows="2" placeholder="本阶段要达到的目标">${escHtml(phaseData?.goals || '')}</textarea>
+        </div>
+        <div class="form-group">
+            <label>配套工具/资料/技能</label>
+            <textarea class="phase-tools" rows="2" placeholder="需要掌握的工具、资料、思维模型等">${escHtml(phaseData?.tools || '')}</textarea>
+        </div>
+        <div class="form-group">
+            <label>考核标准</label>
+            <textarea class="phase-exam" rows="2" placeholder="如何评估本阶段是否达标">${escHtml(phaseData?.examCriteria || '')}</textarea>
+        </div>
+    `;
+    container.appendChild(div);
+}
+
+function renumberPhases() {
+    document.querySelectorAll('#phaseList .phase-edit-block').forEach((block, i) => {
+        block.querySelector('.phase-edit-header span').textContent = '阶段 ' + (i + 1);
+    });
+}
+
+function savePlan() {
+    const name = document.getElementById('planName').value.trim();
+    if (!name) { alert('请输入计划名称'); return; }
+    
+    const phases = [];
+    document.querySelectorAll('#phaseList .phase-edit-block').forEach(block => {
+        phases.push({
+            id: genGrowthId(),
+            name: block.querySelector('.phase-name').value.trim(),
+            timeline: block.querySelector('.phase-timeline').value.trim(),
+            goals: block.querySelector('.phase-goals').value.trim(),
+            tools: block.querySelector('.phase-tools').value.trim(),
+            examCriteria: block.querySelector('.phase-exam').value.trim()
+        });
+    });
+    
+    const plan = {
+        id: editingPlanId || genGrowthId(),
+        name: name,
+        position: document.getElementById('planPosition').value.trim(),
+        duration: document.getElementById('planDuration').value.trim(),
+        description: document.getElementById('planDesc').value.trim(),
+        phases: phases,
+        createdAt: editingPlanId ? (growthPlans.find(p => p.id === editingPlanId)?.createdAt || new Date().toISOString()) : new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    };
+    
+    if (editingPlanId) {
+        const idx = growthPlans.findIndex(p => p.id === editingPlanId);
+        if (idx >= 0) growthPlans[idx] = plan;
+    } else {
+        growthPlans.push(plan);
+    }
+    
+    saveGrowthPlans();
+    closeModal('createPlanModal');
+    renderPlanList();
+}
+
+function deletePlan(planId) {
+    const empCount = growthEmployees.filter(e => e.planId === planId).length;
+    if (empCount > 0) {
+        if (!confirm('该计划下有 ' + empCount + ' 名员工正在使用，删除后他们的培养计划关联将被清除。确定删除？')) return;
+        growthEmployees.forEach(e => { if (e.planId === planId) e.planId = ''; });
+        saveGrowthEmployees();
+    } else {
+        if (!confirm('确定删除该培养计划？')) return;
+    }
+    growthPlans = growthPlans.filter(p => p.id !== planId);
+    saveGrowthPlans();
+    renderPlanList();
+}
+
+function viewPlanDetail(planId) {
+    const plan = growthPlans.find(p => p.id === planId);
+    if (!plan) return;
+    
+    const empList = growthEmployees.filter(e => e.planId === planId);
+    
+    let html = `<h3 style="margin-bottom:6px;"><i class="fas fa-clipboard-list" style="color:var(--accent);"></i> ${escHtml(plan.name)}</h3>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
+        <span style="font-size:13px;color:var(--text-secondary);"><i class="fas fa-briefcase"></i> ${escHtml(plan.position || '未指定')}</span>
+        <span style="font-size:13px;color:var(--text-secondary);"><i class="fas fa-clock"></i> ${escHtml(plan.duration || '未指定')}</span>
+        <span style="font-size:13px;color:var(--text-secondary);"><i class="fas fa-layer-group"></i> ${plan.phases.length} 个阶段</span>
+    </div>
+    ${plan.description ? '<p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;line-height:1.6;">' + escHtml(plan.description) + '</p>' : ''}`;
+    
+    if (plan.phases.length > 0) {
+        html += '<h4 style="margin-bottom:12px;"><i class="fas fa-route"></i> 培养阶段</h4><div class="plan-timeline">';
+        for (const phase of plan.phases) {
+            html += `<div class="plan-phase-item">
+                <div class="phase-name">${escHtml(phase.name)}</div>
+                <div class="phase-time"><i class="fas fa-clock"></i> ${escHtml(phase.timeline || '未设置时间')}</div>
+                ${phase.goals ? '<div class="phase-section"><div class="phase-section-label">🎯 培养目标</div><div class="phase-section-content">' + escHtml(phase.goals) + '</div></div>' : ''}
+                ${phase.tools ? '<div class="phase-section"><div class="phase-section-label">🛠 配套工具/资料/技能</div><div class="phase-section-content">' + escHtml(phase.tools) + '</div></div>' : ''}
+                ${phase.examCriteria ? '<div class="phase-section"><div class="phase-section-label">📝 考核标准</div><div class="phase-section-content">' + escHtml(phase.examCriteria) + '</div></div>' : ''}
+            </div>`;
+        }
+        html += '</div>';
+    }
+    
+    if (empList.length > 0) {
+        html += '<h4 style="margin-top:20px;margin-bottom:12px;"><i class="fas fa-users"></i> 使用该计划的员工</h4>';
+        for (const emp of empList) {
+            const progress = calcEmployeeProgress(emp, plan);
+            html += `<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);">
+                <span style="font-weight:600;color:var(--primary);">${escHtml(emp.name)}</span>
+                <span style="font-size:12px;color:var(--text-secondary);">${escHtml(emp.position || '')}</span>
+                <div style="flex:1;height:6px;background:var(--bg-primary);border-radius:3px;overflow:hidden;">
+                    <div style="height:100%;width:${progress}%;background:var(--accent);border-radius:3px;"></div>
+                </div>
+                <span style="font-size:12px;color:var(--accent);font-weight:600;">${progress}%</span>
+            </div>`;
+        }
+    }
+    
+    document.getElementById('planDetailContent').innerHTML = html;
+    openModal('planDetailModal');
+}
+
+function calcEmployeeProgress(emp, plan) {
+    if (!plan || !plan.phases || plan.phases.length === 0) return 0;
+    const phaseStatus = emp.phaseStatus || {};
+    let completed = 0;
+    for (const phase of plan.phases) {
+        if (phaseStatus[phase.id]?.status === 'completed') completed++;
+    }
+    return Math.round((completed / plan.phases.length) * 100);
+}
+
+// ==================== 员工管理 ====================
+
+function renderEmployeeList() {
+    const container = document.getElementById('growthEmployeeList');
+    if (growthEmployees.length === 0) {
+        container.innerHTML = '<div class="growth-empty"><i class="fas fa-users"></i><p>还没有员工记录，点击上方"添加员工"开始</p></div>';
+        return;
+    }
+    let html = '';
+    for (const emp of growthEmployees) {
+        const plan = growthPlans.find(p => p.id === emp.planId);
+        const progress = plan ? calcEmployeeProgress(emp, plan) : 0;
+        const isProbation = emp.endDate && new Date(emp.endDate) > new Date();
+        const statusClass = isProbation ? 'probation' : 'passed';
+        const statusText = isProbation ? '试用期' : '已转正';
+        
+        html += `<div class="growth-employee-card">
+            <div class="emp-card-header">
+                <div class="emp-card-name">${escHtml(emp.name)}</div>
+                <div class="emp-card-status ${statusClass}">${statusText}</div>
+            </div>
+            <div class="emp-card-info">
+                <span><i class="fas fa-briefcase"></i> ${escHtml(emp.position || '未指定')}</span>
+                <span><i class="fas fa-calendar-alt"></i> 入职 ${escHtml(emp.startDate || '未设置')}</span>
+                ${plan ? '<span><i class="fas fa-clipboard-list"></i> ' + escHtml(plan.name) + '</span>' : '<span style="color:#e53e3e;"><i class="fas fa-exclamation-circle"></i> 未分配计划</span>'}
+            </div>
+            ${plan ? '<div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;">培养进度</div><div class="emp-progress-bar"><div class="emp-progress-fill" style="width:' + progress + '%;"></div></div><div style="text-align:right;font-size:12px;color:var(--accent);font-weight:600;margin-top:4px;">' + progress + '%</div>' : ''}
+            <div class="emp-card-actions">
+                <button onclick="event.stopPropagation();viewEmployeeDetail('${emp.id}')"><i class="fas fa-eye"></i> 详情</button>
+                <button onclick="event.stopPropagation();editEmployee('${emp.id}')"><i class="fas fa-edit"></i> 编辑</button>
+                <button class="danger" onclick="event.stopPropagation();deleteEmployee('${emp.id}')" style="color:#e53e3e;"><i class="fas fa-trash"></i> 删除</button>
+            </div>
+        </div>`;
+    }
+    container.innerHTML = html;
+}
+
+function showAddEmployeeModal() {
+    editingEmployeeId = null;
+    document.getElementById('employeeModalTitle').textContent = '添加员工';
+    document.getElementById('empName').value = '';
+    document.getElementById('empPosition').value = '';
+    document.getElementById('empStartDate').value = '';
+    document.getElementById('empEndDate').value = '';
+    document.getElementById('empNotes').value = '';
+    
+    // 填充计划下拉
+    const sel = document.getElementById('empPlan');
+    sel.innerHTML = '<option value="">-- 请选择 --</option>';
+    growthPlans.forEach(p => {
+        sel.innerHTML += '<option value="' + p.id + '">' + escHtml(p.name) + '</option>';
+    });
+    openModal('addEmployeeModal');
+}
+
+function editEmployee(empId) {
+    const emp = growthEmployees.find(e => e.id === empId);
+    if (!emp) return;
+    editingEmployeeId = empId;
+    document.getElementById('employeeModalTitle').textContent = '编辑员工';
+    document.getElementById('empName').value = emp.name;
+    document.getElementById('empPosition').value = emp.position || '';
+    document.getElementById('empStartDate').value = emp.startDate || '';
+    document.getElementById('empEndDate').value = emp.endDate || '';
+    document.getElementById('empNotes').value = emp.notes || '';
+    
+    const sel = document.getElementById('empPlan');
+    sel.innerHTML = '<option value="">-- 请选择 --</option>';
+    growthPlans.forEach(p => {
+        sel.innerHTML += '<option value="' + p.id + '"' + (emp.planId === p.id ? ' selected' : '') + '>' + escHtml(p.name) + '</option>';
+    });
+    openModal('addEmployeeModal');
+}
+
+function saveEmployee() {
+    const name = document.getElementById('empName').value.trim();
+    if (!name) { alert('请输入员工姓名'); return; }
+    
+    const emp = {
+        id: editingEmployeeId || genGrowthId(),
+        name: name,
+        position: document.getElementById('empPosition').value.trim(),
+        startDate: document.getElementById('empStartDate').value,
+        endDate: document.getElementById('empEndDate').value,
+        planId: document.getElementById('empPlan').value,
+        notes: document.getElementById('empNotes').value.trim(),
+        phaseStatus: editingEmployeeId ? (growthEmployees.find(e => e.id === editingEmployeeId)?.phaseStatus || {}) : {},
+        createdAt: editingEmployeeId ? (growthEmployees.find(e => e.id === editingEmployeeId)?.createdAt || new Date().toISOString()) : new Date().toISOString()
+    };
+    
+    if (editingEmployeeId) {
+        const idx = growthEmployees.findIndex(e => e.id === editingEmployeeId);
+        if (idx >= 0) growthEmployees[idx] = emp;
+    } else {
+        growthEmployees.push(emp);
+    }
+    
+    saveGrowthEmployees();
+    closeModal('addEmployeeModal');
+    renderEmployeeList();
+}
+
+function deleteEmployee(empId) {
+    if (!confirm('确定删除该员工记录？')) return;
+    growthEmployees = growthEmployees.filter(e => e.id !== empId);
+    saveGrowthEmployees();
+    renderEmployeeList();
+}
+
+function viewEmployeeDetail(empId) {
+    const emp = growthEmployees.find(e => e.id === empId);
+    if (!emp) return;
+    const plan = growthPlans.find(p => p.id === emp.planId);
+    const progress = plan ? calcEmployeeProgress(emp, plan) : 0;
+    const isProbation = emp.endDate && new Date(emp.endDate) > new Date();
+    
+    let html = `<h3 style="margin-bottom:6px;"><i class="fas fa-user" style="color:var(--accent);"></i> ${escHtml(emp.name)}</h3>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px;">
+        <span style="font-size:13px;color:var(--text-secondary);"><i class="fas fa-briefcase"></i> ${escHtml(emp.position || '未指定')}</span>
+        <span style="font-size:13px;color:var(--text-secondary);"><i class="fas fa-calendar-alt"></i> 入职 ${escHtml(emp.startDate || '未设置')}</span>
+        <span style="font-size:13px;color:var(--text-secondary);"><i class="fas fa-calendar-check"></i> 试用期至 ${escHtml(emp.endDate || '未设置')}</span>
+        <span style="font-size:13px;padding:2px 8px;border-radius:10px;${isProbation ? 'background:rgba(196,150,60,0.15);color:#b8860b;' : 'background:rgba(72,187,120,0.15);color:#2f855a;'}">${isProbation ? '试用期' : '已转正'}</span>
+    </div>
+    ${emp.notes ? '<p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">' + escHtml(emp.notes) + '</p>' : ''}`;
+    
+    if (plan) {
+        html += `<div style="margin-bottom:16px;padding:12px;background:var(--bg-primary);border-radius:8px;">
+            <div style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;">培养计划：${escHtml(plan.name)}</div>
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div style="flex:1;height:8px;background:#fff;border-radius:4px;overflow:hidden;">
+                    <div style="height:100%;width:${progress}%;background:linear-gradient(90deg,var(--accent),#d4a84c);border-radius:4px;"></div>
+                </div>
+                <span style="font-size:14px;font-weight:600;color:var(--accent);">${progress}%</span>
+            </div>
+        </div>`;
+        
+        // 阶段进度
+        html += '<h4 style="margin-bottom:12px;"><i class="fas fa-route"></i> 阶段进度</h4><div class="emp-phase-progress">';
+        for (const phase of (plan.phases || [])) {
+            const ps = emp.phaseStatus?.[phase.id];
+            const status = ps?.status || 'not_started';
+            const statusLabel = status === 'completed' ? '✅ 已完成' : status === 'in_progress' ? '🔄 进行中' : '⬜ 未开始';
+            const score = ps?.score != null ? ps.score : null;
+            
+            html += `<div class="emp-phase-row">
+                <div class="phase-status-dot ${status}"></div>
+                <div class="phase-info">
+                    <div class="phase-name">${escHtml(phase.name)}</div>
+                    <div class="phase-time">${escHtml(phase.timeline || '')} · ${statusLabel}${score != null ? ' · 得分: ' + score : ''}</div>
+                </div>
+                <div class="phase-actions">
+                    ${status === 'not_started' ? '<button onclick="setPhaseStatus(\'' + emp.id + '\',\'' + phase.id + '\',\'in_progress\')">开始</button>' : ''}
+                    ${status === 'in_progress' ? '<button onclick="setPhaseStatus(\'' + emp.id + '\',\'' + phase.id + '\',\'completed\')">完成</button>' : ''}
+                    ${status === 'completed' ? '<button onclick="setPhaseStatus(\'' + emp.id + '\',\'' + phase.id + '\',\'not_started\')">重置</button>' : ''}
+                    <button onclick="showPhaseExamForEmployee('${emp.id}','${phase.id}')">考核</button>
+                </div>
+            </div>`;
+        }
+        html += '</div>';
+    } else {
+        html += '<div class="growth-empty" style="padding:30px;"><i class="fas fa-exclamation-circle"></i><p>尚未分配培养计划</p></div>';
+    }
+    
+    // 考试记录
+    const empResults = growthExamResults.filter(r => r.employeeId === empId);
+    if (empResults.length > 0) {
+        html += '<h4 style="margin-top:20px;margin-bottom:12px;"><i class="fas fa-file-alt"></i> 考试记录</h4>';
+        for (const r of empResults) {
+            const exam = growthExams.find(e => e.id === r.examId);
+            const passed = r.score >= (exam?.passScore || 60);
+            html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+                <span style="font-size:13px;">${escHtml(exam?.name || '未知考试')}</span>
+                <span style="font-size:13px;font-weight:600;${passed ? 'color:#48bb78;' : 'color:#e53e3e;'}">${r.score}分 ${passed ? '✓通过' : '✗未通过'}</span>
+                <span style="font-size:12px;color:var(--text-secondary);">${r.takenAt ? new Date(r.takenAt).toLocaleDateString('zh-CN') : ''}</span>
+            </div>`;
+        }
+    }
+    
+    document.getElementById('employeeDetailContent').innerHTML = html;
+    openModal('employeeDetailModal');
+}
+
+function setPhaseStatus(empId, phaseId, status) {
+    const emp = growthEmployees.find(e => e.id === empId);
+    if (!emp) return;
+    if (!emp.phaseStatus) emp.phaseStatus = {};
+    if (!emp.phaseStatus[phaseId]) emp.phaseStatus[phaseId] = {};
+    emp.phaseStatus[phaseId].status = status;
+    if (status === 'completed') emp.phaseStatus[phaseId].completedAt = new Date().toISOString();
+    saveGrowthEmployees();
+    viewEmployeeDetail(empId);
+}
+
+function showPhaseExamForEmployee(empId, phaseId) {
+    // 找到关联此阶段的考试
+    const relatedExams = growthExams.filter(e => e.phaseId === phaseId);
+    if (relatedExams.length === 0) {
+        if (confirm('该阶段暂无关联考试，是否跳转创建？')) {
+            showCreateExamModal();
+            // 预选计划和阶段
+            const emp = growthEmployees.find(e => e.id === empId);
+            if (emp?.planId) {
+                document.getElementById('examPlan').value = emp.planId;
+                loadExamPhases();
+                document.getElementById('examPhase').value = phaseId;
+            }
+        }
+        return;
+    }
+    // 如果只有一个考试，直接开始
+    if (relatedExams.length === 1) {
+        startExamForEmployee(relatedExams[0].id, empId);
+    } else {
+        // 多个考试让用户选
+        let msg = '该阶段有以下考试，请输入序号：\n';
+        relatedExams.forEach((e, i) => { msg += (i+1) + '. ' + e.name + '\n'; });
+        const choice = prompt(msg);
+        if (choice) {
+            const idx = parseInt(choice) - 1;
+            if (idx >= 0 && idx < relatedExams.length) {
+                startExamForEmployee(relatedExams[idx].id, empId);
+            }
+        }
+    }
+}
+
+// ==================== 考核评估 ====================
+
+function renderExamList() {
+    const container = document.getElementById('growthExamList');
+    if (growthExams.length === 0) {
+        container.innerHTML = '<div class="growth-empty"><i class="fas fa-file-alt"></i><p>还没有考试，点击上方"新建考试"创建</p></div>';
+        return;
+    }
+    let html = '';
+    for (const exam of growthExams) {
+        const plan = growthPlans.find(p => p.id === exam.planId);
+        const phase = plan?.phases?.find(p => p.id === exam.phaseId);
+        const resultCount = growthExamResults.filter(r => r.examId === exam.id).length;
+        
+        html += `<div class="growth-exam-card">
+            <div class="exam-card-header">
+                <div class="exam-card-title">${escHtml(exam.name)}</div>
+            </div>
+            <div class="exam-card-meta">
+                ${plan ? '<span><i class="fas fa-clipboard-list"></i> ' + escHtml(plan.name) + '</span>' : ''}
+                ${phase ? '<span><i class="fas fa-layer-group"></i> ' + escHtml(phase.name) + '</span>' : ''}
+                <span><i class="fas fa-question-circle"></i> ${exam.questions?.length || 0} 题</span>
+                <span><i class="fas fa-check-circle"></i> 及格 ${exam.passScore || 60} 分</span>
+                <span><i class="fas fa-users"></i> ${resultCount} 人已考</span>
+            </div>
+            <div class="exam-card-actions">
+                <button onclick="viewExamDetail('${exam.id}')"><i class="fas fa-eye"></i> 查看</button>
+                <button onclick="editExam('${exam.id}')"><i class="fas fa-edit"></i> 编辑</button>
+                <button onclick="startExamForEmployee('${exam.id}')" title="指定员工作答"><i class="fas fa-pen"></i> 安排考试</button>
+                <button onclick="viewExamResults('${exam.id}')"><i class="fas fa-chart-bar"></i> 成绩</button>
+                <button class="danger" onclick="deleteExam('${exam.id}')" style="color:#e53e3e;"><i class="fas fa-trash"></i> 删除</button>
+            </div>
+        </div>`;
+    }
+    container.innerHTML = html;
+}
+
+function showCreateExamModal() {
+    editingExamId = null;
+    currentExamQuestions = [];
+    document.getElementById('examModalTitle').textContent = '新建考试';
+    document.getElementById('examName').value = '';
+    document.getElementById('examPassScore').value = 60;
+    
+    const sel = document.getElementById('examPlan');
+    sel.innerHTML = '<option value="">-- 请选择 --</option>';
+    growthPlans.forEach(p => {
+        sel.innerHTML += '<option value="' + p.id + '">' + escHtml(p.name) + '</option>';
+    });
+    document.getElementById('examPhase').innerHTML = '<option value="">-- 先选择计划 --</option>';
+    document.getElementById('questionList').innerHTML = '';
+    openModal('createExamModal');
+}
+
+function loadExamPhases() {
+    const planId = document.getElementById('examPlan').value;
+    const sel = document.getElementById('examPhase');
+    sel.innerHTML = '<option value="">-- 请选择阶段 --</option>';
+    if (!planId) return;
+    const plan = growthPlans.find(p => p.id === planId);
+    if (!plan) return;
+    (plan.phases || []).forEach(p => {
+        sel.innerHTML += '<option value="' + p.id + '">' + escHtml(p.name) + '</option>';
+    });
+}
+
+function editExam(examId) {
+    const exam = growthExams.find(e => e.id === examId);
+    if (!exam) return;
+    editingExamId = examId;
+    currentExamQuestions = JSON.parse(JSON.stringify(exam.questions || []));
+    document.getElementById('examModalTitle').textContent = '编辑考试';
+    document.getElementById('examName').value = exam.name;
+    document.getElementById('examPassScore').value = exam.passScore || 60;
+    
+    const sel = document.getElementById('examPlan');
+    sel.innerHTML = '<option value="">-- 请选择 --</option>';
+    growthPlans.forEach(p => {
+        sel.innerHTML += '<option value="' + p.id + '"' + (exam.planId === p.id ? ' selected' : '') + '>' + escHtml(p.name) + '</option>';
+    });
+    loadExamPhases();
+    if (exam.phaseId) document.getElementById('examPhase').value = exam.phaseId;
+    
+    renderQuestionList();
+    openModal('createExamModal');
+}
+
+function addQuestion(type) {
+    const q = { id: genGrowthId(), type: type, question: '', options: [], correctAnswer: '', points: 10 };
+    if (type === 'single' || type === 'multiple') {
+        q.options = ['A. ', 'B. ', 'C. ', 'D. '];
+    }
+    currentExamQuestions.push(q);
+    renderQuestionList();
+}
+
+function renderQuestionList() {
+    const container = document.getElementById('questionList');
+    let html = '';
+    currentExamQuestions.forEach((q, i) => {
+        const typeLabel = q.type === 'single' ? '单选' : q.type === 'multiple' ? '多选' : '简答';
+        html += `<div class="question-item" data-idx="${i}">
+            <div class="question-header">
+                <span class="question-type-badge">${typeLabel} · ${q.points}分</span>
+                <button class="question-remove" onclick="removeQuestion(${i})"><i class="fas fa-trash"></i></button>
+            </div>
+            <div style="margin-bottom:8px;">
+                <input type="text" value="${escAttr(q.question)}" onchange="currentExamQuestions[${i}].question=this.value" placeholder="题目内容" style="width:100%;border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:13px;">
+            </div>`;
+        
+        if (q.type === 'single' || q.type === 'multiple') {
+            (q.options || []).forEach((opt, j) => {
+                html += `<div style="display:flex;gap:6px;margin-bottom:4px;align-items:center;">
+                    ${q.type === 'single' ? '<input type="radio" name="correct_' + i + '"' + (q.correctAnswer == j ? ' checked' : '') + ' onchange="currentExamQuestions[' + i + '].correctAnswer=' + j + '">' : '<input type="checkbox"' + ((Array.isArray(q.correctAnswer) && q.correctAnswer.includes(j)) ? ' checked' : '') + ' onchange="toggleMultiAnswer(' + i + ',' + j + ')">'}
+                    <input type="text" value="${escAttr(opt)}" onchange="currentExamQuestions[${i}].options[${j}]=this.value" placeholder="选项 ${String.fromCharCode(65+j)}" style="flex:1;border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-size:12px;">
+                    <button onclick="removeOption(${i},${j})" style="font-size:11px;color:#e53e3e;background:none;border:none;cursor:pointer;"><i class="fas fa-times"></i></button>
+                </div>`;
+            });
+            html += `<button onclick="addOption(${i})" style="font-size:11px;color:var(--secondary);background:none;border:none;cursor:pointer;margin-top:4px;"><i class="fas fa-plus"></i> 添加选项</button>`;
+        } else {
+            html += `<div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">
+                <textarea onchange="currentExamQuestions[${i}].correctAnswer=this.value" placeholder="参考答案（简答题由管理者手动评分）" style="width:100%;border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-size:12px;min-height:40px;">${escHtml(q.correctAnswer || '')}</textarea>
+            </div>`;
+        }
+        html += '</div>';
+    });
+    container.innerHTML = html;
+}
+
+function removeQuestion(idx) {
+    currentExamQuestions.splice(idx, 1);
+    renderQuestionList();
+}
+
+function addOption(qIdx) {
+    const nextLetter = String.fromCharCode(65 + currentExamQuestions[qIdx].options.length);
+    currentExamQuestions[qIdx].options.push(nextLetter + '. ');
+    renderQuestionList();
+}
+
+function removeOption(qIdx, optIdx) {
+    if (currentExamQuestions[qIdx].options.length <= 2) { alert('至少保留2个选项'); return; }
+    currentExamQuestions[qIdx].options.splice(optIdx, 1);
+    // 调整正确答案索引
+    if (currentExamQuestions[qIdx].type === 'single') {
+        if (currentExamQuestions[qIdx].correctAnswer == optIdx) currentExamQuestions[qIdx].correctAnswer = '';
+        else if (currentExamQuestions[qIdx].correctAnswer > optIdx) currentExamQuestions[qIdx].correctAnswer--;
+    } else if (Array.isArray(currentExamQuestions[qIdx].correctAnswer)) {
+        currentExamQuestions[qIdx].correctAnswer = currentExamQuestions[qIdx].correctAnswer.filter(a => a !== optIdx).map(a => a > optIdx ? a - 1 : a);
+    }
+    renderQuestionList();
+}
+
+function toggleMultiAnswer(qIdx, optIdx) {
+    if (!Array.isArray(currentExamQuestions[qIdx].correctAnswer)) currentExamQuestions[qIdx].correctAnswer = [];
+    const arr = currentExamQuestions[qIdx].correctAnswer;
+    const idx = arr.indexOf(optIdx);
+    if (idx >= 0) arr.splice(idx, 1);
+    else arr.push(optIdx);
+}
+
+function saveExam() {
+    const name = document.getElementById('examName').value.trim();
+    if (!name) { alert('请输入考试名称'); return; }
+    if (currentExamQuestions.length === 0) { alert('请至少添加一道题目'); return; }
+    
+    // 验证题目完整性
+    for (let i = 0; i < currentExamQuestions.length; i++) {
+        const q = currentExamQuestions[i];
+        if (!q.question.trim()) { alert('第' + (i+1) + '题题目不能为空'); return; }
+        if ((q.type === 'single' || q.type === 'multiple') && (!q.options || q.options.length < 2)) { alert('第' + (i+1) + '题至少需要2个选项'); return; }
+    }
+    
+    const exam = {
+        id: editingExamId || genGrowthId(),
+        name: name,
+        planId: document.getElementById('examPlan').value,
+        phaseId: document.getElementById('examPhase').value,
+        passScore: parseInt(document.getElementById('examPassScore').value) || 60,
+        questions: JSON.parse(JSON.stringify(currentExamQuestions)),
+        createdAt: editingExamId ? (growthExams.find(e => e.id === editingExamId)?.createdAt || new Date().toISOString()) : new Date().toISOString()
+    };
+    
+    if (editingExamId) {
+        const idx = growthExams.findIndex(e => e.id === editingExamId);
+        if (idx >= 0) growthExams[idx] = exam;
+    } else {
+        growthExams.push(exam);
+    }
+    
+    saveGrowthExams();
+    closeModal('createExamModal');
+    renderExamList();
+}
+
+function deleteExam(examId) {
+    if (!confirm('确定删除该考试？相关考试成绩也将被删除。')) return;
+    growthExams = growthExams.filter(e => e.id !== examId);
+    growthExamResults = growthExamResults.filter(r => r.examId !== examId);
+    saveGrowthExams();
+    saveGrowthExamResults();
+    renderExamList();
+}
+
+function viewExamDetail(examId) {
+    const exam = growthExams.find(e => e.id === examId);
+    if (!exam) return;
+    
+    const plan = growthPlans.find(p => p.id === exam.planId);
+    const phase = plan?.phases?.find(p => p.id === exam.phaseId);
+    const totalPoints = (exam.questions || []).reduce((sum, q) => sum + (q.points || 10), 0);
+    
+    let html = `<h3 style="margin-bottom:6px;"><i class="fas fa-file-alt" style="color:var(--accent);"></i> ${escHtml(exam.name)}</h3>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;font-size:13px;color:var(--text-secondary);">
+        ${plan ? '<span><i class="fas fa-clipboard-list"></i> ' + escHtml(plan.name) + '</span>' : ''}
+        ${phase ? '<span><i class="fas fa-layer-group"></i> ' + escHtml(phase.name) + '</span>' : ''}
+        <span><i class="fas fa-question-circle"></i> ${exam.questions?.length || 0} 题</span>
+        <span><i class="fas fa-star"></i> 总分 ${totalPoints}</span>
+        <span><i class="fas fa-check-circle"></i> 及格 ${exam.passScore} 分</span>
+    </div>
+    <h4 style="margin-bottom:12px;">题目列表</h4>`;
+    
+    (exam.questions || []).forEach((q, i) => {
+        const typeLabel = q.type === 'single' ? '单选题' : q.type === 'multiple' ? '多选题' : '简答题';
+        html += `<div class="question-item">
+            <div class="question-header">
+                <span style="font-size:13px;color:var(--primary);font-weight:600;">第${i+1}题</span>
+                <span class="question-type-badge">${typeLabel} · ${q.points}分</span>
+            </div>
+            <div class="question-text">${escHtml(q.question)}</div>`;
+        if (q.options && q.options.length > 0) {
+            html += '<div class="question-options">';
+            q.options.forEach((opt, j) => {
+                const isCorrect = q.type === 'single' ? q.correctAnswer == j : (Array.isArray(q.correctAnswer) && q.correctAnswer.includes(j));
+                html += `<div style="${isCorrect ? 'color:#48bb78;font-weight:600;' : ''}">${escHtml(opt)} ${isCorrect ? '✓' : ''}</div>`;
+            });
+            html += '</div>';
+        } else if (q.correctAnswer) {
+            html += '<div style="font-size:12px;color:#48bb78;margin-top:4px;">参考答案：' + escHtml(q.correctAnswer) + '</div>';
+        }
+        html += '</div>';
+    });
+    
+    document.getElementById('examDetailContent').innerHTML = html;
+    openModal('examDetailModal');
+}
+
+// 安排考试：选择员工后进入作答
+function startExamForEmployee(examId, empId) {
+    const exam = growthExams.find(e => e.id === examId);
+    if (!exam) return;
+    
+    if (!empId) {
+        // 让员工选择
+        if (growthEmployees.length === 0) { alert('请先添加员工'); return; }
+        let msg = '请选择参加考试员工（输入序号）：\n';
+        growthEmployees.forEach((e, i) => { msg += (i+1) + '. ' + e.name + '\n'; });
+        const choice = prompt(msg);
+        if (!choice) return;
+        const idx = parseInt(choice) - 1;
+        if (idx < 0 || idx >= growthEmployees.length) { alert('无效选择'); return; }
+        empId = growthEmployees[idx].id;
+    }
+    
+    const emp = growthEmployees.find(e => e.id === empId);
+    if (!emp) return;
+    
+    // 渲染作答界面
+    let html = `<h3 style="margin-bottom:6px;"><i class="fas fa-pen" style="color:var(--accent);"></i> ${escHtml(exam.name)}</h3>
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">考生：${escHtml(emp.name)} | 及格分数：${exam.passScore}分</p>
+    <div id="examAnswerForm">`;
+    
+    (exam.questions || []).forEach((q, i) => {
+        const typeLabel = q.type === 'single' ? '单选题' : q.type === 'multiple' ? '多选题' : '简答题';
+        html += `<div class="exam-question-block">
+            <div class="exam-q-num">第${i+1}题 · ${typeLabel} · ${q.points}分</div>
+            <div class="exam-q-text">${escHtml(q.question)}</div>
+            <div data-qidx="${i}" data-qtype="${q.type}">`;
+        
+        if (q.type === 'single') {
+            (q.options || []).forEach((opt, j) => {
+                html += `<label class="exam-option-item"><input type="radio" name="answer_${i}" value="${j}"> ${escHtml(opt)}</label>`;
+            });
+        } else if (q.type === 'multiple') {
+            (q.options || []).forEach((opt, j) => {
+                html += `<label class="exam-option-item"><input type="checkbox" name="answer_${i}" value="${j}"> ${escHtml(opt)}</label>`;
+            });
+        } else {
+            html += `<textarea id="essay_answer_${i}" placeholder="请输入答案"></textarea>`;
+        }
+        html += '</div></div>';
+    });
+    
+    html += `</div>
+    <div style="text-align:right;margin-top:16px;">
+        <button class="btn btn-outline" onclick="closeModal('examDetailModal')" style="margin-right:10px;">取消</button>
+        <button class="btn btn-primary" onclick="submitExamAnswers('${exam.id}','${emp.id}')"><i class="fas fa-check"></i> 提交阅卷</button>
+    </div>`;
+    
+    document.getElementById('examDetailContent').innerHTML = html;
+    openModal('examDetailModal');
+}
+
+function submitExamAnswers(examId, empId) {
+    const exam = growthExams.find(e => e.id === examId);
+    if (!exam) return;
+    
+    let totalScore = 0;
+    let answers = [];
+    
+    (exam.questions || []).forEach((q, i) => {
+        let answer = '';
+        let isCorrect = false;
+        
+        if (q.type === 'single') {
+            const checked = document.querySelector(`input[name="answer_${i}"]:checked`);
+            answer = checked ? checked.value : '';
+            isCorrect = (answer !== '' && q.correctAnswer == answer);
+        } else if (q.type === 'multiple') {
+            const checked = document.querySelectorAll(`input[name="answer_${i}"]:checked`);
+            const selected = Array.from(checked).map(c => parseInt(c.value)).sort();
+            answer = JSON.stringify(selected);
+            const correct = (Array.isArray(q.correctAnswer) ? q.correctAnswer : []).sort();
+            isCorrect = JSON.stringify(selected) === JSON.stringify(correct);
+        } else {
+            const ta = document.getElementById('essay_answer_' + i);
+            answer = ta ? ta.value.trim() : '';
+            isCorrect = false; // 简答题需手动评分
+        }
+        
+        if (isCorrect) totalScore += (q.points || 10);
+        answers.push({ questionId: q.id, answer: answer, isCorrect: isCorrect, points: isCorrect ? (q.points || 10) : 0 });
+    });
+    
+    // 计算总分（按百分制换算）
+    const maxPoints = (exam.questions || []).reduce((sum, q) => sum + (q.points || 10), 0);
+    const finalScore = maxPoints > 0 ? Math.round((totalScore / maxPoints) * 100) : 0;
+    
+    // 保存结果
+    const result = {
+        id: genGrowthId(),
+        examId: examId,
+        employeeId: empId,
+        score: finalScore,
+        rawScore: totalScore,
+        maxScore: maxPoints,
+        answers: answers,
+        passed: finalScore >= (exam.passScore || 60),
+        takenAt: new Date().toISOString()
+    };
+    growthExamResults.push(result);
+    saveGrowthExamResults();
+    
+    // 显示结果
+    showExamResult(result, exam);
+}
+
+function showExamResult(result, exam) {
+    const emp = growthEmployees.find(e => e.id === result.employeeId);
+    let html = `<div class="exam-result-header">
+        <div class="exam-result-score ${result.passed ? 'pass' : 'fail'}">${result.score}</div>
+        <div class="exam-result-label">${result.passed ? '✓ 通过' : '✗ 未通过'} | ${emp?.name || '未知'} | ${escHtml(exam.name)}</div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">原始得分 ${result.rawScore}/${result.maxScore} | 及格线 ${exam.passScore}分</div>
+    </div>`;
+    
+    html += '<h4 style="margin-bottom:12px;">答题详情</h4>';
+    (exam.questions || []).forEach((q, i) => {
+        const ans = result.answers[i];
+        const typeLabel = q.type === 'single' ? '单选' : q.type === 'multiple' ? '多选' : '简答';
+        let answerText = '';
+        if (q.type === 'single') {
+            answerText = ans.answer !== '' ? (q.options[ans.answer] || '未作答') : '未作答';
+        } else if (q.type === 'multiple') {
+            try {
+                const sel = JSON.parse(ans.answer);
+                answerText = sel.length > 0 ? sel.map(s => q.options[s] || '').join('、') : '未作答';
+            } catch(e) { answerText = '未作答'; }
+        } else {
+            answerText = ans.answer || '未作答';
+        }
+        
+        html += `<div class="question-item">
+            <div class="question-header">
+                <span style="font-size:13px;font-weight:600;color:var(--primary);">第${i+1}题 (${typeLabel})</span>
+                <span style="font-size:12px;${ans.isCorrect ? 'color:#48bb78;' : 'color:#e53e3e;'}">${ans.isCorrect ? '✓ 正确' : '✗ 错误'} ${ans.points || 0}/${q.points || 10}分</span>
+            </div>
+            <div class="question-text">${escHtml(q.question)}</div>
+            <div style="font-size:13px;margin-top:6px;">
+                <span style="color:var(--text-secondary);">作答：</span>
+                <span style="${ans.isCorrect ? 'color:#48bb78;' : 'color:#e53e3e;'}">${escHtml(answerText)}</span>
+            </div>
+        </div>`;
+    });
+    
+    html += `<div style="text-align:right;margin-top:16px;">
+        <button class="btn btn-outline" onclick="closeModal('examResultModal');openModal('examDetailModal');" style="margin-right:10px;">返回</button>
+        <button class="btn btn-primary" onclick="closeModal('examResultModal');">完成</button>
+    </div>`;
+    
+    closeModal('examDetailModal');
+    document.getElementById('examResultContent').innerHTML = html;
+    openModal('examResultModal');
+}
+
+function viewExamResults(examId) {
+    const exam = growthExams.find(e => e.id === examId);
+    if (!exam) return;
+    const results = growthExamResults.filter(r => r.examId === examId);
+    
+    let html = `<h3 style="margin-bottom:6px;"><i class="fas fa-chart-bar" style="color:var(--accent);"></i> ${escHtml(exam.name)} - 成绩列表</h3>
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">共 ${results.length} 人参加 | 及格线 ${exam.passScore}分</p>`;
+    
+    if (results.length === 0) {
+        html += '<div class="growth-empty" style="padding:30px;"><p>暂无考试记录</p></div>';
+    } else {
+        html += '<table style="width:100%;border-collapse:collapse;font-size:13px;"><thead><tr style="background:var(--bg-primary);">';
+        html += '<th style="padding:10px;text-align:left;border-bottom:2px solid var(--border);">姓名</th>';
+        html += '<th style="padding:10px;text-align:center;border-bottom:2px solid var(--border);">得分</th>';
+        html += '<th style="padding:10px;text-align:center;border-bottom:2px solid var(--border);">结果</th>';
+        html += '<th style="padding:10px;text-align:center;border-bottom:2px solid var(--border);">考试时间</th>';
+        html += '</tr></thead><tbody>';
+        
+        for (const r of results) {
+            const emp = growthEmployees.find(e => e.id === r.employeeId);
+            html += `<tr>
+                <td style="padding:10px;border-bottom:1px solid var(--border);">${escHtml(emp?.name || '未知')}</td>
+                <td style="padding:10px;text-align:center;border-bottom:1px solid var(--border);font-weight:600;">${r.score}</td>
+                <td style="padding:10px;text-align:center;border-bottom:1px solid var(--border);">
+                    <span style="padding:2px 8px;border-radius:10px;font-size:12px;${r.passed ? 'background:rgba(72,187,120,0.15);color:#2f855a;' : 'background:rgba(229,62,62,0.15);color:#e53e3e;'}">${r.passed ? '通过' : '未通过'}</span>
+                </td>
+                <td style="padding:10px;text-align:center;border-bottom:1px solid var(--border);color:var(--text-secondary);">${r.takenAt ? new Date(r.takenAt).toLocaleDateString('zh-CN') : ''}</td>
+            </tr>`;
+        }
+        html += '</tbody></table>';
+    }
+    
+    html += `<div style="text-align:right;margin-top:16px;">
+        <button class="btn btn-outline" onclick="closeModal('examResultModal')">关闭</button>
+    </div>`;
+    
+    document.getElementById('examResultContent').innerHTML = html;
+    openModal('examResultModal');
+}
+
+// 初始化成长天地数据
+loadGrowthData();
 
 // ==================== 方案生成功能 ====================
 

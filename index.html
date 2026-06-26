@@ -137,6 +137,10 @@
                 <i class="fas fa-user-circle"></i>
                 <span>九型人格</span>
             </li>
+            <li class="nav-item" data-page="growth">
+                <i class="fas fa-seedling"></i>
+                <span>成长天地</span>
+            </li>
             <li class="nav-item" data-page="plan-generator" style="display:none;">
                 <i class="fas fa-graduation-cap"></i>
                 <span>方案生成</span>
@@ -934,6 +938,215 @@
                 </div>
             </div>
         </div>
+        <!-- ==================== 成长天地 ==================== -->
+        <div class="page" id="page-growth">
+            <h1 class="page-title"><i class="fas fa-seedling"></i> 成长天地</h1>
+            
+            <!-- Tab切换 -->
+            <div class="module-tabs">
+                <button class="tab-btn active" onclick="showGrowthTab('plans')">
+                    <i class="fas fa-clipboard-list"></i> 培养计划
+                </button>
+                <button class="tab-btn" onclick="showGrowthTab('employees')">
+                    <i class="fas fa-users"></i> 员工管理
+                </button>
+                <button class="tab-btn" onclick="showGrowthTab('exams')">
+                    <i class="fas fa-file-alt"></i> 考核评估
+                </button>
+            </div>
+
+            <!-- Tab 1: 培养计划 -->
+            <div class="growth-content active" id="growth-plans">
+                <div class="growth-header">
+                    <h3>试用期培养计划模板</h3>
+                    <button class="btn btn-primary" onclick="showCreatePlanModal()">
+                        <i class="fas fa-plus"></i> 新建计划
+                    </button>
+                </div>
+                <div class="growth-plan-list" id="growthPlanList">
+                    <!-- 动态渲染 -->
+                </div>
+            </div>
+
+            <!-- Tab 2: 员工管理 -->
+            <div class="growth-content" id="growth-employees">
+                <div class="growth-header">
+                    <h3>员工成长档案</h3>
+                    <button class="btn btn-primary" onclick="showAddEmployeeModal()">
+                        <i class="fas fa-user-plus"></i> 添加员工
+                    </button>
+                </div>
+                <div class="growth-employee-list" id="growthEmployeeList">
+                    <!-- 动态渲染 -->
+                </div>
+            </div>
+
+            <!-- Tab 3: 考核评估 -->
+            <div class="growth-content" id="growth-exams">
+                <div class="growth-header">
+                    <h3>考试题库与评估</h3>
+                    <button class="btn btn-primary" onclick="showCreateExamModal()">
+                        <i class="fas fa-plus"></i> 新建考试
+                    </button>
+                </div>
+                <div class="growth-exam-list" id="growthExamList">
+                    <!-- 动态渲染 -->
+                </div>
+            </div>
+
+            <!-- 培养计划详情弹窗 -->
+            <div class="modal" id="planDetailModal">
+                <div class="modal-content modal-xl">
+                    <span class="modal-close" onclick="closeModal('planDetailModal')">&times;</span>
+                    <div id="planDetailContent"></div>
+                </div>
+            </div>
+
+            <!-- 新建/编辑计划弹窗 -->
+            <div class="modal" id="createPlanModal">
+                <div class="modal-content modal-lg">
+                    <span class="modal-close" onclick="closeModal('createPlanModal')">&times;</span>
+                    <h3 id="planModalTitle">新建培养计划</h3>
+                    <div class="form-group">
+                        <label>计划名称</label>
+                        <input type="text" id="planName" placeholder="如：销售新人30天培养计划">
+                    </div>
+                    <div class="form-group">
+                        <label>适用岗位</label>
+                        <input type="text" id="planPosition" placeholder="如：留学顾问">
+                    </div>
+                    <div class="form-group">
+                        <label>培养周期</label>
+                        <input type="text" id="planDuration" placeholder="如：30天 / 3个月">
+                    </div>
+                    <div class="form-group">
+                        <label>计划描述</label>
+                        <textarea id="planDesc" rows="3" placeholder="计划的整体目标和说明"></textarea>
+                    </div>
+                    
+                    <h4 style="margin-top:20px;">阶段设置</h4>
+                    <div id="phaseList"></div>
+                    <button class="btn btn-outline" onclick="addPhaseField()" style="margin-top:10px;">
+                        <i class="fas fa-plus"></i> 添加阶段
+                    </button>
+                    
+                    <div style="margin-top:24px;text-align:right;">
+                        <button class="btn btn-outline" onclick="closeModal('createPlanModal')" style="margin-right:10px;">取消</button>
+                        <button class="btn btn-primary" onclick="savePlan()">保存计划</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 添加员工弹窗 -->
+            <div class="modal" id="addEmployeeModal">
+                <div class="modal-content">
+                    <span class="modal-close" onclick="closeModal('addEmployeeModal')">&times;</span>
+                    <h3 id="employeeModalTitle">添加员工</h3>
+                    <div class="form-group">
+                        <label>姓名</label>
+                        <input type="text" id="empName" placeholder="员工姓名">
+                    </div>
+                    <div class="form-group">
+                        <label>岗位</label>
+                        <input type="text" id="empPosition" placeholder="如：留学顾问">
+                    </div>
+                    <div class="form-group">
+                        <label>入职日期</label>
+                        <input type="date" id="empStartDate">
+                    </div>
+                    <div class="form-group">
+                        <label>试用期结束日期</label>
+                        <input type="date" id="empEndDate">
+                    </div>
+                    <div class="form-group">
+                        <label>分配培养计划</label>
+                        <select id="empPlan">
+                            <option value="">-- 请选择 --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>备注</label>
+                        <textarea id="empNotes" rows="2" placeholder="备注信息"></textarea>
+                    </div>
+                    <div style="margin-top:20px;text-align:right;">
+                        <button class="btn btn-outline" onclick="closeModal('addEmployeeModal')" style="margin-right:10px;">取消</button>
+                        <button class="btn btn-primary" onclick="saveEmployee()">保存</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 员工详情弹窗 -->
+            <div class="modal" id="employeeDetailModal">
+                <div class="modal-content modal-xl">
+                    <span class="modal-close" onclick="closeModal('employeeDetailModal')">&times;</span>
+                    <div id="employeeDetailContent"></div>
+                </div>
+            </div>
+
+            <!-- 新建考试弹窗 -->
+            <div class="modal" id="createExamModal">
+                <div class="modal-content modal-lg">
+                    <span class="modal-close" onclick="closeModal('createExamModal')">&times;</span>
+                    <h3 id="examModalTitle">新建考试</h3>
+                    <div class="form-group">
+                        <label>考试名称</label>
+                        <input type="text" id="examName" placeholder="如：产品知识考核">
+                    </div>
+                    <div class="form-group">
+                        <label>关联培养计划</label>
+                        <select id="examPlan" onchange="loadExamPhases()">
+                            <option value="">-- 请选择 --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>关联阶段</label>
+                        <select id="examPhase">
+                            <option value="">-- 先选择计划 --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>及格分数</label>
+                        <input type="number" id="examPassScore" value="60" min="0" max="100">
+                    </div>
+                    
+                    <h4 style="margin-top:20px;">题目列表</h4>
+                    <div id="questionList"></div>
+                    <div style="margin-top:10px;display:flex;gap:10px;">
+                        <button class="btn btn-outline" onclick="addQuestion('single')">
+                            <i class="fas fa-plus"></i> 单选题
+                        </button>
+                        <button class="btn btn-outline" onclick="addQuestion('multiple')">
+                            <i class="fas fa-plus"></i> 多选题
+                        </button>
+                        <button class="btn btn-outline" onclick="addQuestion('essay')">
+                            <i class="fas fa-plus"></i> 简答题
+                        </button>
+                    </div>
+                    
+                    <div style="margin-top:24px;text-align:right;">
+                        <button class="btn btn-outline" onclick="closeModal('createExamModal')" style="margin-right:10px;">取消</button>
+                        <button class="btn btn-primary" onclick="saveExam()">保存考试</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 考试详情/作答弹窗 -->
+            <div class="modal" id="examDetailModal">
+                <div class="modal-content modal-lg">
+                    <span class="modal-close" onclick="closeModal('examDetailModal')">&times;</span>
+                    <div id="examDetailContent"></div>
+                </div>
+            </div>
+
+            <!-- 查看考试结果弹窗 -->
+            <div class="modal" id="examResultModal">
+                <div class="modal-content modal-lg">
+                    <span class="modal-close" onclick="closeModal('examResultModal')">&times;</span>
+                    <div id="examResultContent"></div>
+                </div>
+            </div>
+        </div>
+
         <!-- ==================== 方案生成页面 ==================== -->
         <div class="page" id="page-plan-generator" style="display:none !important;">
             <h1 class="page-title"><i class="fas fa-graduation-cap"></i> 方案生成</h1>
