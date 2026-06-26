@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <meta name="googlebot" content="noindex, nofollow, noarchive">
+    <title>留学销售赋能平台 - 精简版</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // 同步检测分享/收集参数，在body渲染前隐藏内容防止闪烁
+        var _urlParams = new URLSearchParams(window.location.search);
+        if (_urlParams.get('share') || _urlParams.get('collect')) {
+            document.documentElement.classList.add('share-loading');
+        }
+        // 同步检测登录状态：未登录且非分享/收集模式，隐藏所有内容
+        var _isShareOrCollect = !!(_urlParams.get('share') || _urlParams.get('collect'));
+        var _isLoggedIn = !!sessionStorage.getItem('salesEmpowerment_loggedIn');
+        if (!_isLoggedIn && !_isShareOrCollect) {
+            document.documentElement.classList.add('not-logged-in');
+        }
+    </script>
+</head>
+<body>
+    <!-- 登录界面 -->
+    <div class="login-gate" id="loginGate">
+        <div class="login-card">
+            <div class="login-logo">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <h1 class="login-title">留学销售赋能平台</h1>
+            <p class="login-subtitle">请登录以访问平台内容</p>
+            <div class="login-form">
+                <div class="login-field">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="loginPassword" placeholder="请输入访问密码" 
+                           onkeydown="if(event.key==='Enter')doLogin()">
+                </div>
+                <button class="login-btn" onclick="doLogin()">
+                    <i class="fas fa-sign-in-alt"></i> 登录
+                </button>
+                <p class="login-error" id="loginError" style="display:none;">密码错误，请重试</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 分享链接密码验证界面 -->
+    <div class="share-password-gate" id="sharePasswordGate" style="display:none;">
+        <div class="share-password-card">
+            <div class="share-password-icon">
+                <i class="fas fa-link"></i>
+            </div>
+            <h2 class="share-password-title">受保护的分享内容</h2>
+            <p class="share-password-subtitle">请输入查看密码以访问此分享内容</p>
+            <div class="share-password-form">
+                <div class="share-password-field">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="sharePasswordInput" placeholder="请输入查看密码" 
+                           onkeydown="if(event.key==='Enter')doSharePasswordVerify()">
+                </div>
+                <button class="share-password-btn" onclick="doSharePasswordVerify()">
+                    <i class="fas fa-eye"></i> 查看内容
+                </button>
+                <p class="share-password-error" id="sharePasswordError" style="display:none;">密码错误，请重试</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 分享模式加载遮罩 -->
+    <div class="share-loading-mask">
+        <div class="spinner"></div>
+        <div class="loading-text">正在加载...</div>
+    </div>
+    <!-- 顶部状态栏 -->
+    <header class="top-bar">
+        <div class="logo">
+            <i class="fas fa-graduation-cap"></i>
+            <span>留学销售赋能平台</span>
+        </div>
+        <div class="user-info">
+            <span class="date-time" id="dateTime"></span>
+            <div class="avatar" id="avatarBtn" onclick="toggleAvatarMenu()">
+                <i class="fas fa-user"></i>
+            </div>
+            <!-- 头像下拉菜单 -->
+            <div class="avatar-menu" id="avatarMenu" style="display:none;">
+                <div class="avatar-menu-item" onclick="goAdmin()">
+                    <i class="fas fa-shield-alt"></i> 后台管理
+                </div>
+                <div class="avatar-menu-item" onclick="goHome()">
+                    <i class="fas fa-home"></i> 返回首页
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 分享模式顶部栏 -->
+    <div class="share-header" id="shareHeader" style="display: none;">
+        <span>由 <strong>留学销售赋能平台</strong> 提供</span>
+    </div>
+
+    <!-- 左侧导航栏 -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-rocket"></i>
+            <span>销售赋能</span>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item active" data-page="competitors">
+                <i class="fas fa-chart-bar"></i>
+                <span>竞品情报站</span>
+            </li>
+            <li class="nav-item" data-page="ai-studio">
+                <i class="fas fa-robot"></i>
+                <span>AI话术工坊</span>
+            </li>
+            <li class="nav-item" data-page="tools">
+                <i class="fas fa-tools"></i>
+                <span>销售工具箱</span>
+            </li>
+            <li class="nav-item" data-page="enneagram">
+                <i class="fas fa-user-circle"></i>
+                <span>九型人格</span>
+            </li>
+            <li class="nav-item" data-page="plan-generator" style="display:none;">
+                <i class="fas fa-graduation-cap"></i>
+                <span>方案生成</span>
+            </li>
+            <li class="nav-item" data-page="admin" id="adminNavItem">
+                <i class="fas fa-shield-alt"></i>
+                <span>后台管理</span>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="main-content" id="mainContent">
+        <!-- ==================== 竞品情报站 ==================== -->
+        <div class="page active" id="page-competitors">
+            <h1 class="page-title"><i class="fas fa-chart-bar"></i> 竞品情报站</h1>
+            
+            <!-- 筛选器 -->
+            <div class="filters-bar" id="competitorFilters">
+                <div class="filter-group">
+                    <label>覆盖国别</label>
+                    <select id="filterCountry">
+                        <option value="all">全部</option>
+                        <option value="多国">多国覆盖</option>
+                        <option value="北美">北美</option>
+                        <option value="英国">英国</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>业务模式</label>
+                    <select id="filterProduct">
+                        <option value="all">全部</option>
+                        <option value="多国">多国</option>
+                        <option value="北美">北美</option>
+                        <option value="英国">英国</option>
+                    </select>
+                </div>
+                <button class="btn btn-secondary" onclick="filterCompetitors()">
+                    <i class="fas fa-filter"></i> 应用筛选
+                </button>
+                <button class="btn btn-outline" id="shareCompetitorBtn" onclick="generateShareLink('competitors')">
+                    <i class="fas fa-share-alt"></i> 生成分享链接
+                </button>
+            </div>
+
+            <!-- 竞品对比表格 -->
+            <div class="card">
+                <div class="card-header-with-actions">
+                    <h3><i class="fas fa-table"></i> 竞品总览 <span style="font-size:0.8rem;color:#6B7280;font-weight:400">点击行查看详情</span></h3>
+                    <div class="card-actions">
+                        <button class="btn btn-primary btn-sm" onclick="openAddCompetitor()">
+                            <i class="fas fa-plus"></i> 新增竞品
+                        </button>
+                        <button class="btn btn-outline btn-sm" onclick="exportCompetitors()">
+                            <i class="fas fa-file-export"></i> 导出
+                        </button>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table" id="competitorTable">
+                        <thead>
+                            <tr>
+                                <th>机构</th>
+                                <th>覆盖国别</th>
+                                <th>B2B</th>
+                                <th>优势区域</th>
+                                <th>核心优势</th>
+                                <th>主要劣势</th>
+                                <th>综合评分</th>
+                                <th style="width:100px;text-align:center">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="competitorBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 竞品编辑/新增弹窗 -->
+            <div class="modal" id="competitorEditModal">
+                <div class="modal-content modal-lg">
+                    <span class="modal-close" onclick="closeModal('competitorEditModal')">&times;</span>
+                    <h2 id="compEditTitle"><i class="fas fa-plus-circle"></i> 新增竞品</h2>
+                    <form id="compEditForm" onsubmit="saveCompetitor(event)">
+                        <input type="hidden" id="compEditIndex" value="-1">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>机构简称 <span class="required">*</span></label>
+                                <input type="text" id="compName" placeholder="例如：HTI" required>
+                            </div>
+                            <div class="form-group">
+                                <label>机构全称 <span class="required">*</span></label>
+                                <input type="text" id="compFullName" placeholder="例如：HTI 留学" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>覆盖国别分类</label>
+                                <select id="compCountry">
+                                    <option value="多国">多国覆盖</option>
+                                    <option value="北美">北美</option>
+                                    <option value="英国">英国</option>
+                                    <option value="澳洲">澳洲</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>具体覆盖国家/地区</label>
+                                <input type="text" id="compCoverage" placeholder="例如：英国、美国、澳洲">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>产品方向</label>
+                                <select id="compProduct">
+                                    <option value="多国">多国</option>
+                                    <option value="北美">北美</option>
+                                    <option value="英国">英国</option>
+                                    <option value="澳洲">澳洲</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>是否B2B</label>
+                                <select id="compIsB2B">
+                                    <option value="false">否</option>
+                                    <option value="true">是</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>优势区域</label>
+                                <input type="text" id="compStrongRegion" placeholder="例如：江浙沪">
+                            </div>
+                            <div class="form-group">
+                                <label>综合评分 (1-10)</label>
+                                <input type="number" id="compScore" min="1" max="10" step="0.1" placeholder="7.0">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>核心优势 <span class="required">*</span></label>
+                            <textarea id="compAdvantage" rows="3" placeholder="描述该竞品的核心优势..." required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>主要劣势 <span class="required">*</span></label>
+                            <textarea id="compDisadvantage" rows="3" placeholder="描述该竞品的主要劣势..." required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>佣金政策</label>
+                            <textarea id="compCommission" rows="2" placeholder="描述佣金政策..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>服务评价</label>
+                            <textarea id="compService" rows="2" placeholder="描述服务评价..."></textarea>
+                        </div>
+                        <h4 style="margin: 16px 0 8px; color: var(--text-secondary);"><i class="fas fa-chart-radar"></i> 六维能力评分 (1-10)</h4>
+                        <div class="form-row-six">
+                            <div class="form-group">
+                                <label>品牌力</label>
+                                <input type="number" id="compRadarBrand" min="1" max="10" value="7">
+                            </div>
+                            <div class="form-group">
+                                <label>价格竞争力</label>
+                                <input type="number" id="compRadarPrice" min="1" max="10" value="7">
+                            </div>
+                            <div class="form-group">
+                                <label>服务能力</label>
+                                <input type="number" id="compRadarService" min="1" max="10" value="7">
+                            </div>
+                            <div class="form-group">
+                                <label>渠道覆盖</label>
+                                <input type="number" id="compRadarChannel" min="1" max="10" value="7">
+                            </div>
+                            <div class="form-group">
+                                <label>产品力</label>
+                                <input type="number" id="compRadarProduct" min="1" max="10" value="7">
+                            </div>
+                            <div class="form-group">
+                                <label>技术实力</label>
+                                <input type="number" id="compRadarTech" min="1" max="10" value="7">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-outline" onclick="closeModal('competitorEditModal')">取消</button>
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> 保存</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 雷达图对比 -->
+            <div class="card radar-card">
+                <h3><i class="fas fa-chart-radar"></i> 多维度能力对比</h3>
+                <div class="radar-container" id="radarContainer">
+                </div>
+            </div>
+
+            <!-- 竞品动态时间线 -->
+            <div class="card timeline-card">
+                <h3><i class="fas fa-clock"></i> 竞品动态</h3>
+                <div class="timeline" id="competitorTimeline">
+                </div>
+            </div>
+
+            <!-- 竞品详情弹窗 -->
+            <div class="modal" id="competitorModal">
+                <div class="modal-content modal-lg">
+                    <span class="modal-close" onclick="closeModal('competitorModal')">&times;</span>
+                    <div id="competitorModalBody"></div>
+                </div>
+            </div>
+
+            <!-- 收集模式说明（?collect=token 模式下显示） -->
+            <div class="card" id="collectModeIntro" style="display: none;">
+                <h3><i class="fas fa-bullhorn"></i> 竞品信息收集</h3>
+                <p style="color:#4B5563;line-height:1.8;">欢迎提交您了解到的竞品信息！您的反馈将帮助我们更好地了解市场动态。</p>
+
+            </div>
+
+            <!-- 访客反馈表单（分享模式下显示） -->
+            <div class="card feedback-form" id="competitorFeedbackForm" style="display: none;">
+                <h3><i class="fas fa-edit"></i> 新增竞品反馈</h3>
+                <p class="hint">您可以通过此表单提交您观察到的竞品信息，系统会自动整理并提交审核。</p>
+                <form id="feedbackForm" onsubmit="submitFeedback(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>竞品名称 <span class="required">*</span></label>
+                            <input type="text" id="fbName" placeholder="例如：某某留学机构" required>
+                        </div>
+                        <div class="form-group">
+                            <label>国家/地区 <span class="required">*</span></label>
+                            <select id="fbCountry" required>
+                                <option value="">请选择</option>
+                                <option value="国内">国内机构</option>
+                                <option value="美国">美国</option>
+                                <option value="英国">英国</option>
+                                <option value="澳洲">澳洲</option>
+                                <option value="其他">其他</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>核心产品 <span class="required">*</span></label>
+                        <input type="text" id="fbProduct" placeholder="例如：高端申请、中端申请等" required>
+                    </div>
+                    <div class="form-group">
+                        <label>优势描述 <span class="required">*</span></label>
+                        <textarea id="fbAdvantage" rows="3" placeholder="描述该竞品的主要优势..." required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>劣势描述 <span class="required">*</span></label>
+                        <textarea id="fbDisadvantage" rows="3" placeholder="描述该竞品的主要劣势或我们的机会点..." required></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>信息来源</label>
+                            <input type="text" id="fbSource" placeholder="例如：官网、展会、客户反馈等">
+                        </div>
+                        <div class="form-group">
+                            <label>提交人姓名 <span class="required">*</span></label>
+                            <input type="text" id="fbSubmitter" placeholder="请留下您的姓名" required>
+                        </div>
+                    </div>
+                    <!-- 文件上传区域（收集模式下显示） -->
+                    <div id="collectFileUpload" style="display:none;margin-bottom:16px;">
+                        <label style="font-weight:600;margin-bottom:6px;display:block;"><i class="fas fa-cloud-upload-alt"></i> 上传竞品资料（可选）</label>
+                        <p style="color:#6B7280;font-size:0.85rem;margin-bottom:8px;">支持图片、PDF、Word等格式，如竞品截图、宣传资料等</p>
+                        <div id="collectDropZone" style="border:2px dashed #D1D5DB;border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:border-color 0.2s;" onclick="document.getElementById('collectFileInput').click()" ondragover="event.preventDefault();this.style.borderColor='#4F46E5'" ondragleave="this.style.borderColor='#D1D5DB'" ondrop="event.preventDefault();this.style.borderColor='#D1D5DB';handleCollectFiles(event.dataTransfer.files)">
+                            <i class="fas fa-cloud-upload-alt" style="font-size:1.5rem;color:#9CA3AF;"></i>
+                            <p style="color:#6B7280;margin:8px 0 0;">点击或拖拽文件到此处</p>
+                            <input type="file" id="collectFileInput" multiple accept="image/*,.pdf,.doc,.docx,.txt" style="display:none" onchange="handleCollectFiles(this.files)">
+                        </div>
+                        <div id="collectFileList" style="margin-top:8px;"></div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-paper-plane"></i> 提交反馈
+                    </button>
+                </form>
+            </div>
+
+            <!-- 提交结果展示（模拟） -->
+            <div class="card feedback-result" id="feedbackResult" style="display: none;">
+                <div class="processing-animation" id="processingAnimation">
+                    <div class="spinner"></div>
+                    <p>正在AI整理中...</p>
+                </div>
+                <div class="result-content" id="resultContent" style="display: none;">
+                    <div class="result-header">
+                        <i class="fas fa-check-circle success-icon"></i>
+                        <h3>提交成功！</h3>
+                    </div>
+                    <div class="整理结果-box" id="整理结果Box"></div>
+                    <p class="result-tip"><i class="fas fa-info-circle"></i> 已提交至管理员审核，感谢您的反馈！</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== AI话术工坊 + 话术库 ==================== -->
+        <div class="page" id="page-ai-studio">
+            <h1 class="page-title"><i class="fas fa-robot"></i> AI话术工坊</h1>
+            
+            <!-- Tab切换 -->
+            <div class="module-tabs">
+                <button class="tab-btn active" onclick="showStudioTab('studio')">
+                    <i class="fas fa-magic"></i> AI话术工坊
+                </button>
+                <button class="tab-btn" onclick="showStudioTab('library')">
+                    <i class="fas fa-book"></i> 话术库
+                </button>
+            </div>
+
+            <!-- Tab A: AI话术工坊 -->
+            <div class="studio-content active" id="studio-tab">
+                <div class="studio-layout">
+                    <!-- 输入区 -->
+                    <div class="card input-card script-input-card">
+                        <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <h3 style="margin:0;"><i class="fas fa-edit"></i> 话术生成配置</h3>
+                            <button class="btn btn-outline btn-sm" onclick="openStudioSettings()" title="API设置" style="display:flex;align-items:center;gap:4px;">
+                                <i class="fas fa-gear"></i> 设置
+                            </button>
+                        </div>
+                        
+                        <!-- 我方角色 -->
+                        <div class="form-group">
+                            <label>我方角色</label>
+                            <input type="text" id="myRole" value="B2B留学顾问（销售）" placeholder="例如：B2B留学顾问（销售）">
+                        </div>
+
+                        <!-- 我司情况（默认隐藏，点击展开） -->
+                        <div class="form-group">
+                            <label class="collapsible-label" onclick="toggleCompanyInfo()">
+                                <span>我司情况</span>
+                                <i class="fas fa-plus-circle collapsible-icon" id="companyInfoIcon"></i>
+                            </label>
+                            <div id="companyInfoWrapper" class="collapsible-content" style="display:none;">
+                                <textarea id="myCompanyInfo" rows="4" placeholder="描述我司核心优势和服务范围...">我司英爱均可接单，基本英国前100院校有开放代理的都可做，比如KCL、爱丁堡（仅语言）、曼大、布里斯托、华威、格拉斯哥、利兹、南安普顿、谢菲、杜伦、诺丁汉等；爱尔兰前100比如TCD也有佣金。专注英国领域已有27年，以服务为导向，佣金安全为保障，人工服务为主，AI辅助做关键节点提醒和高频常规问题答复，助力我们合作方签约入学更多学生，实现共赢。</textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <!-- 客户层级 -->
+                            <div class="form-group">
+                                <label>客户层级</label>
+                                <select id="clientLevel">
+                                    <option value="">请选择</option>
+                                    <option value="A级（头部企业）">A级（头部企业）</option>
+                                    <option value="B级（大型企业）">B级（大型企业）</option>
+                                    <option value="C级（中型企业）">C级（中型企业）</option>
+                                    <option value="D级（小型企业）">D级（小型企业）</option>
+                                    <option value="E级（个人工作室）">E级（个人工作室）</option>
+                                    <option value="F级（个人代理）">F级（个人代理）</option>
+                                </select>
+                            </div>
+                            <!-- 客户身份 -->
+                            <div class="form-group">
+                                <label>客户身份</label>
+                                <select id="clientIdentity">
+                                    <option value="">请选择</option>
+                                    <option value="决策者">决策者</option>
+                                    <option value="影响者">影响者</option>
+                                    <option value="使用者">使用者</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- 触达阶段 -->
+                        <div class="form-group">
+                            <label>触达阶段</label>
+                            <select id="clientReachStage">
+                                <option value="">请选择</option>
+                                <option value="首次触达">首次触达</option>
+                                <option value="二次触达">二次触达</option>
+                                <option value="三次触达">三次触达</option>
+                                <option value="四次触达">四次触达</option>
+                                <option value="需求挖掘">需求挖掘</option>
+                                <option value="意向确认阶段">意向确认阶段</option>
+                                <option value="签约阶段">签约阶段</option>
+                                <option value="产出阶段">产出阶段</option>
+                                <option value="维护阶段">维护阶段</option>
+                            </select>
+                        </div>
+
+                        <!-- 客户背景信息 -->
+                        <div class="form-group">
+                            <label>客户背景信息</label>
+                            <textarea id="clientBackground" rows="3" placeholder="如主做国家或产品、合作中机构、常申院校、生源情况、九型（性格）等"></textarea>
+                        </div>
+
+                        <!-- 客户需求描述 -->
+                        <div class="form-group">
+                            <label>客户需求描述</label>
+                            <textarea id="clientNeeds" rows="3" placeholder="请描述客户的核心需求或痛点..."></textarea>
+                        </div>
+
+                        <!-- 文件上传区域 -->
+                        <div class="form-group">
+                            <label>上传文件（聊天截图/对话记录等）</label>
+                            <div class="sc-upload-zone" id="scUploadZone">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>点击或拖拽上传</p>
+                                <span>支持图片、Word、PDF、文本</span>
+                                <input type="file" id="scFileInput" style="display:none;" multiple accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.txt" onchange="handleStudioUpload(this.files)">
+                            </div>
+                            <div id="scFileList"></div>
+                        </div>
+
+                        <button class="btn btn-primary btn-lg btn-generate" id="generateScript" onclick="generateScript()">
+                            <i class="fas fa-magic"></i> 一键生成话术
+                        </button>
+                    </div>
+
+                    <!-- 结果区 -->
+                    <div class="card result-card script-result-card" id="scriptResult">
+                        <h3><i class="fas fa-clipboard-list"></i> 生成结果</h3>
+                        <div class="generated-content" id="generatedContent">
+                            <div class="placeholder-text">
+                                <i class="fas fa-comment-dots"></i>
+                                <p>填写客户信息，点击"一键生成话术"获取定制化话术</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 话术原则提醒（常驻） -->
+                        <div class="sc-block sc-principles-block" id="studioPrinciplesBlock">
+                            <div class="sc-block-title"><span class="sc-emoji">⚠️</span> 话术原则提醒</div>
+                            <div class="studio-principles">
+                                <div class="sc-principle-item"><span class="sc-check">✅</span> 推新增不推替换，降低决策压力</div>
+                                <div class="sc-principle-item"><span class="sc-check">✅</span> 只共情问题，不评判对方现有合作方</div>
+                                <div class="sc-principle-item"><span class="sc-check">✅</span> 先体验再决定，用服务说话</div>
+                                <div class="sc-principle-item"><span class="sc-check">✅</span> 发完不追问，等1-2天再换场景钩子触达</div>
+                                <div class="sc-principle-item"><span class="sc-check">✅</span> 不诋毁同行，用实力和结果赢得信任</div>
+                            </div>
+                        </div>
+                        <div class="script-actions" id="scriptActions" style="display: none;">
+                            <button class="btn btn-secondary" onclick="copyGeneratedScript()">
+                                <i class="fas fa-copy"></i> 复制全部
+                            </button>
+                            <button class="btn btn-outline" onclick="favoriteScript()">
+                                <i class="fas fa-heart"></i> 收藏
+                            </button>
+                            <button class="btn btn-outline" onclick="clearGeneratedScript()" style="color:#ef4444;border-color:#fecaca;">
+                                <i class="fas fa-trash-alt"></i> 清除
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab B: 话术库 -->
+            <div class="studio-content" id="library-tab">
+                <!-- 搜索和筛选 -->
+                <div class="filters-bar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="scriptSearch" placeholder="搜索话术..." oninput="filterScripts()">
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="openAddScript()">
+                        <i class="fas fa-plus"></i> 新增话术
+                    </button>
+                </div>
+
+                <!-- 话术标签 -->
+                <div class="script-tags" id="scriptTags">
+                    <span class="tag active" data-category="all">全部</span>
+                    <span class="tag" data-category="ai_generated">🤖 AI生成</span>
+                    <span class="tag" data-category="cold_outreach">冷触达</span>
+                    <span class="tag" data-category="warm_follow">跟进升温</span>
+                    <span class="tag" data-category="objection">异议拆解</span>
+                    <span class="tag" data-category="closing">临门促单</span>
+                    <span class="tag" data-category="nurture">长期培育</span>
+                    <span class="tag" data-category="first_contact">首次触达</span>
+                    <span class="tag" data-category="request_apply">索要申请</span>
+                    <span class="tag" data-category="reward">奖励发放</span>
+                </div>
+
+                <!-- 话术卡片列表 -->
+                <div class="script-cards" id="scriptCards">
+                </div>
+            </div>
+
+            <!-- API设置弹窗 -->
+            <div class="modal" id="studioSettingsModal" style="display:none;">
+                <div class="modal-content" style="max-width:460px;">
+                    <span class="modal-close" onclick="closeStudioSettings()">&times;</span>
+                    <h3 style="margin-bottom:16px;"><i class="fas fa-gear"></i> 扣子 Bot 设置</h3>
+                    <div style="background:#f0f7ff;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;color:#555;line-height:1.6;">
+                        <strong>如何获取：</strong><br>
+                        1. 登录 <a href="https://www.coze.cn" target="_blank" style="color:#4a90d9;">coze.cn</a>，创建一个Bot<br>
+                        2. Bot的人设与回复逻辑中粘贴话术专家Prompt<br>
+                        3. 在 <a href="https://www.coze.cn/open/api" target="_blank" style="color:#4a90d9;">开放平台</a> 获取Personal Access Token<br>
+                        4. Bot ID 在Bot发布页的URL中获取
+                    </div>
+                    <div class="form-group">
+                        <label>Coze API Token</label>
+                        <input type="password" id="studioCozeToken" placeholder="pat_xxxxxxxx">
+                    </div>
+                    <div class="form-group">
+                        <label>Bot ID（话术工坊）</label>
+                        <input type="text" id="studioBotId" placeholder="在Bot发布页URL中获取">
+                    </div>
+                    <div class="form-group">
+                        <label style="display:none;">Bot ID（方案生成）</label>
+                        <input type="text" id="studioPlanBotId" placeholder="方案生成专用Bot，留空则共用话术Bot" style="display:none;">
+                    </div>
+                    <button class="btn btn-primary" onclick="saveStudioSettings()" style="width:100%;">保存设置</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 销售工具箱 ==================== -->
+        <div class="page" id="page-tools">
+            <h1 class="page-title"><i class="fas fa-tools"></i> 销售工具箱</h1>
+            
+            <!-- 工具筛选栏 -->
+            <div class="tools-filter-bar">
+                <div class="tools-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="toolSearchInput" placeholder="搜索工具名称或关键词…" oninput="filterTools()">
+                    <span class="tools-search-clear" id="toolSearchClear" onclick="clearToolSearch()"><i class="fas fa-times"></i></span>
+                </div>
+                <div class="tools-tags-filter" id="toolsTagsFilter">
+                    <span class="tools-tag-filter active" data-filter="all" onclick="filterByTag(this)">全部</span>
+                    <span class="tools-tag-filter" data-filter="规划" onclick="filterByTag(this)">规划</span>
+                    <span class="tools-tag-filter" data-filter="行前" onclick="filterByTag(this)">行前</span>
+                    <span class="tools-tag-filter" data-filter="认证" onclick="filterByTag(this)">认证</span>
+                    <span class="tools-tag-filter" data-filter="申请" onclick="filterByTag(this)">申请</span>
+                    <span class="tools-tag-filter" data-filter="签证" onclick="filterByTag(this)">签证</span>
+                    <span class="tools-tag-filter" data-filter="换校" onclick="filterByTag(this)">换校</span>
+                    <span class="tools-tag-filter" data-filter="报价" onclick="filterByTag(this)">报价</span>
+                </div>
+            </div>
+
+            <div class="tools-grid" id="toolsGrid">
+                <div class="tool-card" data-keywords="留学 时间 规划 申请 流程 节点" data-tag="规划" onclick="openTool('timeline')">
+                    <div class="tool-icon"><i class="fas fa-clock"></i></div>
+                    <h4>留学时间规划</h4>
+                    <p>英国硕士申请全流程时间节点与任务清单</p>
+                    <span class="tool-tag">规划</span>
+                </div>
+                <div class="tool-card" data-keywords="英国 行前 签证 体检 换汇 行李 落地 生活" data-tag="行前" onclick="openTool('predeparture')">
+                    <div class="tool-icon"><i class="fas fa-plane-departure"></i></div>
+                    <h4>留英行前指南</h4>
+                    <p>签证、体检、换汇、行李、落地、生活全流程指引</p>
+                    <span class="tool-tag">行前</span>
+                </div>
+                <div class="tool-card" data-keywords="学历 认证 留服 国境外 学位" data-tag="认证" onclick="openTool('degree_auth')">
+                    <div class="tool-icon"><i class="fas fa-certificate"></i></div>
+                    <h4>境外学历认证指南</h4>
+                    <p>国（境）外学历学位认证全流程操作指引</p>
+                    <span class="tool-tag">认证</span>
+                </div>
+                <div class="tool-card" data-keywords="爱尔兰 行前 IRP 居留 入境 签证" data-tag="行前" onclick="openTool('ireland_predeparture')">
+                    <div class="tool-icon"><i class="fas fa-shamrock"></i></div>
+                    <h4>爱尔兰行前指南</h4>
+                    <p>入境、IRP居留卡、行李准备、紧急联系全流程指引</p>
+                    <span class="tool-tag">行前</span>
+                </div>
+                <div class="tool-card" data-keywords="UCAS 本科 申请 英国 Buzzword 佣金" data-tag="申请" onclick="openTool('ucas')">
+                    <div class="tool-icon"><i class="fas fa-university"></i></div>
+                    <h4>UCAS申请说明</h4>
+                    <p>英国本科UCAS申请流程、材料、时间线及注意事项</p>
+                    <span class="tool-tag">申请</span>
+                </div>
+                <div class="tool-card" data-keywords="英国 签证 学生 保证金 肺结核 体检" data-tag="签证" onclick="openTool('uk_visa')">
+                    <div class="tool-icon"><i class="fas fa-passport"></i></div>
+                    <h4>英国学生签证指南</h4>
+                    <p>签证材料、保证金、肺结核体检、申请流程全指引</p>
+                    <span class="tool-tag">签证</span>
+                </div>
+                <div class="tool-card" data-keywords="紧急 换校 选校 谢菲尔德 诺丁汉 伯明翰 奖学金" data-tag="换校" onclick="openTool('emergency_switch')">
+                    <div class="tool-icon"><i class="fas fa-exchange-alt"></i></div>
+                    <h4>紧急换校指南</h4>
+                    <p>紧急换校选校维度、推荐院校、换校流程全指引</p>
+                    <span class="tool-tag">换校</span>
+                </div>
+                <div class="tool-card" data-keywords="文书 外售 报价 PS 推荐信 简历 套餐" data-tag="报价" onclick="openTool('writing_service')">
+                    <div class="tool-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+                    <h4>文书外售服务报价</h4>
+                    <p>2026-2027年度文书套餐及散件报价</p>
+                    <span class="tool-tag">报价</span>
+                </div>
+                <div class="tool-card" data-keywords="英国 申请 材料 清单 PS 推荐信 成绩单 雅思 护照 文书" data-tag="申请" onclick="openTool('uk_materials')">
+                    <div class="tool-icon"><i class="fas fa-clipboard-list"></i></div>
+                    <h4>英国申请材料清单</h4>
+                    <p>硕士及其他课程申请材料准备要点与注意事项</p>
+                    <span class="tool-tag">申请</span>
+                </div>
+                <div class="tool-card" data-keywords="毕业 材料 办理 毕业证 学位证 成绩单 均分证明 翻译 盖章" data-tag="申请" onclick="openTool('graduation_docs')">
+                    <div class="tool-icon"><i class="fas fa-graduation-cap"></i></div>
+                    <h4>毕业材料办理温馨提示</h4>
+                    <p>国内本科生毕业证、学位证、成绩单、均分证明办理指引</p>
+                    <span class="tool-tag">申请</span>
+                </div>
+                <div class="tool-card" data-keywords="留位费 退费 押金 deposit refund 冷静期 签证被拒" data-tag="申请" onclick="openTool('deposit_refund')">
+                    <div class="tool-icon"><i class="fas fa-sterling-sign"></i></div>
+                    <h4>留位费退费政策</h4>
+                    <p>13所英国热门大学留位费退费规则汇总</p>
+                    <span class="tool-tag">申请</span>
+                </div>
+            </div>
+
+            <!-- 工具详情弹窗 -->
+            <div class="modal" id="toolModal">
+                <div class="modal-content modal-lg">
+                    <span class="modal-close" onclick="closeModal('toolModal')">&times;</span>
+                    <div id="toolModalBody"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 九型人格 ==================== -->
+        <div class="page" id="page-enneagram">
+            <h1 class="page-title"><i class="fas fa-user-circle"></i> 九型人格</h1>
+            
+            <!-- Tab切换 -->
+            <div class="module-tabs">
+                <button class="tab-btn active" onclick="showEnneaTab('types')">
+                    <i class="fas fa-book-open"></i> 九型详解
+                </button>
+                <button class="tab-btn" onclick="showEnneaTab('test')">
+                    <i class="fas fa-question-circle"></i> 互动测试
+                </button>
+                <button class="tab-btn" onclick="showEnneaTab('team')">
+                    <i class="fas fa-users"></i> 团队搭配
+                </button>
+            </div>
+
+            <!-- 九型详解 -->
+            <div class="enneagram-content active" id="ennea-types">
+                <div class="enneagram-grid" id="enneagramCards"></div>
+            </div>
+
+            <!-- 互动测试 -->
+            <div class="enneagram-content" id="ennea-test">
+                <div class="test-container" id="testContainer">
+                    <div class="test-progress">
+                        <span>题目 <span id="currentQ">1</span> / 9</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="testProgress"></div>
+                        </div>
+                    </div>
+                    <div class="test-question" id="testQuestion"></div>
+                    <div class="test-options" id="testOptions"></div>
+                </div>
+                <div class="test-result" id="testResult" style="display: none;"></div>
+            </div>
+
+            <!-- 团队搭配 -->
+            <div class="enneagram-content" id="ennea-team">
+                <div class="team-builder">
+                    <h3>选择团队成员类型</h3>
+                    <p class="hint">点击选择团队成员，生成搭配建议</p>
+                    <div class="team-select-grid" id="teamSelectGrid"></div>
+                    <div class="selected-team">
+                        <h4>已选成员：</h4>
+                        <div id="selectedMembers">
+                            <span class="empty-tip">请在下方选择成员</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="generateTeamAdvice()">
+                        <i class="fas fa-magic"></i> 生成搭配建议
+                    </button>
+                    <div class="team-advice" id="teamAdvice"></div>
+                </div>
+            </div>
+
+            <!-- 九型详情弹窗 -->
+            <div class="modal" id="enneaModal">
+                <div class="modal-content modal-lg">
+                    <span class="modal-close" onclick="closeModal('enneaModal')">&times;</span>
+                    <div id="enneaModalBody"></div>
+                </div>
+            </div>
+        </div>
+        <!-- ==================== 方案生成页面 ==================== -->
+        <div class="page" id="page-plan-generator" style="display:none !important;">
+            <h1 class="page-title"><i class="fas fa-graduation-cap"></i> 方案生成</h1>
+
+            <!-- Tab切换 -->
+            <div class="module-tabs">
+                <button class="tab-btn active" onclick="showPlanTab('generate')">
+                    <i class="fas fa-magic"></i> 方案生成
+                </button>
+
+            </div>
+
+            <!-- ===== 方案生成Tab ===== -->
+            <div class="plan-content active" id="plan-generate">
+                <div class="plan-layout">
+                    <!-- 左侧表单 -->
+                    <div class="plan-form-panel">
+                        <div class="plan-form-card">
+                            <h3><i class="fas fa-user-graduate"></i> 学生背景信息</h3>
+                            <div class="form-group">
+                                <label>意向国家 <span class="required">*</span></label>
+                                <div class="plan-multi-select" id="planCountrySelect">
+                                    <div class="plan-multi-select-display" onclick="toggleMultiSelect('planCountrySelect')">
+                                        <span class="plan-multi-select-text" id="planCountryText">请选择国家</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div class="plan-multi-select-dropdown" id="planCountryDropdown">
+                                        <label class="plan-multi-option"><input type="checkbox" value="英国" onchange="updateMultiSelectText('planCountrySelect','planCountryText')"> 英国</label>
+                                        <label class="plan-multi-option"><input type="checkbox" value="爱尔兰" onchange="updateMultiSelectText('planCountrySelect','planCountryText')"> 爱尔兰</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>学历层次 <span class="required">*</span></label>
+                                <select id="planDegree">
+                                    <option value="">请选择</option>
+                                    <option value="本科">本科</option>
+                                    <option value="大专（3年全日制）">大专（3年全日制）</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>本科专业 <span class="required">*</span></label>
+                                <select id="planMajor">
+                                    <option value="">请选择</option>
+                                    <option value="商科">商科</option>
+                                    <option value="工科">工科</option>
+                                    <option value="传媒">传媒</option>
+                                    <option value="教育">教育</option>
+                                    <option value="法律">法律</option>
+                                    <option value="艺术">艺术</option>
+                                    <option value="计算机">计算机</option>
+                                    <option value="理科">理科</option>
+                                    <option value="人文社科">人文社科</option>
+                                    <option value="医学">医学</option>
+                                    <option value="其他">其他</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>意向专业 <span class="required">*</span></label>
+                                <select id="planTargetMajor">
+                                    <option value="">请选择</option>
+                                    <option value="商科">商科</option>
+                                    <option value="工科">工科</option>
+                                    <option value="传媒">传媒</option>
+                                    <option value="教育">教育</option>
+                                    <option value="法律">法律</option>
+                                    <option value="艺术">艺术</option>
+                                    <option value="计算机">计算机</option>
+                                    <option value="理科">理科</option>
+                                    <option value="人文社科">人文社科</option>
+                                    <option value="医学">医学</option>
+                                    <option value="其他">其他</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>本科院校 <span class="required">*</span></label>
+                                <div class="plan-uni-search" id="planUniSearchWrap">
+                                    <input type="text" id="planUniInput" placeholder="输入院校名称搜索" autocomplete="off" oninput="searchUniversity(this.value)">
+                                    <input type="hidden" id="planUniLevel">
+                                    <div class="plan-uni-dropdown" id="planUniDropdown"></div>
+                                </div>
+                                <div class="plan-uni-level-tag" id="planUniLevelTag" style="display:none;">
+                                    <i class="fas fa-university"></i> <span id="planUniLevelText"></span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>均分/GPA</label>
+                                <input type="number" id="planGPA" placeholder="如 80" min="0" max="100" step="0.1">
+                            </div>
+                            <button class="btn btn-primary btn-block" id="planGenerateBtn" onclick="generatePlan()">
+                                <i class="fas fa-magic"></i> 生成方案
+                            </button>
+                        </div>
+                    </div>
+                    <!-- 右侧结果区 -->
+                    <div class="plan-result-panel">
+                        <div class="plan-result-card" id="planResultArea">
+                            <div class="plan-empty-state">
+                                <i class="fas fa-lightbulb"></i>
+                                <h3>填写学生信息，生成院校推荐方案</h3>
+                                <p>基于院校参考资料，AI将为你精准推荐匹配院校</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+<!-- ==================== 后台管理页面 ==================== -->
+        <div class="page" id="page-admin">
+            <h1 class="page-title"><i class="fas fa-shield-alt"></i> 后台管理</h1>
+            
+            <!-- 管理员登录 -->
+            <div class="card" id="adminLoginCard">
+                <h3><i class="fas fa-lock"></i> 管理员验证</h3>
+                <p class="hint">请输入管理密码以访问后台管理功能</p>
+                <div class="form-group">
+                    <label>管理密码</label>
+                    <input type="password" id="adminPassword" placeholder="请输入管理密码" onkeydown="if(event.key==='Enter')adminLogin()">
+                </div>
+                <button class="btn btn-primary" onclick="adminLogin()"><i class="fas fa-sign-in-alt"></i> 进入管理</button>
+            </div>
+
+            <!-- 管理面板（登录后显示） -->
+            <div id="adminPanel" style="display:none;">
+                <!-- 管理面板 Tab 切换 -->
+                <div class="admin-section-tabs">
+                    <button class="admin-section-tab active" data-section="competitor-mgmt" onclick="switchAdminSection('competitor-mgmt')">
+                        <i class="fas fa-chart-bar"></i> 竞品信息管理
+                    </button>
+                    <button class="admin-section-tab" data-section="share-mgmt" onclick="switchAdminSection('share-mgmt')">
+                        <i class="fas fa-share-alt"></i> 分享管理
+                    </button>
+                </div>
+
+                <!-- 竞品信息管理区 -->
+                <div class="admin-section-content active" id="adminSectionCompetitorMgmt">
+                    <!-- 统计概览 -->
+                    <div class="admin-stats" id="adminStats">
+                        <div class="stat-card stat-pending">
+                            <div class="stat-num" id="statPending">0</div>
+                            <div class="stat-label">待审核</div>
+                        </div>
+                        <div class="stat-card stat-approved">
+                            <div class="stat-num" id="statApproved">0</div>
+                            <div class="stat-label">已发布</div>
+                        </div>
+                        <div class="stat-card stat-rejected">
+                            <div class="stat-num" id="statRejected">0</div>
+                            <div class="stat-label">已拒绝</div>
+                        </div>
+                    </div>
+
+                    <!-- 筛选标签 -->
+                    <div class="admin-filter-tabs">
+                        <button class="admin-tab active" data-status="pending" onclick="filterAdminSubmissions('pending')">
+                            <i class="fas fa-clock"></i> 待审核 <span class="badge" id="badgePending">0</span>
+                        </button>
+                        <button class="admin-tab" data-status="approved" onclick="filterAdminSubmissions('approved')">
+                            <i class="fas fa-check-circle"></i> 已发布 <span class="badge" id="badgeApproved">0</span>
+                        </button>
+                        <button class="admin-tab" data-status="rejected" onclick="filterAdminSubmissions('rejected')">
+                            <i class="fas fa-times-circle"></i> 已拒绝 <span class="badge" id="badgeRejected">0</span>
+                        </button>
+                        <button class="admin-tab" data-status="all" onclick="filterAdminSubmissions('all')">
+                            <i class="fas fa-list"></i> 全部
+                        </button>
+                    </div>
+
+                    <!-- 提交列表 -->
+                    <div class="card">
+                        <div class="card-header-with-actions">
+                            <h3><i class="fas fa-inbox"></i> 竞品信息管理</h3>
+                            <button class="btn btn-outline btn-sm" onclick="loadAllSubmissions()"><i class="fas fa-sync-alt"></i> 刷新</button>
+                        </div>
+                        <div id="adminSubmissionList">
+                            <p class="hint" style="text-align:center;padding:40px 0;">加载中...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 分享管理区 -->
+                <div class="admin-section-content" id="adminSectionShareMgmt">
+                    <div class="card">
+                        <div class="card-header-with-actions">
+                            <h3><i class="fas fa-share-alt"></i> 分享链接管理</h3>
+                            <div style="display:flex;gap:8px;">
+                                <button class="btn btn-primary btn-sm" onclick="openCreateShareLink()"><i class="fas fa-plus"></i> 创建分享链接</button>
+                                <button class="btn btn-outline btn-sm" onclick="loadShareLinks()"><i class="fas fa-sync-alt"></i> 刷新</button>
+                            </div>
+                        </div>
+                        <div id="shareLinksList">
+                            <p class="hint" style="text-align:center;padding:40px 0;">加载中...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 管理员编辑弹窗 -->
+        <div class="modal" id="adminEditModal">
+            <div class="modal-content modal-lg">
+                <span class="modal-close" onclick="closeModal('adminEditModal')">&times;</span>
+                <h2 id="adminEditTitle"><i class="fas fa-edit"></i> 编辑竞品信息</h2>
+                <form id="adminEditForm" onsubmit="saveAdminEdit(event)">
+                    <input type="hidden" id="adminEditId" value="">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>机构简称 <span class="required">*</span></label>
+                            <input type="text" id="adminCompName" placeholder="例如：HTI" required>
+                        </div>
+                        <div class="form-group">
+                            <label>机构全称 <span class="required">*</span></label>
+                            <input type="text" id="adminCompFullName" placeholder="例如：HTI 留学" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>覆盖国别分类</label>
+                            <select id="adminCompCountry">
+                                <option value="多国">多国覆盖</option>
+                                <option value="北美">北美</option>
+                                <option value="英国">英国</option>
+                                <option value="澳洲">澳洲</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>具体覆盖国家/地区</label>
+                            <input type="text" id="adminCompCoverage" placeholder="例如：英国、美国、澳洲">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>是否B2B</label>
+                            <select id="adminCompIsB2B">
+                                <option value="false">否</option>
+                                <option value="true">是</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>优势区域</label>
+                            <input type="text" id="adminCompStrongRegion" placeholder="例如：江浙沪">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>综合评分 (1-10)</label>
+                        <input type="number" id="adminCompScore" min="1" max="10" step="0.1" value="7.0">
+                    </div>
+                    <div class="form-group">
+                        <label>核心优势 <span class="required">*</span></label>
+                        <textarea id="adminCompAdvantage" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>主要劣势 <span class="required">*</span></label>
+                        <textarea id="adminCompDisadvantage" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>佣金政策</label>
+                        <textarea id="adminCompCommission" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>服务评价</label>
+                        <textarea id="adminCompService" rows="2"></textarea>
+                    </div>
+                    <h4 style="margin: 16px 0 8px; color: var(--text-secondary);"><i class="fas fa-chart-radar"></i> 六维能力评分 (1-10)</h4>
+                    <div class="form-row-six">
+                        <div class="form-group"><label>品牌力</label><input type="number" id="adminRadarBrand" min="1" max="10" value="7"></div>
+                        <div class="form-group"><label>价格竞争力</label><input type="number" id="adminRadarPrice" min="1" max="10" value="7"></div>
+                        <div class="form-group"><label>服务能力</label><input type="number" id="adminRadarService" min="1" max="10" value="7"></div>
+                        <div class="form-group"><label>渠道覆盖</label><input type="number" id="adminRadarChannel" min="1" max="10" value="7"></div>
+                        <div class="form-group"><label>产品力</label><input type="number" id="adminRadarProduct" min="1" max="10" value="7"></div>
+                        <div class="form-group"><label>技术实力</label><input type="number" id="adminRadarTech" min="1" max="10" value="7"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>审核状态</label>
+                        <select id="adminCompStatus">
+                            <option value="pending">待审核</option>
+                            <option value="approved">发布到主页面</option>
+                            <option value="rejected">拒绝</option>
+                        </select>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-outline" onclick="closeModal('adminEditModal')">取消</button>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> 保存</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 分享链接创建弹窗 -->
+    <div class="modal" id="createShareLinkModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('createShareLinkModal')">&times;</span>
+            <h2><i class="fas fa-share-alt"></i> 创建分享链接</h2>
+            <form id="createShareLinkForm" onsubmit="createShareLink(event)">
+                <div class="form-group">
+                    <label>分享标题/备注</label>
+                    <input type="text" id="shareLinkTitle" placeholder="例如：给XX机构的分享">
+                </div>
+                <div class="form-group">
+                    <label>选择要分享的板块 <span class="required">*</span></label>
+                    <div class="share-section-checkboxes">
+                        <label class="share-section-checkbox">
+                            <input type="checkbox" name="shareSection" value="competitors">
+                            <span class="share-section-label"><i class="fas fa-chart-bar"></i> 竞品情报站</span>
+                        </label>
+                        <div class="share-section-checkbox-group">
+                            <label class="share-section-checkbox">
+                                <input type="checkbox" name="shareSection" value="ai-studio" onchange="toggleStudioSubOptions()">
+                                <span class="share-section-label"><i class="fas fa-robot"></i> AI话术工坊</span>
+                            </label>
+                            <div class="studio-sub-options" id="studioSubOptions" style="display:none;">
+                                <label class="share-section-checkbox share-sub-checkbox">
+                                    <input type="checkbox" name="shareSubStudio" value="craft" checked>
+                                    <span class="share-section-label"><i class="fas fa-magic"></i> AI话术工坊（生成功能）</span>
+                                </label>
+                                <label class="share-section-checkbox share-sub-checkbox">
+                                    <input type="checkbox" name="shareSubStudio" value="library" checked>
+                                    <span class="share-section-label"><i class="fas fa-book"></i> 话术库（只读话术库）</span>
+                                </label>
+                            </div>
+                        </div>
+                        <label class="share-section-checkbox">
+                            <input type="checkbox" name="shareSection" value="tools">
+                            <span class="share-section-label"><i class="fas fa-tools"></i> 销售工具箱</span>
+                        </label>
+                        <div class="share-section-checkbox-group">
+                            <label class="share-section-checkbox">
+                                <input type="checkbox" name="shareSection" value="enneagram" onchange="toggleEnneagramSubOptions()">
+                                <span class="share-section-label"><i class="fas fa-user-circle"></i> 九型人格</span>
+                            </label>
+                            <div class="studio-sub-options" id="enneagramSubOptions" style="display:none;">
+                                <label class="share-section-checkbox share-sub-checkbox">
+                                    <input type="checkbox" name="shareSubEnneagram" value="types" checked>
+                                    <span class="share-section-label"><i class="fas fa-book-open"></i> 九型详解</span>
+                                </label>
+                                <label class="share-section-checkbox share-sub-checkbox">
+                                    <input type="checkbox" name="shareSubEnneagram" value="test" checked>
+                                    <span class="share-section-label"><i class="fas fa-question-circle"></i> 互动测试</span>
+                                </label>
+                                <label class="share-section-checkbox share-sub-checkbox">
+                                    <input type="checkbox" name="shareSubEnneagram" value="team" checked>
+                                    <span class="share-section-label"><i class="fas fa-users"></i> 团队搭配</span>
+                                </label>
+                            </div>
+                        </div>
+                        <label class="share-section-checkbox">
+                            <input type="checkbox" name="shareSection" value="plan-generator" style="display:none;">
+                            <span class="share-section-label" style="display:none;"><i class="fas fa-graduation-cap"></i> 方案生成</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>过期时间（可选）</label>
+                    <input type="datetime-local" id="shareLinkExpires">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('createShareLinkModal')">取消</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-link"></i> 创建链接</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 分享无效提示页面 -->
+    <div class="modal" id="shareInvalidModal">
+        <div class="modal-content" style="text-align:center;padding:60px 40px;">
+            <i class="fas fa-exclamation-triangle" style="font-size:3rem;color:var(--warning);margin-bottom:20px;display:block;"></i>
+            <h2 id="shareInvalidTitle">分享链接无效</h2>
+            <p id="shareInvalidMsg" style="color:var(--text-secondary);margin:16px 0 24px;">该分享链接不存在或已失效，请联系分享者获取新的链接。</p>
+            <button class="btn btn-primary" onclick="window.location.href=window.location.pathname">返回首页</button>
+        </div>
+    </div>
+
+    <!-- 话术编辑弹窗 -->
+    <div class="modal" id="scriptEditModal">
+        <div class="modal-content modal-lg">
+            <span class="modal-close" onclick="closeModal('scriptEditModal')">&times;</span>
+            <h2 id="scriptEditTitle"><i class="fas fa-plus-circle"></i> 新增话术</h2>
+            <form id="scriptEditForm" onsubmit="saveScriptEdit(event)">
+                <input type="hidden" id="scriptEditId" value="">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>话术标题 <span class="required">*</span></label>
+                        <input type="text" id="scriptEditName" placeholder="例如：首次电话触达话术" required>
+                    </div>
+                    <div class="form-group">
+                        <label>适用场景 <span class="required">*</span></label>
+                        <input type="text" id="scriptEditScene" placeholder="例如：首次联系B端合作伙伴" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>话术分类</label>
+                        <select id="scriptEditCategory">
+                            <option value="cold_outreach">冷触达</option>
+                            <option value="warm_follow">跟进升温</option>
+                            <option value="objection">异议拆解</option>
+                            <option value="closing">临门促单</option>
+                            <option value="nurture">长期培育</option>
+                            <option value="first_contact">首次触达</option>
+                            <option value="request_apply">索要申请</option>
+                            <option value="reward">奖励发放</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>实用评分 (1-5)</label>
+                        <select id="scriptEditRating">
+                            <option value="5">★★★★★ 必备</option>
+                            <option value="4">★★★★ 常用</option>
+                            <option value="3">★★★ 备用</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>话术内容 <span class="required">*</span></label>
+                    <textarea id="scriptEditContent" rows="8" placeholder="写出你实际会说的原话，别写教科书式的话术..." required></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('scriptEditModal')">取消</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> 保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
