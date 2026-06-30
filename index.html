@@ -959,13 +959,19 @@
             <div class="growth-content active" id="growth-plans">
                 <div class="growth-header">
                     <h3>试用期培养计划模板</h3>
-                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
                         <button class="btn btn-secondary" onclick="importPlanFromFile()">
                             <i class="fas fa-file-import"></i> 导入计划
                         </button>
-                        <button class="btn btn-secondary" onclick="exportAllPlans()">
-                            <i class="fas fa-file-export"></i> 导出全部
-                        </button>
+                        <div style="position:relative;display:inline-block;">
+                            <button class="btn btn-secondary" onclick="toggleExportAllMenu(event)">
+                                <i class="fas fa-file-export"></i> 导出全部 <i class="fas fa-caret-down" style="margin-left:4px;"></i>
+                            </button>
+                            <div id="exportAllMenu" style="display:none;position:absolute;right:0;top:100%;margin-top:4px;background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.1);z-index:100;min-width:150px;overflow:hidden;">
+                                <div onclick="exportAllPlans('json');closeExportMenus();" style="padding:10px 16px;cursor:pointer;font-size:13px;color:var(--text-primary);transition:background 0.15s;" onmouseover="this.style.background='var(--bg-primary)'" onmouseout="this.style.background='transparent'"><i class="fas fa-file-code" style="margin-right:8px;color:var(--accent);"></i>导出为 JSON</div>
+                                <div onclick="exportAllPlans('word');closeExportMenus();" style="padding:10px 16px;cursor:pointer;font-size:13px;color:var(--text-primary);transition:background 0.15s;" onmouseover="this.style.background='var(--bg-primary)'" onmouseout="this.style.background='transparent'"><i class="fas fa-file-word" style="margin-right:8px;color:#2B579A;"></i>导出为 Word</div>
+                            </div>
+                        </div>
                         <button class="btn btn-primary" onclick="showCreatePlanModal()">
                             <i class="fas fa-plus"></i> 新建计划
                         </button>
@@ -1583,6 +1589,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

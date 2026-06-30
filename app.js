@@ -8198,96 +8198,486 @@ function deletePlan(planId) {
 function importPlanFromFile() {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = '.json';
+    input.accept = '.json,.docx';
     input.onchange = function(e) {
         const file = e.target.files[0];
         if (!file) return;
         
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            try {
-                const data = JSON.parse(event.target.result);
-                
-                // 支持单个计划或计划数组
-                let plansToImport = [];
-                if (Array.isArray(data)) {
-                    plansToImport = data;
-                } else if (data.id && data.name) {
-                    plansToImport = [data];
-                } else if (data.plans && Array.isArray(data.plans)) {
-                    plansToImport = data.plans;
-                } else {
-                    alert('文件格式不正确，请选择有效的培养计划JSON文件');
-                    return;
-                }
-                
-                // 验证并导入
-                let imported = 0;
-                for (const plan of plansToImport) {
-                    if (!plan.name || !plan.phases) {
-                        console.warn('跳过无效计划:', plan);
-                        continue;
+        const ext = file.name.split('.').pop().toLowerCase();
+        
+        if (ext === 'json') {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const data = JSON.parse(event.target.result);
+                    let plansToImport = [];
+                    if (Array.isArray(data)) {
+                        plansToImport = data;
+                    } else if (data.id && data.name) {
+                        plansToImport = [data];
+                    } else if (data.plans && Array.isArray(data.plans)) {
+                        plansToImport = data.plans;
+                    } else {
+                        alert('文件格式不正确，请选择有效的培养计划JSON文件');
+                        return;
                     }
-                    // 生成新ID避免冲突
-                    plan.id = genGrowthId();
-                    plan.createdAt = new Date().toISOString();
-                    plan.updatedAt = new Date().toISOString();
-                    // 为每个阶段生成新ID
-                    if (plan.phases) {
-                        plan.phases.forEach(p => { p.id = genGrowthId(); });
+                    let imported = 0;
+                    for (const plan of plansToImport) {
+                        if (!plan.name || !plan.phases) {
+                            console.warn('跳过无效计划:', plan);
+                            continue;
+                        }
+                        plan.id = genGrowthId();
+                        plan.createdAt = new Date().toISOString();
+                        plan.updatedAt = new Date().toISOString();
+                        if (plan.phases) {
+                            plan.phases.forEach(p => { p.id = genGrowthId(); });
+                        }
+                        growthPlans.push(plan);
+                        imported++;
                     }
-                    growthPlans.push(plan);
-                    imported++;
+                    if (imported > 0) {
+                        saveGrowthPlans();
+                        renderPlanList();
+                        alert(`成功导入 ${imported} 个培养计划`);
+                    } else {
+                        alert('没有有效的培养计划可导入');
+                    }
+                } catch (err) {
+                    alert('文件解析失败: ' + err.message);
                 }
-                
-                if (imported > 0) {
-                    saveGrowthPlans();
-                    renderPlanList();
-                    alert(`成功导入 ${imported} 个培养计划`);
-                } else {
-                    alert('没有有效的培养计划可导入');
-                }
-            } catch (err) {
-                alert('文件解析失败: ' + err.message);
-            }
-        };
-        reader.readAsText(file);
+            };
+            reader.readAsText(file);
+        } else if (ext === 'docx') {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const arrayBuffer = event.target.result;
+                mammoth.convertToHtml({arrayBuffer: arrayBuffer})
+                    .then(function(result) {
+                        const html = result.value;
+                        const plan = parseDocxHtmlToPlan(html, file.name);
+                        if (plan) {
+                            plan.id = genGrowthId();
+                            plan.createdAt = new Date().toISOString();
+                            plan.updatedAt = new Date().toISOString();
+                            plan.phases.forEach(p => { p.id = genGrowthId(); });
+                            growthPlans.push(plan);
+                            saveGrowthPlans();
+                            renderPlanList();
+                            alert(`成功从 Word 文档导入培养计划「${plan.name}」`);
+                        } else {
+                            alert('无法从该 Word 文档中解析出培养计划结构，请确认文档包含阶段划分信息（如"第X阶段"等标题）');
+                        }
+                    })
+                    .catch(function(err) {
+                        alert('Word 文档解析失败: ' + err.message);
+                    });
+            };
+            reader.readAsArrayBuffer(file);
+        } else {
+            alert('请选择 .json 或 .docx 格式的文件');
+        }
     };
     input.click();
 }
 
-function exportAllPlans() {
+function parseDocxHtmlToPlan(html, fileName) {
+    // 创建临时DOM解析
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const body = doc.body;
+    
+    // 提取计划名称：优先从文件名提取，其次从第一个标题
+    let planName = '';
+    if (fileName) {
+        planName = fileName.replace(/\.docx?$/i, '').replace(/[_-]/g, ' ').trim();
+    }
+    if (!planName) {
+        const firstHeading = body.querySelector('h1, h2, h3, strong, b');
+        planName = firstHeading ? firstHeading.textContent.trim() : '导入的培养计划';
+    }
+    
+    // 尝试检测统一要求区域
+    let unifiedRequirements = '';
+    const allText = body.innerText || body.textContent || '';
+    const reqPatterns = [/统一要求[：:\s]*([\s\S]*?)(?=第[一二三四五六七八\d]+阶段|$)/i, /统一标准[：:\s]*([\s\S]*?)(?=第[一二三四五六七八\d]+阶段|$)/i];
+    for (const pat of reqPatterns) {
+        const m = allText.match(pat);
+        if (m) {
+            unifiedRequirements = m[1].trim();
+            break;
+        }
+    }
+    
+    // 提取阶段：通过标题元素识别
+    const phases = [];
+    const children = Array.from(body.children);
+    
+    // 尝试通过标题(h1-h6)或粗体文本识别阶段
+    let currentPhase = null;
+    let currentContent = [];
+    
+    // 阶段标题的正则模式
+    const phasePatterns = [
+        /^第[一二三四五六七八九十\d]+[阶个]段/,
+        /^阶段[一二三四五六七八九十\d]/,
+        /^Phase\s*\d+/i,
+        /^\d+\.\s*(第[一二三四五六七八九十\d]+[月周天日])/,
+        /^第[一二三四五六七八九十\d]+[月周]/
+    ];
+    
+    function isPhaseHeading(text) {
+        const t = text.trim();
+        return phasePatterns.some(p => p.test(t));
+    }
+    
+    function extractTimeline(text) {
+        const t = text.trim();
+        // 提取时间线信息
+        const timeMatch = t.match(/第[一二三四五六七八九十\d]+[月周天日][^\u4e00-\u9fa5]*[到至\-~]*第?[一二三四五六七八九十\d]*[月周天日]?/);
+        if (timeMatch) return timeMatch[0];
+        const numTimeMatch = t.match(/\d+[\s\-~到至]*\d*\s*[月周天日]/);
+        if (numTimeMatch) return numTimeMatch[0];
+        return t.substring(0, 30);
+    }
+    
+    function saveCurrentPhase() {
+        if (!currentPhase) return;
+        const content = currentContent.join('\n').trim();
+        
+        // 尝试从内容中分类提取目标、工具、考核标准
+        let goals = '', tools = '', examCriteria = '';
+        
+        // 按关键词分段
+        const sections = content.split(/\n/).filter(l => l.trim());
+        let currentSection = 'goals';
+        
+        for (const line of sections) {
+            const lt = line.trim();
+            if (/目标|目的|Objectives?/i.test(lt) && lt.length < 20) {
+                currentSection = 'goals';
+                continue;
+            }
+            if (/工具|资料|技能|参考|材料|Tools?/i.test(lt) && lt.length < 20) {
+                currentSection = 'tools';
+                continue;
+            }
+            if (/考核|标准|评估|要求|Criteria?/i.test(lt) && lt.length < 20) {
+                currentSection = 'exam';
+                continue;
+            }
+            
+            // 如果内容行包含关键词前缀，归类
+            if (/^[•·\-\*]\s*/.test(lt) || /^\d+[\.、]\s*/.test(lt)) {
+                if (currentSection === 'goals') goals += (goals ? '\n' : '') + lt;
+                else if (currentSection === 'tools') tools += (tools ? '\n' : '') + lt;
+                else if (currentSection === 'exam') examCriteria += (examCriteria ? '\n' : '') + lt;
+                else goals += (goals ? '\n' : '') + lt;
+            } else {
+                // 普通文本行，归入当前section
+                if (currentSection === 'goals') goals += (goals ? '\n' : '') + lt;
+                else if (currentSection === 'tools') tools += (tools ? '\n' : '') + lt;
+                else if (currentSection === 'exam') examCriteria += (examCriteria ? '\n' : '') + lt;
+                else goals += (goals ? '\n' : '') + lt;
+            }
+        }
+        
+        // 如果没有明确分类，把全部内容作为目标
+        if (!goals && !tools && !examCriteria) {
+            goals = content;
+        }
+        
+        phases.push({
+            name: currentPhase.name,
+            timeline: currentPhase.timeline,
+            goals: goals || '请参考原文档',
+            tools: tools || '',
+            examCriteria: examCriteria || ''
+        });
+    }
+    
+    for (const child of children) {
+        const tag = child.tagName.toLowerCase();
+        const text = child.textContent.trim();
+        if (!text) continue;
+        
+        if (tag.match(/^h[1-6]$/) || ((tag === 'p' || tag === 'div') && child.querySelector('strong, b') && isPhaseHeading(text))) {
+            if (isPhaseHeading(text)) {
+                saveCurrentPhase();
+                currentPhase = { name: text, timeline: extractTimeline(text) };
+                currentContent = [];
+                continue;
+            }
+        }
+        
+        if (currentPhase) {
+            currentContent.push(text);
+        } else if (!isPhaseHeading(text)) {
+            // 还没遇到第一个阶段标题前的内容，作为计划描述
+            if (!planName || planName === fileName.replace(/\.docx?$/i, '').replace(/[_-]/g, ' ').trim()) {
+                // 可能描述内容
+            }
+        }
+    }
+    saveCurrentPhase();
+    
+    // 如果没解析出阶段，尝试从表格解析
+    if (phases.length === 0) {
+        const tables = body.querySelectorAll('table');
+        for (const table of tables) {
+            const rows = table.querySelectorAll('tr');
+            for (const row of rows) {
+                const cells = row.querySelectorAll('td, th');
+                if (cells.length >= 2) {
+                    const firstCell = cells[0].textContent.trim();
+                    if (isPhaseHeading(firstCell) || /阶段|Phase|月|周/i.test(firstCell)) {
+                        phases.push({
+                            name: firstCell,
+                            timeline: extractTimeline(firstCell),
+                            goals: Array.from(cells).slice(1).map(c => c.textContent.trim()).join('\n'),
+                            tools: '',
+                            examCriteria: ''
+                        });
+                    }
+                }
+            }
+        }
+    }
+    
+    // 如果还是没有阶段，创建一个默认阶段，把全部内容放进去
+    if (phases.length === 0) {
+        phases.push({
+            name: '全部阶段',
+            timeline: '',
+            goals: allText.substring(0, 2000),
+            tools: '',
+            examCriteria: ''
+        });
+    }
+    
+    return {
+        name: planName,
+        position: '',
+        duration: '',
+        description: '',
+        phases: phases,
+        unifiedRequirements: unifiedRequirements
+    };
+}
+
+function exportAllPlans(format) {
     if (growthPlans.length === 0) {
         alert('当前没有培养计划可导出');
         return;
     }
     
-    const exportData = {
-        version: '1.0',
-        exportDate: new Date().toISOString(),
-        plans: growthPlans
-    };
-    
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `培养计划导出_${new Date().toISOString().slice(0, 10)}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    if (!format || format === 'json') {
+        const exportData = {
+            version: '1.0',
+            exportDate: new Date().toISOString(),
+            plans: growthPlans
+        };
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `培养计划导出_${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    } else if (format === 'word') {
+        exportAllAsWord();
+    }
 }
 
 function exportPlan(planId) {
     const plan = growthPlans.find(p => p.id === planId);
     if (!plan) return;
     
-    const blob = new Blob([JSON.stringify(plan, null, 2)], { type: 'application/json' });
+    // Show format choice menu
+    const menuId = 'exportMenu_' + planId;
+    let existing = document.getElementById(menuId);
+    if (existing) {
+        existing.remove();
+        return;
+    }
+    // Close other export menus
+    document.querySelectorAll('.export-format-menu').forEach(m => m.remove());
+    
+    const btn = event.target.closest('button');
+    const rect = btn.getBoundingClientRect();
+    const menu = document.createElement('div');
+    menu.id = menuId;
+    menu.className = 'export-format-menu';
+    menu.style.cssText = `position:fixed;top:${rect.bottom + 4}px;left:${rect.left}px;background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.12);z-index:10000;min-width:150px;overflow:hidden;`;
+    menu.innerHTML = `
+        <div onclick="doExportPlan('${plan.id}','json');this.parentElement.remove();" style="padding:10px 16px;cursor:pointer;font-size:13px;color:var(--text-primary);transition:background 0.15s;" onmouseover="this.style.background='var(--bg-primary)'" onmouseout="this.style.background='transparent'"><i class="fas fa-file-code" style="margin-right:8px;color:var(--accent);"></i>导出为 JSON</div>
+        <div onclick="doExportPlan('${plan.id}','word');this.parentElement.remove();" style="padding:10px 16px;cursor:pointer;font-size:13px;color:var(--text-primary);transition:background 0.15s;" onmouseover="this.style.background='var(--bg-primary)'" onmouseout="this.style.background='transparent'"><i class="fas fa-file-word" style="margin-right:8px;color:#2B579A;"></i>导出为 Word</div>
+    `;
+    document.body.appendChild(menu);
+    
+    // Close on outside click
+    setTimeout(() => {
+        document.addEventListener('click', function closeExportMenu(e) {
+            if (!menu.contains(e.target) && e.target !== btn) {
+                menu.remove();
+                document.removeEventListener('click', closeExportMenu);
+            }
+        });
+    }, 100);
+}
+
+function doExportPlan(planId, format) {
+    const plan = growthPlans.find(p => p.id === planId);
+    if (!plan) return;
+    
+    if (format === 'json') {
+        const blob = new Blob([JSON.stringify(plan, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${plan.name}_${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    } else if (format === 'word') {
+        exportPlanAsWord(plan);
+    }
+}
+
+function toggleExportAllMenu(e) {
+    e.stopPropagation();
+    const menu = document.getElementById('exportAllMenu');
+    if (menu.style.display === 'none') {
+        menu.style.display = 'block';
+        setTimeout(() => {
+            document.addEventListener('click', function closeMenu(ev) {
+                if (!menu.contains(ev.target)) {
+                    menu.style.display = 'none';
+                    document.removeEventListener('click', closeMenu);
+                }
+            });
+        }, 50);
+    } else {
+        menu.style.display = 'none';
+    }
+}
+
+function closeExportMenus() {
+    const menu = document.getElementById('exportAllMenu');
+    if (menu) menu.style.display = 'none';
+    document.querySelectorAll('.export-format-menu').forEach(m => m.remove());
+}
+
+function generatePlanWordHtml(plan) {
+    let bodyHtml = '';
+    bodyHtml += `<h1 style="font-size:22px;color:#1B2B4B;margin-bottom:4px;">${escHtml(plan.name)}</h1>`;
+    if (plan.position || plan.duration) {
+        bodyHtml += `<p style="font-size:13px;color:#666;margin-bottom:16px;">`;
+        if (plan.position) bodyHtml += `岗位：${escHtml(plan.position)}`;
+        if (plan.position && plan.duration) bodyHtml += ` &nbsp;|&nbsp; `;
+        if (plan.duration) bodyHtml += `周期：${escHtml(plan.duration)}`;
+        bodyHtml += `</p>`;
+    }
+    if (plan.description) {
+        bodyHtml += `<p style="font-size:13px;color:#444;line-height:1.7;margin-bottom:16px;">${escHtml(plan.description)}</p>`;
+    }
+    if (plan.unifiedRequirements) {
+        bodyHtml += `<div style="background:#F8F6F0;border-left:3px solid #C4963C;padding:12px 16px;margin-bottom:20px;border-radius:4px;">`;
+        bodyHtml += `<div style="font-size:14px;font-weight:600;color:#1B2B4B;margin-bottom:8px;">统一要求</div>`;
+        bodyHtml += `<div style="font-size:13px;color:#444;line-height:1.8;white-space:pre-line;">${escHtml(plan.unifiedRequirements)}</div>`;
+        bodyHtml += `</div>`;
+    }
+    
+    bodyHtml += `<h2 style="font-size:18px;color:#1B2B4B;margin:20px 0 12px;border-bottom:2px solid #C4963C;padding-bottom:6px;">培养阶段</h2>`;
+    
+    for (let i = 0; i < plan.phases.length; i++) {
+        const phase = plan.phases[i];
+        bodyHtml += `<div style="margin-bottom:20px;border:1px solid #E8E4DD;border-radius:8px;overflow:hidden;">`;
+        bodyHtml += `<div style="background:#1B2B4B;color:#fff;padding:10px 16px;font-size:15px;font-weight:600;">`;
+        bodyHtml += `阶段 ${i + 1}：${escHtml(phase.name)}`;
+        if (phase.timeline) bodyHtml += `<span style="float:right;font-weight:400;font-size:13px;opacity:0.85;">${escHtml(phase.timeline)}</span>`;
+        bodyHtml += `</div>`;
+        bodyHtml += `<div style="padding:14px 16px;">`;
+        if (phase.goals) {
+            bodyHtml += `<div style="margin-bottom:10px;"><strong style="color:#1B2B4B;font-size:13px;">🎯 培养目标</strong><div style="font-size:13px;color:#444;line-height:1.7;margin-top:4px;white-space:pre-line;">${escHtml(phase.goals)}</div></div>`;
+        }
+        if (phase.tools) {
+            bodyHtml += `<div style="margin-bottom:10px;"><strong style="color:#1B2B4B;font-size:13px;">🛠 配套工具/资料</strong><div style="font-size:13px;color:#444;line-height:1.7;margin-top:4px;white-space:pre-line;">${escHtml(phase.tools)}</div></div>`;
+        }
+        if (phase.examCriteria) {
+            bodyHtml += `<div><strong style="color:#1B2B4B;font-size:13px;">📝 考核标准</strong><div style="font-size:13px;color:#444;line-height:1.7;margin-top:4px;white-space:pre-line;">${escHtml(phase.examCriteria)}</div></div>`;
+        }
+        bodyHtml += `</div></div>`;
+    }
+    
+    const fullHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><style>body{font-family:'Microsoft YaHei','SimSun',sans-serif;padding:30px 40px;max-width:800px;margin:0 auto;}p{margin:6px 0;}</style></head><body>${bodyHtml}</body></html>`;
+    return fullHtml;
+}
+
+function exportPlanAsWord(plan) {
+    const html = generatePlanWordHtml(plan);
+    const blob = new Blob(['\ufeff' + html], { type: 'application/msword' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${plan.name}_${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `${plan.name}.doc`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function exportAllAsWord() {
+    let bodyHtml = '';
+    bodyHtml += `<h1 style="font-size:22px;color:#1B2B4B;margin-bottom:20px;text-align:center;">培养计划汇总</h1>`;
+    bodyHtml += `<p style="font-size:12px;color:#999;text-align:center;margin-bottom:30px;">导出时间：${new Date().toLocaleString('zh-CN')}</p>`;
+    
+    for (let pi = 0; pi < growthPlans.length; pi++) {
+        const plan = growthPlans[pi];
+        if (pi > 0) bodyHtml += `<hr style="border:none;border-top:2px solid #E8E4DD;margin:30px 0;">`;
+        bodyHtml += `<div style="page-break-before:${pi > 0 ? 'always' : 'auto'};">`;
+        bodyHtml += `<h2 style="font-size:18px;color:#1B2B4B;margin-bottom:4px;">${escHtml(plan.name)}</h2>`;
+        if (plan.position || plan.duration) {
+            bodyHtml += `<p style="font-size:13px;color:#666;margin-bottom:12px;">`;
+            if (plan.position) bodyHtml += `岗位：${escHtml(plan.position)}`;
+            if (plan.position && plan.duration) bodyHtml += ` &nbsp;|&nbsp; `;
+            if (plan.duration) bodyHtml += `周期：${escHtml(plan.duration)}`;
+            bodyHtml += `</p>`;
+        }
+        if (plan.description) {
+            bodyHtml += `<p style="font-size:13px;color:#444;line-height:1.7;margin-bottom:12px;">${escHtml(plan.description)}</p>`;
+        }
+        if (plan.unifiedRequirements) {
+            bodyHtml += `<div style="background:#F8F6F0;border-left:3px solid #C4963C;padding:10px 14px;margin-bottom:14px;border-radius:4px;">`;
+            bodyHtml += `<div style="font-size:13px;font-weight:600;color:#1B2B4B;margin-bottom:6px;">统一要求</div>`;
+            bodyHtml += `<div style="font-size:12px;color:#444;line-height:1.7;white-space:pre-line;">${escHtml(plan.unifiedRequirements)}</div>`;
+            bodyHtml += `</div>`;
+        }
+        for (let i = 0; i < plan.phases.length; i++) {
+            const phase = plan.phases[i];
+            bodyHtml += `<div style="margin-bottom:12px;border:1px solid #E8E4DD;border-radius:6px;overflow:hidden;">`;
+            bodyHtml += `<div style="background:#1B2B4B;color:#fff;padding:8px 14px;font-size:14px;font-weight:600;">`;
+            bodyHtml += `阶段 ${i + 1}：${escHtml(phase.name)}`;
+            if (phase.timeline) bodyHtml += `<span style="float:right;font-weight:400;font-size:12px;opacity:0.85;">${escHtml(phase.timeline)}</span>`;
+            bodyHtml += `</div>`;
+            bodyHtml += `<div style="padding:10px 14px;">`;
+            if (phase.goals) bodyHtml += `<div style="margin-bottom:8px;"><strong style="font-size:12px;color:#1B2B4B;">🎯 培养目标</strong><div style="font-size:12px;color:#444;line-height:1.6;margin-top:2px;white-space:pre-line;">${escHtml(phase.goals)}</div></div>`;
+            if (phase.tools) bodyHtml += `<div style="margin-bottom:8px;"><strong style="font-size:12px;color:#1B2B4B;">🛠 配套工具/资料</strong><div style="font-size:12px;color:#444;line-height:1.6;margin-top:2px;white-space:pre-line;">${escHtml(phase.tools)}</div></div>`;
+            if (phase.examCriteria) bodyHtml += `<div><strong style="font-size:12px;color:#1B2B4B;">📝 考核标准</strong><div style="font-size:12px;color:#444;line-height:1.6;margin-top:2px;white-space:pre-line;">${escHtml(phase.examCriteria)}</div></div>`;
+            bodyHtml += `</div></div>`;
+        }
+        bodyHtml += `</div>`;
+    }
+    
+    const fullHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><style>body{font-family:'Microsoft YaHei','SimSun',sans-serif;padding:30px 40px;max-width:800px;margin:0 auto;}p{margin:6px 0;}</style></head><body>${bodyHtml}</body></html>`;
+    const blob = new Blob(['\ufeff' + fullHtml], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `培养计划汇总_${new Date().toISOString().slice(0, 10)}.doc`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
