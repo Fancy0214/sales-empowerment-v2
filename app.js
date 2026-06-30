@@ -8708,16 +8708,20 @@ function viewPlanDetail(planId) {
     ${plan.unifiedRequirements ? '<div style="background:var(--bg-primary);border-left:3px solid var(--accent);padding:12px 16px;margin-bottom:16px;border-radius:6px;"><div style="font-size:13px;font-weight:600;color:var(--primary);margin-bottom:8px;"><i class="fas fa-exclamation-triangle"></i> 统一要求</div><div style="font-size:12px;color:var(--text-secondary);line-height:1.8;white-space:pre-line;">' + escHtml(plan.unifiedRequirements) + '</div></div>' : ''}`;
     
     // 附件管理区域
-    html += `<div style="background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:16px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-            <span style="font-size:13px;font-weight:600;color:var(--primary);"><i class="fas fa-paperclip" style="margin-right:6px;color:var(--accent);"></i>附件资料</span>
-            <label style="cursor:pointer;font-size:12px;color:var(--accent);border:1px dashed var(--accent);padding:4px 12px;border-radius:4px;transition:background 0.15s;" onmouseover="this.style.background='rgba(196,150,60,0.08)'" onmouseout="this.style.background='transparent'" onclick="uploadPlanFile('${plan.id}')">
-                <i class="fas fa-upload" style="margin-right:4px;"></i>上传附件
-            </label>
-        </div>`;
+    html += `<div style="background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;margin-bottom:16px;overflow:hidden;">
+        <div onclick="togglePlanFiles('${plan.id}')" style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;cursor:pointer;user-select:none;transition:background 0.15s;" onmouseover="this.style.background='rgba(0,0,0,0.02)'" onmouseout="this.style.background='transparent'">
+            <span style="font-size:13px;font-weight:600;color:var(--primary);"><i class="fas fa-paperclip" style="margin-right:6px;color:var(--accent);"></i>附件资料${plan.files.length > 0 ? '（' + plan.files.length + '）' : ''}</span>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <label style="cursor:pointer;font-size:12px;color:var(--accent);border:1px dashed var(--accent);padding:4px 12px;border-radius:4px;transition:background 0.15s;" onmouseover="this.style.background='rgba(196,150,60,0.08)'" onmouseout="this.style.background='transparent'" onclick="event.stopPropagation();uploadPlanFile('${plan.id}')">
+                    <i class="fas fa-upload" style="margin-right:4px;"></i>上传
+                </label>
+                <i id="planFilesArrow_${plan.id}" class="fas fa-chevron-down" style="font-size:11px;color:var(--text-secondary);transition:transform 0.25s;"></i>
+            </div>
+        </div>
+        <div id="planFilesContent_${plan.id}" style="display:none;border-top:1px solid var(--border);padding:12px 16px;">`;
     
     if (plan.files.length === 0) {
-        html += `<div style="text-align:center;padding:16px;color:var(--text-secondary);font-size:12px;"><i class="fas fa-inbox" style="font-size:20px;display:block;margin-bottom:6px;opacity:0.4;"></i>暂无附件，支持 PDF、Word、Excel 格式（单文件≤5MB）</div>`;
+        html += `<div style="text-align:center;padding:10px;color:var(--text-secondary);font-size:12px;"><i class="fas fa-inbox" style="font-size:18px;display:block;margin-bottom:4px;opacity:0.4;"></i>暂无附件，支持 PDF、Word、Excel 格式（单文件≤5MB）</div>`;
     } else {
         html += `<div style="display:flex;flex-direction:column;gap:6px;">`;
         for (const file of plan.files) {
@@ -8738,7 +8742,7 @@ function viewPlanDetail(planId) {
         }
         html += `</div>`;
     }
-    html += `</div>`;
+    html += `</div></div>`;
     
     if (plan.phases.length > 0) {
         html += '<h4 style="margin-bottom:12px;"><i class="fas fa-route"></i> 培养阶段</h4><div class="plan-timeline">';
@@ -8832,6 +8836,19 @@ function downloadPlanFile(planId, fileId) {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+}
+
+function togglePlanFiles(planId) {
+    const content = document.getElementById('planFilesContent_' + planId);
+    const arrow = document.getElementById('planFilesArrow_' + planId);
+    if (!content || !arrow) return;
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        arrow.style.transform = 'rotate(180deg)';
+    } else {
+        content.style.display = 'none';
+        arrow.style.transform = 'rotate(0deg)';
+    }
 }
 
 function deletePlanFile(planId, fileId) {
