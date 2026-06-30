@@ -4733,6 +4733,7 @@ html.share-loading .share-loading-mask {
     font-size: 13px;
     color: var(--text-primary);
     line-height: 1.6;
+    white-space: pre-line;
 }
 
 /* 员工详情 - 阶段进度 */
