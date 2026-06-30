@@ -959,9 +959,17 @@
             <div class="growth-content active" id="growth-plans">
                 <div class="growth-header">
                     <h3>试用期培养计划模板</h3>
-                    <button class="btn btn-primary" onclick="showCreatePlanModal()">
-                        <i class="fas fa-plus"></i> 新建计划
-                    </button>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <button class="btn btn-secondary" onclick="importPlanFromFile()">
+                            <i class="fas fa-file-import"></i> 导入计划
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportAllPlans()">
+                            <i class="fas fa-file-export"></i> 导出全部
+                        </button>
+                        <button class="btn btn-primary" onclick="showCreatePlanModal()">
+                            <i class="fas fa-plus"></i> 新建计划
+                        </button>
+                    </div>
                 </div>
                 <div class="growth-plan-list" id="growthPlanList">
                     <!-- 动态渲染 -->

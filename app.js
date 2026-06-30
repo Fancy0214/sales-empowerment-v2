@@ -7979,12 +7979,44 @@ function loadGrowthData() {
         growthEmployees = JSON.parse(localStorage.getItem('growth_employees') || '[]');
         growthExams = JSON.parse(localStorage.getItem('growth_exams') || '[]');
         growthExamResults = JSON.parse(localStorage.getItem('growth_exam_results') || '[]');
+        
+        // 首次加载时，如果没有培养计划，尝试加载预设计划
+        if (growthPlans.length === 0) {
+            loadPresetPlans();
+        }
     } catch(e) {
         console.warn('加载成长天地数据失败:', e);
         growthPlans = [];
         growthEmployees = [];
         growthExams = [];
         growthExamResults = [];
+    }
+}
+
+async function loadPresetPlans() {
+    try {
+        const response = await fetch('./preset-plans/入学顾问-置换组-试用期培养计划.json');
+        if (!response.ok) return;
+        
+        const data = await response.json();
+        if (data.plans && Array.isArray(data.plans)) {
+            for (const plan of data.plans) {
+                // 检查是否已存在相同名称的计划
+                const exists = growthPlans.some(p => p.name === plan.name);
+                if (!exists) {
+                    plan.id = genGrowthId();
+                    plan.createdAt = new Date().toISOString();
+                    plan.updatedAt = new Date().toISOString();
+                    if (plan.phases) {
+                        plan.phases.forEach(p => { p.id = genGrowthId(); });
+                    }
+                    growthPlans.push(plan);
+                }
+            }
+            saveGrowthPlans();
+        }
+    } catch (e) {
+        console.warn('加载预设计划失败:', e);
     }
 }
 
@@ -8034,6 +8066,7 @@ function renderPlanList() {
             <div class="plan-card-actions">
                 <button onclick="event.stopPropagation();viewPlanDetail('${plan.id}')"><i class="fas fa-eye"></i> 查看</button>
                 <button onclick="event.stopPropagation();editPlan('${plan.id}')"><i class="fas fa-edit"></i> 编辑</button>
+                <button onclick="event.stopPropagation();exportPlan('${plan.id}')"><i class="fas fa-download"></i> 导出</button>
                 <button class="danger" onclick="event.stopPropagation();deletePlan('${plan.id}')"><i class="fas fa-trash"></i> 删除</button>
             </div>
         </div>`;
@@ -8160,19 +8193,126 @@ function deletePlan(planId) {
     renderPlanList();
 }
 
+// ==================== 培养计划导入/导出 ====================
+
+function importPlanFromFile() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            try {
+                const data = JSON.parse(event.target.result);
+                
+                // 支持单个计划或计划数组
+                let plansToImport = [];
+                if (Array.isArray(data)) {
+                    plansToImport = data;
+                } else if (data.id && data.name) {
+                    plansToImport = [data];
+                } else if (data.plans && Array.isArray(data.plans)) {
+                    plansToImport = data.plans;
+                } else {
+                    alert('文件格式不正确，请选择有效的培养计划JSON文件');
+                    return;
+                }
+                
+                // 验证并导入
+                let imported = 0;
+                for (const plan of plansToImport) {
+                    if (!plan.name || !plan.phases) {
+                        console.warn('跳过无效计划:', plan);
+                        continue;
+                    }
+                    // 生成新ID避免冲突
+                    plan.id = genGrowthId();
+                    plan.createdAt = new Date().toISOString();
+                    plan.updatedAt = new Date().toISOString();
+                    // 为每个阶段生成新ID
+                    if (plan.phases) {
+                        plan.phases.forEach(p => { p.id = genGrowthId(); });
+                    }
+                    growthPlans.push(plan);
+                    imported++;
+                }
+                
+                if (imported > 0) {
+                    saveGrowthPlans();
+                    renderPlanList();
+                    alert(`成功导入 ${imported} 个培养计划`);
+                } else {
+                    alert('没有有效的培养计划可导入');
+                }
+            } catch (err) {
+                alert('文件解析失败: ' + err.message);
+            }
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+}
+
+function exportAllPlans() {
+    if (growthPlans.length === 0) {
+        alert('当前没有培养计划可导出');
+        return;
+    }
+    
+    const exportData = {
+        version: '1.0',
+        exportDate: new Date().toISOString(),
+        plans: growthPlans
+    };
+    
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `培养计划导出_${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function exportPlan(planId) {
+    const plan = growthPlans.find(p => p.id === planId);
+    if (!plan) return;
+    
+    const blob = new Blob([JSON.stringify(plan, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${plan.name}_${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
 function viewPlanDetail(planId) {
     const plan = growthPlans.find(p => p.id === planId);
     if (!plan) return;
     
     const empList = growthEmployees.filter(e => e.planId === planId);
     
-    let html = `<h3 style="margin-bottom:6px;"><i class="fas fa-clipboard-list" style="color:var(--accent);"></i> ${escHtml(plan.name)}</h3>
+    let html = `<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+        <h3 style="margin:0;"><i class="fas fa-clipboard-list" style="color:var(--accent);"></i> ${escHtml(plan.name)}</h3>
+        <button class="btn btn-secondary" onclick="exportPlan('${plan.id}')" style="padding:6px 12px;font-size:12px;">
+            <i class="fas fa-download"></i> 导出此计划
+        </button>
+    </div>
     <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
         <span style="font-size:13px;color:var(--text-secondary);"><i class="fas fa-briefcase"></i> ${escHtml(plan.position || '未指定')}</span>
         <span style="font-size:13px;color:var(--text-secondary);"><i class="fas fa-clock"></i> ${escHtml(plan.duration || '未指定')}</span>
         <span style="font-size:13px;color:var(--text-secondary);"><i class="fas fa-layer-group"></i> ${plan.phases.length} 个阶段</span>
     </div>
-    ${plan.description ? '<p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;line-height:1.6;">' + escHtml(plan.description) + '</p>' : ''}`;
+    ${plan.description ? '<p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;line-height:1.6;">' + escHtml(plan.description) + '</p>' : ''}
+    ${plan.unifiedRequirements ? '<div style="background:var(--bg-primary);border-left:3px solid var(--accent);padding:12px 16px;margin-bottom:16px;border-radius:6px;"><div style="font-size:13px;font-weight:600;color:var(--primary);margin-bottom:8px;"><i class="fas fa-exclamation-triangle"></i> 统一要求</div><div style="font-size:12px;color:var(--text-secondary);line-height:1.8;white-space:pre-line;">' + escHtml(plan.unifiedRequirements) + '</div></div>' : ''}`;
     
     if (plan.phases.length > 0) {
         html += '<h4 style="margin-bottom:12px;"><i class="fas fa-route"></i> 培养阶段</h4><div class="plan-timeline">';
