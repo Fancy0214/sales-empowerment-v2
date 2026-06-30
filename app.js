@@ -3632,6 +3632,16 @@ function switchPage(pageName) {
     document.querySelector(`[data-page="${pageName}"]`).classList.add('active');
     document.getElementById(`page-${pageName}`).classList.add('active');
     
+    // 切换到成长天地时，确保当前 tab 内容已渲染
+    if (pageName === 'growth') {
+        const activeTab = document.querySelector('#page-growth .growth-content.active');
+        if (activeTab) {
+            if (activeTab.id === 'growth-plans') renderPlanList();
+            else if (activeTab.id === 'growth-employees') renderEmployeeList();
+            else if (activeTab.id === 'growth-exams') renderExamList();
+        }
+    }
+    
     // 移动端收起侧边栏
     if (window.innerWidth <= 768) {
         document.querySelector('.sidebar').style.display = 'none';
