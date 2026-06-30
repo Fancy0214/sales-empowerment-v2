@@ -8688,6 +8688,9 @@ function viewPlanDetail(planId) {
     const plan = growthPlans.find(p => p.id === planId);
     if (!plan) return;
     
+    // 确保 files 数组存在
+    if (!plan.files) plan.files = [];
+    
     const empList = growthEmployees.filter(e => e.planId === planId);
     
     let html = `<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
@@ -8703,6 +8706,39 @@ function viewPlanDetail(planId) {
     </div>
     ${plan.description ? '<p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;line-height:1.6;">' + escHtml(plan.description) + '</p>' : ''}
     ${plan.unifiedRequirements ? '<div style="background:var(--bg-primary);border-left:3px solid var(--accent);padding:12px 16px;margin-bottom:16px;border-radius:6px;"><div style="font-size:13px;font-weight:600;color:var(--primary);margin-bottom:8px;"><i class="fas fa-exclamation-triangle"></i> 统一要求</div><div style="font-size:12px;color:var(--text-secondary);line-height:1.8;white-space:pre-line;">' + escHtml(plan.unifiedRequirements) + '</div></div>' : ''}`;
+    
+    // 附件管理区域
+    html += `<div style="background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <span style="font-size:13px;font-weight:600;color:var(--primary);"><i class="fas fa-paperclip" style="margin-right:6px;color:var(--accent);"></i>附件资料</span>
+            <label style="cursor:pointer;font-size:12px;color:var(--accent);border:1px dashed var(--accent);padding:4px 12px;border-radius:4px;transition:background 0.15s;" onmouseover="this.style.background='rgba(196,150,60,0.08)'" onmouseout="this.style.background='transparent'" onclick="uploadPlanFile('${plan.id}')">
+                <i class="fas fa-upload" style="margin-right:4px;"></i>上传附件
+            </label>
+        </div>`;
+    
+    if (plan.files.length === 0) {
+        html += `<div style="text-align:center;padding:16px;color:var(--text-secondary);font-size:12px;"><i class="fas fa-inbox" style="font-size:20px;display:block;margin-bottom:6px;opacity:0.4;"></i>暂无附件，支持 PDF、Word、Excel 格式（单文件≤5MB）</div>`;
+    } else {
+        html += `<div style="display:flex;flex-direction:column;gap:6px;">`;
+        for (const file of plan.files) {
+            const ext = file.name.split('.').pop().toLowerCase();
+            let icon = 'fa-file', iconColor = '#888';
+            if (['pdf'].includes(ext)) { icon = 'fa-file-pdf'; iconColor = '#e53e3e'; }
+            else if (['doc','docx'].includes(ext)) { icon = 'fa-file-word'; iconColor = '#2B579A'; }
+            else if (['xls','xlsx'].includes(ext)) { icon = 'fa-file-excel'; iconColor = '#217346'; }
+            html += `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:#fff;border:1px solid var(--border);border-radius:6px;">
+                <i class="fas ${icon}" style="color:${iconColor};font-size:18px;min-width:22px;"></i>
+                <div style="flex:1;min-width:0;">
+                    <div style="font-size:13px;color:var(--text-primary);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(file.name)}</div>
+                    <div style="font-size:11px;color:var(--text-secondary);margin-top:1px;">${formatFileSize(file.size)} · ${new Date(file.uploadDate).toLocaleDateString('zh-CN')}</div>
+                </div>
+                <button onclick="downloadPlanFile('${plan.id}','${file.id}')" style="padding:4px 10px;font-size:11px;background:transparent;border:1px solid var(--border);border-radius:4px;cursor:pointer;color:var(--accent);transition:background 0.15s;" onmouseover="this.style.background='var(--bg-primary)'" onmouseout="this.style.background='transparent'"><i class="fas fa-download"></i></button>
+                <button onclick="deletePlanFile('${plan.id}','${file.id}')" style="padding:4px 10px;font-size:11px;background:transparent;border:1px solid #fed7d7;border-radius:4px;cursor:pointer;color:#e53e3e;transition:background 0.15s;" onmouseover="this.style.background='#fff5f5'" onmouseout="this.style.background='transparent'"><i class="fas fa-trash"></i></button>
+            </div>`;
+        }
+        html += `</div>`;
+    }
+    html += `</div>`;
     
     if (plan.phases.length > 0) {
         html += '<h4 style="margin-bottom:12px;"><i class="fas fa-route"></i> 培养阶段</h4><div class="plan-timeline">';
@@ -8735,6 +8771,79 @@ function viewPlanDetail(planId) {
     
     document.getElementById('planDetailContent').innerHTML = html;
     openModal('planDetailModal');
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
+
+function uploadPlanFile(planId) {
+    const plan = growthPlans.find(p => p.id === planId);
+    if (!plan) return;
+    
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.pdf,.doc,.docx,.xls,.xlsx';
+    input.onchange = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        if (file.size > maxSize) {
+            alert('文件大小不能超过 5MB，当前文件 ' + formatFileSize(file.size));
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            if (!plan.files) plan.files = [];
+            plan.files.push({
+                id: genGrowthId(),
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                dataUrl: event.target.result,
+                uploadDate: new Date().toISOString()
+            });
+            saveGrowthPlans();
+            viewPlanDetail(planId); // 刷新详情视图
+        };
+        reader.onerror = function() {
+            alert('文件读取失败，请重试');
+        };
+        reader.readAsDataURL(file);
+    };
+    input.click();
+}
+
+function downloadPlanFile(planId, fileId) {
+    const plan = growthPlans.find(p => p.id === planId);
+    if (!plan || !plan.files) return;
+    const file = plan.files.find(f => f.id === fileId);
+    if (!file) return;
+    
+    const a = document.createElement('a');
+    a.href = file.dataUrl;
+    a.download = file.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+function deletePlanFile(planId, fileId) {
+    const plan = growthPlans.find(p => p.id === planId);
+    if (!plan || !plan.files) return;
+    const file = plan.files.find(f => f.id === fileId);
+    if (!file) return;
+    if (!confirm(`确定删除附件「${file.name}」？`)) return;
+    
+    plan.files = plan.files.filter(f => f.id !== fileId);
+    saveGrowthPlans();
+    viewPlanDetail(planId);
 }
 
 function calcEmployeeProgress(emp, plan) {
