@@ -5719,13 +5719,17 @@ function setView(view) {
     document.querySelectorAll('.view-toggle button').forEach(b => {
         b.classList.toggle('active', b.dataset.view === view);
     });
+    const stageViewEl = document.getElementById('stageView');
+    const allViewEl = document.getElementById('allStagesView');
     if (view === 'stage') {
-        document.getElementById('stageView').style.display = 'block';
-        document.getElementById('allStagesView').classList.remove('active');
+        stageViewEl.style.display = 'block';
+        allViewEl.style.display = '';
+        allViewEl.classList.remove('active');
         renderStageView();
     } else {
-        document.getElementById('stageView').style.display = 'none';
-        document.getElementById('allStagesView').classList.add('active');
+        stageViewEl.style.display = 'none';
+        allViewEl.style.display = '';
+        allViewEl.classList.add('active');
         renderAllStagesView();
     }
 }
@@ -5885,7 +5889,9 @@ function initToolsPage() {
     renderJourneyNav();
     renderTagFilterBar();
     renderStageView();
-    document.getElementById('allStagesView').style.display = 'none';
+    // allStagesView 通过 CSS class 控制显隐，不设 inline style
+    const allView = document.getElementById('allStagesView');
+    if (allView) { allView.style.display = ''; allView.classList.remove('active'); }
 }
 
 function openTool(toolId) {
