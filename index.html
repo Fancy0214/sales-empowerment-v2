@@ -776,7 +776,12 @@
         <!-- ==================== 销售工具箱 ==================== -->
         <div class="page" id="page-tools">
             <h1 class="page-title"><i class="fas fa-tools"></i> 销售工具箱</h1>
-            
+
+            <!-- 旅程时间线导航 -->
+            <div class="journey-nav">
+                <div class="journey-track" id="journeyTrack"></div>
+            </div>
+
             <!-- 工具筛选栏 -->
             <div class="tools-filter-bar">
                 <div class="tools-search">
@@ -784,86 +789,20 @@
                     <input type="text" id="toolSearchInput" placeholder="搜索工具名称或关键词…" oninput="filterTools()">
                     <span class="tools-search-clear" id="toolSearchClear" onclick="clearToolSearch()"><i class="fas fa-times"></i></span>
                 </div>
-                <div class="tools-tags-filter" id="toolsTagsFilter">
-                    <span class="tools-tag-filter active" data-filter="all" onclick="filterByTag(this)">全部</span>
-                    <span class="tools-tag-filter" data-filter="规划" onclick="filterByTag(this)">规划</span>
-                    <span class="tools-tag-filter" data-filter="行前" onclick="filterByTag(this)">行前</span>
-                    <span class="tools-tag-filter" data-filter="认证" onclick="filterByTag(this)">认证</span>
-                    <span class="tools-tag-filter" data-filter="申请" onclick="filterByTag(this)">申请</span>
-                    <span class="tools-tag-filter" data-filter="签证" onclick="filterByTag(this)">签证</span>
-                    <span class="tools-tag-filter" data-filter="换校" onclick="filterByTag(this)">换校</span>
-                    <span class="tools-tag-filter" data-filter="报价" onclick="filterByTag(this)">报价</span>
+                <div class="view-toggle">
+                    <button class="active" data-view="stage" onclick="setView('stage')"><i class="fas fa-layer-group" style="margin-right:4px;"></i>分阶段</button>
+                    <button data-view="all" onclick="setView('all')"><i class="fas fa-th" style="margin-right:4px;"></i>总览</button>
                 </div>
             </div>
 
-            <div class="tools-grid" id="toolsGrid">
-                <div class="tool-card" data-keywords="留学 时间 规划 申请 流程 节点" data-tag="规划" onclick="openTool('timeline')">
-                    <div class="tool-icon"><i class="fas fa-clock"></i></div>
-                    <h4>留学时间规划</h4>
-                    <p>英国硕士申请全流程时间节点与任务清单</p>
-                    <span class="tool-tag">规划</span>
-                </div>
-                <div class="tool-card" data-keywords="英国 行前 签证 体检 换汇 行李 落地 生活" data-tag="行前" onclick="openTool('predeparture')">
-                    <div class="tool-icon"><i class="fas fa-plane-departure"></i></div>
-                    <h4>留英行前指南</h4>
-                    <p>签证、体检、换汇、行李、落地、生活全流程指引</p>
-                    <span class="tool-tag">行前</span>
-                </div>
-                <div class="tool-card" data-keywords="学历 认证 留服 国境外 学位" data-tag="认证" onclick="openTool('degree_auth')">
-                    <div class="tool-icon"><i class="fas fa-certificate"></i></div>
-                    <h4>境外学历认证指南</h4>
-                    <p>国（境）外学历学位认证全流程操作指引</p>
-                    <span class="tool-tag">认证</span>
-                </div>
-                <div class="tool-card" data-keywords="爱尔兰 行前 IRP 居留 入境 签证" data-tag="行前" onclick="openTool('ireland_predeparture')">
-                    <div class="tool-icon"><i class="fas fa-leaf"></i></div>
-                    <h4>爱尔兰行前指南</h4>
-                    <p>入境、IRP居留卡、行李准备、紧急联系全流程指引</p>
-                    <span class="tool-tag">行前</span>
-                </div>
-                <div class="tool-card" data-keywords="UCAS 本科 申请 英国 Buzzword 佣金" data-tag="申请" onclick="openTool('ucas')">
-                    <div class="tool-icon"><i class="fas fa-university"></i></div>
-                    <h4>UCAS申请说明</h4>
-                    <p>英国本科UCAS申请流程、材料、时间线及注意事项</p>
-                    <span class="tool-tag">申请</span>
-                </div>
-                <div class="tool-card" data-keywords="英国 签证 学生 保证金 肺结核 体检" data-tag="签证" onclick="openTool('uk_visa')">
-                    <div class="tool-icon"><i class="fas fa-passport"></i></div>
-                    <h4>英国学生签证指南</h4>
-                    <p>签证材料、保证金、肺结核体检、申请流程全指引</p>
-                    <span class="tool-tag">签证</span>
-                </div>
-                <div class="tool-card" data-keywords="紧急 换校 选校 谢菲尔德 诺丁汉 伯明翰 奖学金" data-tag="换校" onclick="openTool('emergency_switch')">
-                    <div class="tool-icon"><i class="fas fa-exchange-alt"></i></div>
-                    <h4>紧急换校指南</h4>
-                    <p>紧急换校选校维度、推荐院校、换校流程全指引</p>
-                    <span class="tool-tag">换校</span>
-                </div>
-                <div class="tool-card" data-keywords="文书 外售 报价 PS 推荐信 简历 套餐" data-tag="报价" onclick="openTool('writing_service')">
-                    <div class="tool-icon"><i class="fas fa-file-invoice-dollar"></i></div>
-                    <h4>文书外售服务报价</h4>
-                    <p>2026-2027年度文书套餐及散件报价</p>
-                    <span class="tool-tag">报价</span>
-                </div>
-                <div class="tool-card" data-keywords="英国 申请 材料 清单 PS 推荐信 成绩单 雅思 护照 文书" data-tag="申请" onclick="openTool('uk_materials')">
-                    <div class="tool-icon"><i class="fas fa-clipboard-list"></i></div>
-                    <h4>英国申请材料清单</h4>
-                    <p>硕士及其他课程申请材料准备要点与注意事项</p>
-                    <span class="tool-tag">申请</span>
-                </div>
-                <div class="tool-card" data-keywords="毕业 材料 办理 毕业证 学位证 成绩单 均分证明 翻译 盖章" data-tag="申请" onclick="openTool('graduation_docs')">
-                    <div class="tool-icon"><i class="fas fa-graduation-cap"></i></div>
-                    <h4>毕业材料办理温馨提示</h4>
-                    <p>国内本科生毕业证、学位证、成绩单、均分证明办理指引</p>
-                    <span class="tool-tag">申请</span>
-                </div>
-                <div class="tool-card" data-keywords="留位费 退费 押金 deposit refund 冷静期 签证被拒" data-tag="申请" onclick="openTool('deposit_refund')">
-                    <div class="tool-icon"><i class="fas fa-sterling-sign"></i></div>
-                    <h4>留位费退费政策</h4>
-                    <p>13所英国热门大学留位费退费规则汇总</p>
-                    <span class="tool-tag">申请</span>
-                </div>
-            </div>
+            <!-- 功能标签筛选条 -->
+            <div class="tag-filter-bar" id="tagFilterBar"></div>
+
+            <!-- 分阶段视图 -->
+            <div class="stage-view" id="stageView"></div>
+
+            <!-- 总览视图 -->
+            <div class="all-stages-view" id="allStagesView"></div>
 
             <!-- 工具详情弹窗 -->
             <div class="modal" id="toolModal">

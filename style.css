@@ -1335,20 +1335,159 @@ body {
 }
 
 /* ==================== 销售工具箱 ==================== */
-.tools-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 24px;
+
+/* ===== 旅程时间线导航 ===== */
+.journey-nav {
+    position: relative;
+    margin-bottom: 32px;
+    padding: 0 8px;
 }
 
-/* ==================== 工具筛选栏 ==================== */
+.journey-track {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    gap: 0;
+}
+
+.journey-track::before {
+    content: '';
+    position: absolute;
+    top: 32px;
+    left: 40px;
+    right: 40px;
+    height: 2px;
+    background: var(--border);
+    z-index: 0;
+}
+
+.journey-track::after {
+    content: '';
+    position: absolute;
+    top: 32px;
+    left: 40px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), #D4A84C);
+    z-index: 1;
+    transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    width: var(--progress-width, 0%);
+}
+
+.journey-node {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 0 4px;
+    flex: 1;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.journey-node:hover .node-circle {
+    transform: scale(1.1);
+    box-shadow: 0 8px 32px rgba(196,150,60,0.15);
+}
+
+.node-circle {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--bg-primary);
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+}
+
+.journey-node.active .node-circle {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-mid) 100%);
+    border-color: var(--primary);
+    color: #fff;
+    transform: scale(1.15);
+    box-shadow: 0 8px 24px rgba(27,43,75,0.25);
+}
+
+.journey-node.visited .node-circle {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.journey-node.active.visited .node-circle {
+    color: #fff;
+}
+
+.node-number {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--border);
+    color: var(--text-secondary);
+    font-size: 0.65rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.journey-node.active .node-number {
+    background: var(--accent);
+    color: #fff;
+}
+
+.node-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-align: center;
+    transition: color 0.3s ease;
+    line-height: 1.3;
+}
+
+.journey-node.active .node-label {
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+.node-tool-count {
+    font-size: 0.65rem;
+    color: var(--secondary);
+    background: rgba(232,228,221,0.6);
+    padding: 2px 8px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.journey-node.active .node-tool-count {
+    background: rgba(196,150,60,0.12);
+    color: var(--accent);
+}
+
+/* ===== 工具筛选栏 ===== */
 .tools-filter-bar {
-    margin-bottom: 24px;
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    align-items: center;
 }
 
 .tools-search {
     position: relative;
-    margin-bottom: 14px;
+    flex: 1;
+    min-width: 220px;
+    margin-bottom: 0;
 }
 
 .tools-search i.fa-search {
@@ -1374,7 +1513,7 @@ body {
 
 .tools-search input:focus {
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.12);
+    box-shadow: 0 0 0 3px rgba(196,150,60,0.12);
 }
 
 .tools-search input::placeholder {
@@ -1408,36 +1547,312 @@ body {
     display: flex;
 }
 
-.tools-tags-filter {
+/* ===== 视图切换 ===== */
+.view-toggle {
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    background: var(--bg-primary);
+    border-radius: var(--radius-sm);
+    padding: 4px;
+    border: 1px solid var(--border);
 }
 
-.tools-tag-filter {
-    padding: 5px 14px;
-    border-radius: 20px;
-    font-size: 0.8rem;
+.view-toggle button {
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    font-family: var(--font-body);
     color: var(--text-secondary);
-    background: var(--bg-white);
-    border: 1.5px solid var(--border);
     cursor: pointer;
-    transition: var(--transition);
+    transition: all 0.2s ease;
+}
+
+.view-toggle button.active {
+    background: var(--bg-white);
+    color: var(--text-primary);
+    box-shadow: 0 1px 3px rgba(27,43,75,0.06);
+}
+
+/* ===== 功能标签筛选条 ===== */
+.tag-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    padding: 12px 16px;
+    background: var(--bg-white);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+}
+
+.tag-filter-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-right: 4px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tag-filter-label i {
+    font-size: 0.7rem;
+    color: var(--secondary);
+}
+
+.tag-chip {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    border: 1.5px solid var(--border);
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     user-select: none;
 }
 
-.tools-tag-filter:hover {
+.tag-chip:hover {
     border-color: var(--accent);
     color: var(--accent);
+    background: rgba(196,150,60,0.08);
 }
 
-.tools-tag-filter.active {
+.tag-chip.active {
+    border-color: var(--primary);
     background: var(--primary);
     color: #fff;
-    border-color: transparent;
+    box-shadow: 0 2px 8px rgba(27,43,75,0.18);
 }
 
-/* 搜索无结果提示 */
+.tag-chip.active:hover {
+    background: var(--primary-mid);
+    border-color: var(--primary-mid);
+    color: #fff;
+}
+
+.tag-filter-divider {
+    width: 1px;
+    height: 20px;
+    background: var(--border);
+    margin: 0 4px;
+}
+
+.tag-chip-reset {
+    padding: 5px 12px;
+    border-radius: 16px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    border: 1px dashed var(--border);
+    background: transparent;
+    color: var(--secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tag-chip-reset:hover {
+    border-color: var(--secondary);
+    color: var(--text-primary);
+}
+
+/* ===== 工具卡片网格 ===== */
+.tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+}
+
+/* ===== 阶段头部 ===== */
+.stage-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 28px;
+    padding: 20px 24px;
+    background: var(--bg-primary);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+}
+
+.stage-header-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-mid));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.stage-header-text h2 {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.stage-header-text p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.stage-header-badge {
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: var(--accent);
+    background: rgba(196,150,60,0.12);
+    padding: 6px 14px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
+/* ===== 工具卡片 ===== */
+.tool-card {
+    position: relative;
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    cursor: pointer;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+    text-align: left;
+}
+
+.tool-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), #D4A84C);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.tool-card:hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-4px);
+}
+
+.tool-card:hover::before {
+    opacity: 1;
+}
+
+.tool-card.hidden-filter {
+    display: none;
+}
+
+.tool-card-icon-wrap {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: var(--bg-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    color: var(--primary);
+    margin-bottom: 16px;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tool-card:hover .tool-card-icon-wrap {
+    background: var(--primary);
+    color: #fff;
+    transform: scale(1.05);
+}
+
+.tool-card h4 {
+    margin-bottom: 8px;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    font-weight: 700;
+    font-family: var(--font-body);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tool-card p {
+    font-size: 0.82rem;
+    color: #8A9AB5;
+    margin-bottom: 14px;
+    line-height: 1.6;
+}
+
+.tool-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.tool-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.tool-tag {
+    display: inline-block;
+    padding: 3px 10px;
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    border-radius: 12px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.tool-tag.tag-clickable {
+    cursor: pointer;
+}
+
+.tool-tag.tag-clickable:hover {
+    background: var(--primary);
+    color: #fff;
+}
+
+.tool-stages-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.68rem;
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.tool-stages-indicator i {
+    font-size: 0.6rem;
+}
+
+/* 保留旧样式兼容 */
+.tool-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: var(--bg-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    color: var(--primary);
+    margin-bottom: 16px;
+}
+
+/* ===== 搜索无结果提示 ===== */
 .tools-empty {
     grid-column: 1 / -1;
     text-align: center;
@@ -1450,71 +1865,89 @@ body {
     color: var(--border);
     margin-bottom: 12px;
     display: block;
+    opacity: 0.4;
 }
 
 .tools-empty p {
     font-size: 0.95rem;
 }
 
-/* 工具卡片隐藏/显示动画 */
-.tool-card {
-    background: var(--bg-white);
-    border-radius: var(--radius);
-    padding: 28px;
-    box-shadow: var(--shadow);
-    cursor: pointer;
-    transition: all 0.3s ease, opacity 0.25s ease, transform 0.25s ease;
-    text-align: center;
-    border: 2px solid transparent;
+/* ===== 分阶段视图 ===== */
+.stage-view .stage-panel {
+    animation: panelIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.tool-card.hidden-filter {
+@keyframes panelIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== 总览视图 ===== */
+.all-stages-view {
     display: none;
 }
 
-.tool-card:hover {
-    transform: translateY(-6px);
-    box-shadow: var(--shadow-lg);
-    border-color: var(--accent);
+.all-stages-view.active {
+    display: block;
+    animation: panelIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.tool-icon {
-    width: 56px;
-    height: 56px;
-    background: #fff;
+.all-stage-section {
+    margin-bottom: 36px;
+}
+
+.all-stage-section .mini-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+}
+
+.mini-header .mini-num {
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
-    border: 2px solid var(--accent);
+    background: var(--primary);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 16px;
-    font-size: 1.4rem;
-    color: var(--accent);
 }
 
-.tool-card h4 {
-    margin-bottom: 6px;
-    color: var(--text-primary);
+.mini-header h3 {
+    font-family: var(--font-display);
     font-size: 1rem;
     font-weight: 700;
-    font-family: var(--font-body);
+    color: var(--text-primary);
 }
 
-.tool-card p {
-    font-size: 0.82rem;
-    color: #8A9AB5;
-    margin-bottom: 12px;
-    line-height: 1.5;
+.mini-header .mini-count {
+    margin-left: auto;
+    font-size: 0.7rem;
+    color: var(--secondary);
 }
 
-.tool-tag {
-    display: inline-block;
-    padding: 3px 10px;
-    background: rgba(196, 150, 60, 0.08);
-    color: var(--accent);
-    border-radius: 20px;
-    font-size: 0.72rem;
-    font-weight: 500;
+/* ===== 响应式 ===== */
+@media (max-width: 768px) {
+    .journey-track {
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: center;
+    }
+    .journey-track::before, .journey-track::after { display: none; }
+    .journey-node { flex: 0 0 calc(33.33% - 8px); }
+    .node-circle { width: 52px; height: 52px; font-size: 1rem; }
+    .node-label { font-size: 0.7rem; }
+    .tools-grid { grid-template-columns: 1fr; }
+    .tools-filter-bar { flex-direction: column; }
+    .tools-search { min-width: 100%; }
+    .stage-header { flex-direction: column; align-items: flex-start; }
+    .stage-header-badge { margin-left: 0; }
+    .tag-filter-bar { padding: 10px 12px; }
 }
 
 /* ==================== 九型人格 ==================== */
