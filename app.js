@@ -3154,6 +3154,351 @@ g.不接受电子印章和电子签名
 ④ 多数学校不接受「单纯后悔」「拿到更好offer」等主观理由退费
 
 以上信息仅供参考，具体以校方最新政策为准`
+    },
+    'oxford_ellt': {
+        title: 'Oxford ELLT 考试介绍',
+        icon: 'fa-language',
+        tag: '语言考试',
+        stages: ['planning', 'apply'],
+        tags: ['语言'],
+        description: '牛津ELLT英语能力测试——雅思替代方案，模块化考试，48小时出分',
+        keywords: 'ELLT 牛津 英语 语言 考试 雅思 替代 language test',
+        content: `<div class="st-tool-container">
+  <div class="st-tool-header">
+    <div class="st-tool-header-icon"><i class="fas fa-language"></i></div>
+    <h1>Oxford ELLT 考试介绍</h1>
+    <span class="st-tag">语言考试</span>
+  </div>
+
+  <div class="st-hint-bar st-hint-info" style="margin-bottom:16px;"><span class="st-hint-icon">ℹ️</span><span>Oxford ELLT（English Language Level Test）是牛津国际数字研究院推出的在线英语能力测试，可作为雅思替代方案，被多国高校认可。模块化设计、48小时出分、性价比高，适合需要快速获得语言成绩的学生。</span></div>
+
+  <div class="st-card">
+    <div class="st-card-header"><span class="st-card-num">01</span><span class="st-card-title">考试概述</span></div>
+    <div class="st-card-body">
+      <ul class="st-bullet-list">
+        <li><strong>考试全称：</strong>English Language Level Test</li>
+        <li><strong>考试形式：</strong>ELLT Digital（线上考）——完全基于网络</li>
+        <li><strong>考试模块：</strong>阅读、听力、写作、口语，四科可分开考</li>
+        <li><strong>考试时长：</strong>每模块不超过45分钟，30天内完成即可</li>
+        <li><strong>出分时间：</strong>考后48小时工作日出分</li>
+        <li><strong>考试费用：</strong>120英镑（约1100元人民币）</li>
+        <li><strong>考试次数：</strong>不限次数，两次考试之间无最短间隔期</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="st-card">
+    <div class="st-card-header"><span class="st-card-num">02</span><span class="st-card-title">考试结构与题型</span></div>
+    <div class="st-card-body">
+      <div class="st-section-title">📖 Reading 阅读</div>
+      <ul class="st-bullet-list">
+        <li>时长：40分钟 | 2篇文章（400-600词）| 32道题</li>
+        <li>题型：词汇题、选择题（A/B/C/D）、推理题、判断正误/未提及、填空题（不超过1个词）</li>
+        <li>难度范围：A2-C2，考试时随机组合B1和B2/C1难度</li>
+        <li>满分：32分</li>
+      </ul>
+      <div class="st-section-title">🎧 Listening 听力</div>
+      <ul class="st-bullet-list">
+        <li>时长：25分钟 | 3段音频 | 28道题</li>
+        <li>题型：主旨大意题、选择题、推理题、判断正误/未提及、辨说话人（仅Part 3）</li>
+        <li>内容：独白（讲座/演讲，播放1次）、对话（真实场景，播放2次）、3位说话者分析（播放2次）</li>
+        <li>满分：24分</li>
+      </ul>
+      <div class="st-section-title">✍️ Writing 写作</div>
+      <ul class="st-bullet-list">
+        <li>时长：45分钟 | 1篇议论文</li>
+        <li>字数要求：190-260词</li>
+        <li>题型：观点论述型（To what extent do you agree or disagree / Give both sides of the argument）</li>
+      </ul>
+      <div class="st-section-title">🗣️ Speaking 口语</div>
+      <ul class="st-bullet-list">
+        <li>时长：25-30分钟 | 4个部分</li>
+        <li>Part 1：自我介绍（不计分，帮助适应环境）</li>
+        <li>Part 2：观点陈述</li>
+        <li>Part 3：基于写作内容的问答</li>
+        <li>Part 4：基于视觉提示的讨论</li>
+        <li>通过Zoom视频通话与考官在线进行，无需安装Zoom App</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="st-card">
+    <div class="st-card-header"><span class="st-card-num">03</span><span class="st-card-title">ELLT vs 雅思 对比</span></div>
+    <div class="st-card-body">
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead>
+            <tr style="background:#f1f5f9;">
+              <th style="padding:10px;border:1px solid #e2e8f0;text-align:left;">对比项</th>
+              <th style="padding:10px;border:1px solid #e2e8f0;text-align:left;">Oxford ELLT</th>
+              <th style="padding:10px;border:1px solid #e2e8f0;text-align:left;">雅思 IELTS</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:10px;border:1px solid #e2e8f0;font-weight:600;">听力题目数量</td>
+              <td style="padding:10px;border:1px solid #e2e8f0;">24题</td>
+              <td style="padding:10px;border:1px solid #e2e8f0;">40题</td>
+            </tr>
+            <tr>
+              <td style="padding:10px;border:1px solid #e2e8f0;font-weight:600;">阅读文章数量</td>
+              <td style="padding:10px;border:1px solid #e2e8f0;">2篇（400-600词）</td>
+              <td style="padding:10px;border:1px solid #e2e8f0;">3篇（2150-2750词）</td>
+            </tr>
+            <tr>
+              <td style="padding:10px;border:1px solid #e2e8f0;font-weight:600;">写作数量</td>
+              <td style="padding:10px;border:1px solid #e2e8f0;">1篇（190-260词，45分钟）</td>
+              <td style="padding:10px;border:1px solid #e2e8f0;">2篇（小作文150词+大作文250词，60分钟）</td>
+            </tr>
+            <tr>
+              <td style="padding:10px;border:1px solid #e2e8f0;font-weight:600;">口语结构</td>
+              <td style="padding:10px;border:1px solid #e2e8f0;">4个部分（25-30分钟）</td>
+              <td style="padding:10px;border:1px solid #e2e8f0;">3个部分（14分钟）</td>
+            </tr>
+            <tr>
+              <td style="padding:10px;border:1px solid #e2e8f0;font-weight:600;">出分速度</td>
+              <td style="padding:10px;border:1px solid #e2e8f0;">48小时工作日</td>
+              <td style="padding:10px;border:1px solid #e2e8f0;">13天</td>
+            </tr>
+            <tr>
+              <td style="padding:10px;border:1px solid #e2e8f0;font-weight:600;">考试灵活性</td>
+              <td style="padding:10px;border:1px solid #e2e8f0;">四科可分开考，30天内完成</td>
+              <td style="padding:10px;border:1px solid #e2e8f0;">一次性完成全部科目</td>
+            </tr>
+            <tr>
+              <td style="padding:10px;border:1px solid #e2e8f0;font-weight:600;">费用</td>
+              <td style="padding:10px;border:1px solid #e2e8f0;">£120（约1100元）</td>
+              <td style="padding:10px;border:1px solid #e2e8f0;">约2170元</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="st-card">
+    <div class="st-card-header"><span class="st-card-num">04</span><span class="st-card-title">核心优势</span></div>
+    <div class="st-card-body">
+      <ul class="st-checklist">
+        <li><span class="st-checklist-icon"></span>四科可分开考，30天内完成，备考更充分</li>
+        <li><span class="st-checklist-icon"></span>每模块不超过45分钟，考生更易集中精力</li>
+        <li><span class="st-checklist-icon"></span>口语考试额外提供15分钟准备时间，初始环节不计分，帮助适应</li>
+        <li><span class="st-checklist-icon"></span>不限考试次数，两次考试之间无最短间隔期</li>
+        <li><span class="st-checklist-icon"></span>48小时工作日出分，速度远快于雅思</li>
+        <li><span class="st-checklist-icon"></span>考试价格120英镑（约1100元），性价比更优</li>
+        <li><span class="st-checklist-icon"></span><strong>2026年新增：</strong>科目重考（Skill Retake），仅需重考未达标科目，费用50-70英镑</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="st-card">
+    <div class="st-card-header"><span class="st-card-num">05</span><span class="st-card-title">2026年新功能：Skill Retake 科目重考</span></div>
+    <div class="st-card-body">
+      <div class="st-hint-bar st-hint-info" style="margin-bottom:12px;"><span class="st-hint-icon">🆕</span><span>2026年1月上线，允许考生单独重考未达标的科目，无需重考全部。已被所有认可大学接受。</span></div>
+      <ul class="st-bullet-list">
+        <li><strong>适用场景：</strong>仅需提升特定英语技能的考生，更快捷更经济</li>
+        <li><strong>申请时限：</strong>成绩出分后10天内决定是否购买科目重考</li>
+        <li><strong>完成时限：</strong>购买后10天内完成所选科目的重考</li>
+        <li><strong>出分时间：</strong>重考后48小时工作日收到新成绩单</li>
+        <li><strong>总周期：</strong>出分后最多20天内完成重考</li>
+        <li><strong>重考费用：</strong>听力/阅读 £50，写作/口语 £70</li>
+        <li><strong>证书更新：</strong>重考后收到新证书，显示重考科目、新成绩和完成日期</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="st-card">
+    <div class="st-card-header"><span class="st-card-num">06</span><span class="st-card-title">考试准备事项</span></div>
+    <div class="st-card-body">
+      <div class="st-section-title">💻 设备要求</div>
+      <ul class="st-checklist">
+        <li><span class="st-checklist-icon"></span><strong>电脑：</strong>台式机或笔记本，Windows（更推荐）或Mac</li>
+        <li><span class="st-checklist-icon"></span><strong>浏览器：</strong>仅可使用Google Chrome、Edge、360浏览器</li>
+        <li><span class="st-checklist-icon"></span><strong>耳机：</strong>有线入耳耳机（带麦克风），仅听力/口语使用；<span style="color:#dc2626;">禁止使用头戴式或蓝牙耳机</span></li>
+        <li><span class="st-checklist-icon"></span><strong>摄像头：</strong>内置或外置，用于向考官360度展示房间</li>
+        <li><span class="st-checklist-icon"></span><strong>网络：</strong>稳定互联网，上传/下载速度不低于50 Mbps</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="st-card">
+    <div class="st-card-header"><span class="st-card-num">07</span><span class="st-card-title">考试规则</span></div>
+    <div class="st-card-body">
+      <ul class="st-checklist">
+        <li><span class="st-checklist-icon"></span>头部、脸部、肩膀始终保持可见，耳朵保持可见且不被遮盖</li>
+        <li><span class="st-checklist-icon"></span>始终保持麦克风和摄像头开启，关闭将被终止考试</li>
+        <li><span class="st-checklist-icon"></span>必须共享整个电脑屏幕，考官需能看到顶部和底部工具栏</li>
+        <li><span class="st-checklist-icon"></span>不可离开考试平台或刷新页面，否则系统将被锁定</li>
+        <li><span class="st-checklist-icon"></span>关闭所有与考试无关的标签页、浏览器和应用程序</li>
+        <li><span class="st-checklist-icon"></span>关闭所有远程控制软件，确保不会自动运行</li>
+        <li><span class="st-checklist-icon"></span>确保考试区域为私人房间，无其他人员干扰</li>
+      </ul>
+      <div class="st-hint-bar st-warn"><span class="st-hint-icon">⚠️</span><span>技术原因导致无法完成口语考试，需额外支付£30重新预约。因病无法参加，可提供英文病例/医生证明免费重约。</span></div>
+    </div>
+  </div>
+
+  <div class="st-card">
+    <div class="st-card-header"><span class="st-card-num">08</span><span class="st-card-title">成绩与复议</span></div>
+    <div class="st-card-body">
+      <div class="st-section-title">出分规则</div>
+      <ul class="st-bullet-list">
+        <li>一般考后48小时工作日出分（不含周末及英国节假日）</li>
+        <li>审核中状态可能需额外2天</li>
+        <li>考生将获得1个总分和4个单项分（写作/口语评分标准0-12分）</li>
+      </ul>
+      <div class="st-section-title">异常情况</div>
+      <ul class="st-bullet-list">
+        <li><strong>成绩被Hold：</strong>口语、写作单项分差达4分以上，无法出分，需重新报名</li>
+        <li><strong>违规/作弊：</strong>账号被封，无法再报名</li>
+      </ul>
+      <div class="st-section-title">复议流程</div>
+      <ul class="st-bullet-list">
+        <li>适用科目：口语及写作</li>
+        <li>申请时限：出分后14天内</li>
+        <li>复议费用：£30</li>
+        <li>处理时间：14天</li>
+        <li>申请方式：<a href="https://oidigitalinstitute.cn/appeal/" target="_blank">在线填写复议表格</a> → 缴费后发送邮件至 ellt@oidigitalinstitute.com（附OIDI Number）</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="st-card">
+    <div class="st-card-header"><span class="st-card-num">09</span><span class="st-card-title">备考资源</span></div>
+    <div class="st-card-body">
+      <ul class="st-bullet-list">
+        <li><strong>官方网站：</strong><a href="https://oxfordellt.cn" target="_blank">oxfordellt.cn</a></li>
+        <li><strong>免费样题：</strong>官网提供，可提前熟悉题型</li>
+        <li><strong>免费备考课：</strong>Oxford ELLT Prep+
+          <ul style="margin-top:6px;">
+            <li>在线异步学习课程</li>
+            <li>8个模块</li>
+            <li>练习材料</li>
+            <li>自动反馈</li>
+            <li>完整考试概览</li>
+            <li>来自ELLT考官的提示和技巧</li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="st-card">
+    <div class="st-card-header"><span class="st-card-num">10</span><span class="st-card-title">联系方式</span></div>
+    <div class="st-card-body">
+      <ul class="st-bullet-list">
+        <li><strong>联系人：</strong>杨青，Head of ELLT</li>
+        <li><strong>电话：</strong>18551807486</li>
+        <li><strong>邮箱：</strong>qyang@oxfordinternational.com</li>
+        <li><strong>客服邮箱：</strong>ellt@oidigitalinstitute.com</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="st-tool-footer">以上信息仅供参考，具体以官方最新信息为准</div>
+</div>`,
+        rawText: `【Oxford ELLT 考试介绍】
+
+━━━━━━━━━━━━━━━━━━━━
+
+📋 考试概述
+• 考试全称：English Language Level Test
+• 考试形式：ELLT Digital（线上考）——完全基于网络
+• 考试模块：阅读、听力、写作、口语，四科可分开考
+• 考试时长：每模块不超过45分钟，30天内完成即可
+• 出分时间：考后48小时工作日出分
+• 考试费用：120英镑（约1100元人民币）
+• 考试次数：不限次数，两次考试之间无最短间隔期
+
+📋 考试结构与题型
+
+【Reading 阅读】
+• 时长：40分钟 | 2篇文章（400-600词）| 32道题
+• 题型：词汇题、选择题、推理题、判断正误/未提及、填空题
+• 满分：32分
+
+【Listening 听力】
+• 时长：25分钟 | 3段音频 | 28道题
+• 题型：主旨大意题、选择题、推理题、判断正误/未提及、辨说话人
+• 内容：独白（播放1次）、对话（播放2次）、3位说话者分析（播放2次）
+• 满分：24分
+
+【Writing 写作】
+• 时长：45分钟 | 1篇议论文 | 190-260词
+• 题型：观点论述型
+
+【Speaking 口语】
+• 时长：25-30分钟 | 4个部分
+• Part 1：自我介绍（不计分）
+• Part 2：观点陈述
+• Part 3：基于写作内容的问答
+• Part 4：基于视觉提示的讨论
+• 通过Zoom视频通话与考官在线进行
+
+📋 ELLT vs 雅思 对比
+• 听力题目：ELLT 24题 vs 雅思 40题
+• 阅读文章：ELLT 2篇（400-600词）vs 雅思 3篇（2150-2750词）
+• 写作：ELLT 1篇（190-260词，45分钟）vs 雅思 2篇（400词，60分钟）
+• 口语：ELLT 4部分（25-30分钟）vs 雅思 3部分（14分钟）
+• 出分速度：ELLT 48小时 vs 雅思 13天
+• 灵活性：ELLT 四科可分开考 vs 雅思 一次性完成
+• 费用：ELLT £120（约1100元）vs 雅思 约2170元
+
+✅ 核心优势
+□ 四科可分开考，30天内完成，备考更充分
+□ 每模块不超过45分钟，更易集中精力
+□ 口语额外提供15分钟准备时间，初始环节不计分
+□ 不限考试次数，无最短间隔期
+□ 48小时工作日出分
+□ 价格120英镑，性价比优
+□ 2026年新增：科目重考（Skill Retake），仅需重考未达标科目
+
+🆕 2026年新功能：Skill Retake 科目重考
+• 适用场景：仅需提升特定英语技能的考生
+• 申请时限：成绩出分后10天内
+• 完成时限：购买后10天内完成
+• 出分时间：重考后48小时工作日
+• 总周期：出分后最多20天内完成
+• 重考费用：听力/阅读 £50，写作/口语 £70
+• 证书更新：收到新证书，显示重考科目、新成绩和完成日期
+
+💻 设备要求
+□ 电脑：台式机或笔记本，Windows（推荐）或Mac
+□ 浏览器：仅Chrome、Edge、360
+□ 耳机：有线入耳耳机（带麦克风），禁止头戴式或蓝牙
+□ 摄像头：内置或外置，用于360度展示房间
+□ 网络：稳定，上传/下载不低于50 Mbps
+
+⚠️ 考试规则
+□ 头部、脸部、肩膀始终可见，耳朵不被遮盖
+□ 始终开启麦克风和摄像头
+□ 必须共享整个电脑屏幕
+□ 不可离开平台或刷新页面
+□ 关闭无关标签页和应用程序
+□ 关闭远程控制软件
+□ 确保私人房间，无干扰
+□ 技术原因导致无法完成口语需付£30重约；因病可提供证明免费重约
+
+📋 成绩与复议
+• 出分：考后48小时工作日（不含周末及英国节假日）
+• 成绩被Hold：口语、写作分差达4分以上，需重新报名
+• 违规/作弊：账号被封，无法再报名
+• 复议：口语/写作，出分后14天内申请，费用£30，处理14天
+• 复议申请：https://oidigitalinstitute.cn/appeal/
+
+📋 备考资源
+• 官方网站：oxfordellt.cn
+• 免费样题：官网提供
+• 免费备考课：Oxford ELLT Prep+（8个模块，在线异步学习）
+
+📞 联系方式
+• 联系人：杨青，Head of ELLT
+• 电话：18551807486
+• 邮箱：qyang@oxfordinternational.com
+• 客服邮箱：ellt@oidigitalinstitute.com
+
+━━━━━━━━━━━━━━━━━━━━
+
+以上信息仅供参考，具体以官方最新信息为准`
     }
 };
 
