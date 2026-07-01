@@ -1129,7 +1129,7 @@ A：可以，建议由亲友微信/支付宝代付
     },
     'ireland_predeparture': {
         title: '爱尔兰行前指南',
-        icon: 'fa-shamrock',
+        icon: 'fa-tree',
         tag: '入境 · IRP · 行李 · 生活',
         stages: ['predepart'],
         tags: ['行前'],
