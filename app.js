@@ -5805,20 +5805,28 @@ function refreshCurrentView() {
 }
 
 // ===== 渲染工具卡片 =====
-function renderToolCard(tool, delayIdx) {
+function renderToolCard(tool, delayIdx, showStageLabels) {
     delayIdx = delayIdx || 0;
-    const isMulti = tool.stages && tool.stages.length > 1;
-    const tags = tool.tags || [];
+    const funcTags = tool.tags || [];
+    const toolStages = tool.stages || [];
+    
+    // 阶段标签（仅在总览视图显示）
+    let stageLabelsHtml = '';
+    if (showStageLabels) {
+        stageLabelsHtml = toolStages.map(sid => {
+            const s = STAGES.find(st => st.id === sid);
+            return s ? `<span class="tool-stage-tag" style="--stage-color: var(--stage-${sid});"><i class="fas ${s.icon}" style="margin-right:3px;font-size:0.6rem;"></i>${s.name}</span>` : '';
+        }).filter(Boolean).join('');
+    }
+    
     return `
     <div class="tool-card" onclick="openTool('${tool.id}')" style="animation: panelIn 0.5s cubic-bezier(0.16,1,0.3,1) ${delayIdx * 0.06}s both;">
         <div class="tool-card-icon-wrap"><i class="fas ${tool.icon}"></i></div>
         <h4>${tool.title}</h4>
         <p>${tool.description || ''}</p>
-        <div class="tool-card-footer">
-            <div class="tool-tags">
-                ${tags.map(t => `<span class="tool-tag tag-clickable" onclick="event.stopPropagation();toggleTag('${t}')">${t}</span>`).join('')}
-            </div>
-            ${isMulti ? `<span class="tool-stages-indicator"><i class="fas fa-diagram-project"></i> ${tool.stages.length}阶段</span>` : ''}
+        <div class="tool-card-tags-row">
+            ${stageLabelsHtml}
+            ${funcTags.map(t => `<span class="tool-tag tag-clickable" onclick="event.stopPropagation();toggleTag('${t}')">${t}</span>`).join('')}
         </div>
     </div>`;
 }
@@ -5854,33 +5862,20 @@ function renderStageView() {
     container.innerHTML = html;
 }
 
-// ===== 总览视图 =====
+// ===== 总览视图（平铺所有工具，不重复） =====
 function renderAllStagesView() {
     const container = document.getElementById('allStagesView');
     if (!container) return;
     const filtered = getFilteredTools();
-    let html = '';
+    let html = '<div class="tools-grid">';
 
-    STAGES.forEach((stage, idx) => {
-        const stageTools = filtered.filter(t => t.stages && t.stages.includes(stage.id));
-        if (stageTools.length === 0) return;
-
-        html += `
-        <div class="all-stage-section">
-            <div class="mini-header">
-                <span class="mini-num">${idx + 1}</span>
-                <h3>${stage.name}</h3>
-                <span class="mini-count">${stageTools.length} 个工具</span>
-            </div>
-            <div class="tools-grid">
-                ${stageTools.map((t, i) => renderToolCard(t, i)).join('')}
-            </div>
-        </div>`;
-    });
-
-    if (!html) {
+    if (filtered.length === 0) {
         html = `<div class="tools-empty"><i class="fas fa-inbox"></i><p>没有找到匹配的工具</p></div>`;
+    } else {
+        html += filtered.map((t, i) => renderToolCard(t, i, true)).join('');
+        html += '</div>';
     }
+
     container.innerHTML = html;
 }
 

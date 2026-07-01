@@ -1793,23 +1793,19 @@ body {
     line-height: 1.6;
 }
 
-.tool-card-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.tool-tags {
+/* 工具卡片标签行 */
+.tool-card-tags-row {
     display: flex;
     gap: 6px;
     flex-wrap: wrap;
+    align-items: center;
 }
 
 .tool-tag {
     display: inline-block;
     padding: 3px 10px;
-    background: var(--bg-primary);
-    color: var(--text-secondary);
+    background: rgba(107,141,173,0.10);
+    color: var(--secondary);
     border-radius: 12px;
     font-size: 0.68rem;
     font-weight: 600;
@@ -1825,17 +1821,17 @@ body {
     color: #fff;
 }
 
-.tool-stages-indicator {
-    display: flex;
+/* 阶段标签 */
+.tool-stage-tag {
+    display: inline-flex;
     align-items: center;
-    gap: 4px;
-    font-size: 0.68rem;
-    color: var(--accent);
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.65rem;
     font-weight: 600;
-}
-
-.tool-stages-indicator i {
-    font-size: 0.6rem;
+    background: rgba(27,43,75,0.08);
+    color: var(--primary);
+    border: 1px solid rgba(27,43,75,0.12);
 }
 
 /* 保留旧样式兼容 */
