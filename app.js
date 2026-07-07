@@ -11180,7 +11180,31 @@ function aiqExtractTextFromFile(file) {
             reader.onerror = function() { reject(new Error('文件读取失败')); };
             reader.readAsArrayBuffer(file);
         } else if (ext === 'pdf') {
-            reject(new Error('PDF 文件暂不支持，请使用 .txt、.md 或 .docx 格式'));
+            // 使用 pdf.js 提取 PDF 文本
+            if (typeof pdfjsLib === 'undefined') {
+                reject(new Error('PDF.js 未加载，请刷新页面重试'));
+                return;
+            }
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'libs/pdf.worker.min.js';
+            pdfjsLib.getDocument({ data: e.target.result }).promise.then(function(pdf) {
+                var textParts = [];
+                var promises = [];
+                for (var i = 1; i <= pdf.numPages; i++) {
+                    promises.push(pdf.getPage(i).then(function(page) {
+                        return page.getTextContent().then(function(content) {
+                            var pageText = content.items.map(function(item) { return item.str; }).join(' ');
+                            textParts.push(pageText);
+                        });
+                    }));
+                }
+                return Promise.all(promises).then(function() {
+                    return textParts.join('\n\n');
+                });
+            }).then(function(text) {
+                resolve(text.trim());
+            }).catch(function(err) {
+                reject(new Error('PDF 解析失败: ' + err.message));
+            });
         } else {
             reject(new Error('不支持的文件格式: .' + ext));
         }
