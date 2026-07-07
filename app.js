@@ -8807,28 +8807,40 @@ function importPlanFromFile() {
             reader.readAsText(file);
         } else if (ext === 'docx') {
             const reader = new FileReader();
-            reader.onload = function(event) {
+            reader.onload = async function(event) {
                 const arrayBuffer = event.target.result;
-                mammoth.convertToHtml({arrayBuffer: arrayBuffer})
-                    .then(function(result) {
-                        const html = result.value;
-                        const plan = parseDocxHtmlToPlan(html, file.name);
-                        if (plan) {
-                            plan.id = genGrowthId();
-                            plan.createdAt = new Date().toISOString();
-                            plan.updatedAt = new Date().toISOString();
-                            plan.phases.forEach(p => { p.id = genGrowthId(); });
-                            growthPlans.push(plan);
-                            saveGrowthPlans();
-                            renderPlanList();
-                            alert(`成功从 Word 文档导入培养计划「${plan.name}」`);
-                        } else {
-                            alert('无法从该 Word 文档中解析出培养计划结构，请确认文档包含阶段划分信息（如"第X阶段"等标题）');
-                        }
-                    })
-                    .catch(function(err) {
+                let plan = null;
+                // 优先使用 JSZip 直接解析 docx XML 中的表格（最可靠）
+                try {
+                    if (typeof JSZip !== 'undefined') {
+                        plan = await parseDocxZipToPlan(arrayBuffer, file.name);
+                        console.log('[DOCX] JSZip direct parse result:', plan ? 'OK, phases=' + plan.phases.length : 'null');
+                    }
+                } catch (e) {
+                    console.warn('[DOCX] JSZip parse failed:', e);
+                }
+                // 回退：mammoth HTML 解析
+                if (!plan) {
+                    try {
+                        const result = await mammoth.convertToHtml({arrayBuffer: arrayBuffer});
+                        plan = parseDocxHtmlToPlan(result.value, file.name);
+                    } catch (err) {
                         alert('Word 文档解析失败: ' + err.message);
-                    });
+                        return;
+                    }
+                }
+                if (plan) {
+                    plan.id = genGrowthId();
+                    plan.createdAt = new Date().toISOString();
+                    plan.updatedAt = new Date().toISOString();
+                    plan.phases.forEach(p => { p.id = genGrowthId(); });
+                    growthPlans.push(plan);
+                    saveGrowthPlans();
+                    renderPlanList();
+                    alert(`成功从 Word 文档导入培养计划「${plan.name}」`);
+                } else {
+                    alert('无法从该 Word 文档中解析出培养计划结构，请确认文档包含阶段划分信息（如"第X阶段"等标题）');
+                }
             };
             reader.readAsArrayBuffer(file);
         } else {
@@ -9004,6 +9016,142 @@ function parseDocxHtmlToPlan(html, fileName) {
         name: planName,
         position: '',
         duration: '',
+        description: '',
+        phases: phases,
+        unifiedRequirements: unifiedRequirements
+    };
+}
+
+// 直接解析 docx ZIP 提取表格数据（绕过 mammoth 的表格转换）
+async function parseDocxZipToPlan(arrayBuffer, fileName) {
+    if (typeof JSZip === 'undefined') return null;
+
+    const zip = await JSZip.loadAsync(arrayBuffer);
+    const docXml = await zip.file('word/document.xml').async('string');
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(docXml, 'text/xml');
+
+    const tables = xmlDoc.getElementsByTagNameNS('http://schemas.openxmlformats.org/wordprocessingml/2006/main', 'tbl');
+    console.log('[DOCX-ZIP] Tables found in raw XML:', tables.length);
+    if (tables.length === 0) return null;
+
+    const table = tables[0];
+    const rows = table.getElementsByTagNameNS('http://schemas.openxmlformats.org/wordprocessingml/2006/main', 'tr');
+    if (rows.length < 2) return null;
+
+    // 提取计划名称
+    let planName = '';
+    if (fileName) {
+        planName = fileName.replace(/\.docx?$/i, '').replace(/[_-]/g, ' ').trim();
+    }
+    if (!planName) {
+        const firstP = xmlDoc.getElementsByTagNameNS('http://schemas.openxmlformats.org/wordprocessingml/2006/main', 'p')[0];
+        if (firstP) {
+            const ts = firstP.getElementsByTagNameNS('http://schemas.openxmlformats.org/wordprocessingml/2006/main', 't');
+            planName = Array.from(ts).map(t => t.textContent).join('').trim();
+        }
+        if (!planName) planName = '导入的培养计划';
+    }
+
+    // 检测列结构
+    const headerCells = rows[0].getElementsByTagNameNS('http://schemas.openxmlformats.org/wordprocessingml/2006/main', 'tc');
+    const headerTexts = Array.from(headerCells).map(cell => {
+        const ts = cell.getElementsByTagNameNS('http://schemas.openxmlformats.org/wordprocessingml/2006/main', 't');
+        return Array.from(ts).map(t => t.textContent).join('').trim();
+    });
+    console.log('[DOCX-ZIP] Headers:', headerTexts);
+
+    let colIndex = { month: -1, task: -1, criteria: -1 };
+    headerTexts.forEach((text, idx) => {
+        if (colIndex.month === -1 && /月|周期|阶段|时间/i.test(text) && !/衡量|标准|考核/i.test(text)) {
+            colIndex.month = idx;
+        }
+        if (colIndex.task === -1 && /工作|任务|内容|项目/i.test(text) && !/衡量|标准|考核/i.test(text)) {
+            colIndex.task = idx;
+        }
+        if (colIndex.criteria === -1 && /衡量|标准|考核|要求/i.test(text)) {
+            colIndex.criteria = idx;
+        }
+    });
+
+    if (colIndex.month === -1 && colIndex.task === -1 && headerTexts.length >= 3) {
+        if (headerTexts.length === 4) {
+            colIndex.month = 1; colIndex.task = 2; colIndex.criteria = 3;
+        } else if (headerTexts.length === 3) {
+            colIndex.month = 0; colIndex.task = 1; colIndex.criteria = 2;
+        }
+    }
+    console.log('[DOCX-ZIP] Column mapping:', colIndex);
+    if (colIndex.month === -1 && colIndex.task === -1) return null;
+
+    // 提取单元格文本辅助函数
+    function extractCellText(cell) {
+        const ps = cell.getElementsByTagNameNS('http://schemas.openxmlformats.org/wordprocessingml/2006/main', 'p');
+        if (ps.length <= 1) {
+            const ts = cell.getElementsByTagNameNS('http://schemas.openxmlformats.org/wordprocessingml/2006/main', 't');
+            return Array.from(ts).map(t => t.textContent).join('').trim();
+        }
+        const paraTexts = Array.from(ps).map(p => {
+            const pt = p.getElementsByTagNameNS('http://schemas.openxmlformats.org/wordprocessingml/2006/main', 't');
+            return Array.from(pt).map(t => t.textContent).join('').trim();
+        }).filter(t => t);
+        return paraTexts.join('\n').trim();
+    }
+
+    // 解析数据行，按月份分组
+    const monthMap = new Map();
+    let unifiedRequirements = '';
+
+    for (let i = 1; i < rows.length; i++) {
+        const cells = rows[i].getElementsByTagNameNS('http://schemas.openxmlformats.org/wordprocessingml/2006/main', 'tc');
+        if (cells.length < 2) continue;
+
+        const monthText = colIndex.month >= 0 && colIndex.month < cells.length ? extractCellText(cells[colIndex.month]) : '';
+        const taskText = colIndex.task >= 0 && colIndex.task < cells.length ? extractCellText(cells[colIndex.task]) : '';
+        const criteriaText = colIndex.criteria >= 0 && colIndex.criteria < cells.length ? extractCellText(cells[colIndex.criteria]) : '';
+
+        if (!monthText && !taskText) continue;
+
+        if (/【统一要求】|统一要求/.test(monthText + taskText)) {
+            const reqText = taskText || monthText;
+            unifiedRequirements = reqText.replace(/^【统一要求】[：:\s]*/i, '').trim();
+            continue;
+        }
+
+        if (!monthText || !taskText) continue;
+
+        if (!monthMap.has(monthText)) {
+            monthMap.set(monthText, { timeline: monthText, tasks: [] });
+        }
+        const group = monthMap.get(monthText);
+        let entry = taskText;
+        if (criteriaText) {
+            entry = taskText + '：\n' + criteriaText;
+        }
+        group.tasks.push(entry);
+    }
+
+    console.log('[DOCX-ZIP] Months found:', Array.from(monthMap.keys()));
+
+    const phases = [];
+    let phaseIndex = 0;
+    for (const [monthKey, group] of monthMap) {
+        phaseIndex++;
+        phases.push({
+            name: '第' + phaseIndex + '阶段：' + monthKey,
+            timeline: group.timeline,
+            goals: group.tasks.join('\n\n'),
+            tools: '',
+            examCriteria: ''
+        });
+    }
+
+    if (phases.length === 0) return null;
+
+    return {
+        name: planName,
+        position: '',
+        duration: phases.length > 0 ? phases[phases.length - 1].timeline : '',
         description: '',
         phases: phases,
         unifiedRequirements: unifiedRequirements
