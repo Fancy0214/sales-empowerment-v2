@@ -8537,8 +8537,10 @@ function loadGrowthData() {
         growthExams = JSON.parse(localStorage.getItem('growth_exams') || '[]');
         growthExamResults = JSON.parse(localStorage.getItem('growth_exam_results') || '[]');
         
-        // 首次加载时，如果没有培养计划，尝试加载预设计划
-        if (growthPlans.length === 0) {
+        // 只有在 localStorage 从未初始化过时，才加载预设计划（避免删除后重新出现）
+        const storageInitialized = localStorage.getItem('growth_storage_initialized');
+        if (!storageInitialized) {
+            localStorage.setItem('growth_storage_initialized', 'true');
             loadPresetPlans();
         }
     } catch(e) {
