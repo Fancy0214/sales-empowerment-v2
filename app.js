@@ -8812,11 +8812,14 @@ function importPlanFromFile() {
             reader.onload = async function(event) {
                 const arrayBuffer = event.target.result;
                 let plan = null;
+                console.log('[DOCX] JSZip available:', typeof JSZip !== 'undefined');
                 // 优先使用 JSZip 直接解析 docx XML 中的表格（最可靠）
                 try {
                     if (typeof JSZip !== 'undefined') {
                         plan = await parseDocxZipToPlan(arrayBuffer, file.name);
                         console.log('[DOCX] JSZip direct parse result:', plan ? 'OK, phases=' + plan.phases.length : 'null');
+                    } else {
+                        console.warn('[DOCX] JSZip not loaded!');
                     }
                 } catch (e) {
                     console.warn('[DOCX] JSZip parse failed:', e);
