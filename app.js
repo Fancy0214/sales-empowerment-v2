@@ -8843,7 +8843,7 @@ function parseDocxHtmlToPlan(html, fileName) {
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
     const body = doc.body;
-    
+
     // 提取计划名称：优先从文件名提取，其次从第一个标题
     let planName = '';
     if (fileName) {
@@ -8852,6 +8852,15 @@ function parseDocxHtmlToPlan(html, fileName) {
     if (!planName) {
         const firstHeading = body.querySelector('h1, h2, h3, strong, b');
         planName = firstHeading ? firstHeading.textContent.trim() : '导入的培养计划';
+    }
+
+    // 优先尝试表格解析
+    const tables = body.querySelectorAll('table');
+    if (tables.length > 0) {
+        const tableResult = parseDocxTableToPlan(html, fileName);
+        if (tableResult) {
+            return tableResult;
+        }
     }
     
     // 尝试检测统一要求区域
@@ -8977,29 +8986,6 @@ function parseDocxHtmlToPlan(html, fileName) {
         }
     }
     saveCurrentPhase();
-    
-    // 如果没解析出阶段，尝试从表格解析
-    if (phases.length === 0) {
-        const tables = body.querySelectorAll('table');
-        for (const table of tables) {
-            const rows = table.querySelectorAll('tr');
-            for (const row of rows) {
-                const cells = row.querySelectorAll('td, th');
-                if (cells.length >= 2) {
-                    const firstCell = cells[0].textContent.trim();
-                    if (isPhaseHeading(firstCell) || /阶段|Phase|月|周/i.test(firstCell)) {
-                        phases.push({
-                            name: firstCell,
-                            timeline: extractTimeline(firstCell),
-                            goals: Array.from(cells).slice(1).map(c => c.textContent.trim()).join('\n'),
-                            tools: '',
-                            examCriteria: ''
-                        });
-                    }
-                }
-            }
-        }
-    }
     
     // 如果还是没有阶段，创建一个默认阶段，把全部内容放进去
     if (phases.length === 0) {
@@ -10739,3 +10725,113 @@ function readFileAsDataURL(file) {
     });
 }
 
+
+/**
+ * 表格型培养计划解析器
+ * 适用于表格格式的文档（如：序号|考核月份|工作任务|衡量标准）
+ * 按"考核月份"列分组形成阶段，每行对应一个培养目标/考核标准
+ */
+function parseDocxTableToPlan(html, fileName) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const body = doc.body;
+
+    // 提取计划名称
+    let planName = '';
+    if (fileName) {
+        planName = fileName.replace(/\.docx?$/i, '').replace(/[_-]/g, ' ').trim();
+    }
+    if (!planName) {
+        const firstHeading = body.querySelector('h1, h2, h3, strong, b');
+        planName = firstHeading ? firstHeading.textContent.trim() : '导入的培养计划';
+    }
+
+    const tables = body.querySelectorAll('table');
+    if (tables.length === 0) return null;
+
+    const table = tables[0];
+    const rows = table.querySelectorAll('tr');
+    if (rows.length < 2) return null;
+
+    // 检测列结构：分析第一行表头
+    const headerCells = Array.from(rows[0].querySelectorAll('td, th'));
+    const headerTexts = headerCells.map(c => c.textContent.trim());
+
+    let colIndex = { month: -1, task: -1, criteria: -1 };
+    headerTexts.forEach((text, idx) => {
+        if (colIndex.month === -1 && /月|周期|阶段|时间/i.test(text) && !/衡量|标准|考核/i.test(text)) {
+            colIndex.month = idx;
+        }
+        if (colIndex.task === -1 && /工作|任务|内容|项目/i.test(text) && !/衡量|标准|考核/i.test(text)) {
+            colIndex.task = idx;
+        }
+        if (colIndex.criteria === -1 && /衡量|标准|考核|要求/i.test(text)) {
+            colIndex.criteria = idx;
+        }
+    });
+
+    // 常见4列布局推测
+    if (colIndex.month === -1 && colIndex.task === -1 && headerTexts.length >= 3) {
+        if (headerTexts.length === 4) {
+            colIndex.month = 1; colIndex.task = 2; colIndex.criteria = 3;
+        } else if (headerTexts.length === 3) {
+            colIndex.month = 0; colIndex.task = 1; colIndex.criteria = 2;
+        }
+    }
+    if (colIndex.month === -1 && colIndex.task === -1) return null;
+
+    // 提取统一要求
+    let unifiedRequirements = '';
+    const allText = body.innerText || body.textContent || '';
+    const reqPatterns = [
+        /统一要求[：:\s]*([\s\S]*?)(?=【|$)/i,
+        /【统一要求】[\s：:\s]*([\s\S]*?)(?=【|$)/i
+    ];
+    for (const pat of reqPatterns) {
+        const m = allText.match(pat);
+        if (m) {
+            unifiedRequirements = m[1].trim().replace(/【统一要求】[\s：:]*\s*/gi, '').trim();
+            break;
+        }
+    }
+
+    // 解析数据行，按月份分组
+    const monthMap = new Map();
+    for (let i = 1; i < rows.length; i++) {
+        const cells = rows[i].querySelectorAll('td, th');
+        if (cells.length < 2) continue;
+        const monthText = colIndex.month >= 0 && colIndex.month < cells.length ? cells[colIndex.month].textContent.trim() : '';
+        const taskText = colIndex.task >= 0 && colIndex.task < cells.length ? cells[colIndex.task].textContent.trim() : '';
+        const criteriaText = colIndex.criteria >= 0 && colIndex.criteria < cells.length ? cells[colIndex.criteria].textContent.trim() : '';
+        if (!monthText || !taskText) continue;
+        if (/统一要求/i.test(taskText) || /统一要求/i.test(monthText)) continue;
+        if (!monthMap.has(monthText)) monthMap.set(monthText, { timeline: monthText, tasks: [] });
+        const group = monthMap.get(monthText);
+        let entry = taskText;
+        if (criteriaText) entry = taskText + '：\n' + criteriaText.replace(/<br\s*\/?>/gi, '\n').replace(/&nbsp;/g, ' ').trim();
+        group.tasks.push(entry);
+    }
+
+    const phases = [];
+    let phaseIndex = 0;
+    for (const [monthKey, group] of monthMap) {
+        phaseIndex++;
+        phases.push({
+            name: '第' + phaseIndex + '阶段：' + monthKey,
+            timeline: group.timeline,
+            goals: group.tasks.join('\n\n'),
+            tools: '',
+            examCriteria: ''
+        });
+    }
+    if (phases.length === 0) return null;
+
+    return {
+        name: planName,
+        position: '',
+        duration: phases.length > 0 ? phases[phases.length - 1].timeline : '',
+        description: '',
+        phases: phases,
+        unifiedRequirements: unifiedRequirements
+    };
+}
