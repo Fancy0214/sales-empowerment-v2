@@ -892,6 +892,9 @@
                 <button class="tab-btn" onclick="showGrowthTab('exams')">
                     <i class="fas fa-file-alt"></i> 考核评估
                 </button>
+                <button class="tab-btn" onclick="showGrowthTab('ai-questions')">
+                    <i class="fas fa-magic"></i> 智能出题
+                </button>
             </div>
 
             <!-- Tab 1: 培养计划 -->
@@ -944,6 +947,167 @@
                 </div>
                 <div class="growth-exam-list" id="growthExamList">
                     <!-- 动态渲染 -->
+                </div>
+            </div>
+
+            <!-- Tab 4: 智能出题 -->
+            <div class="growth-content" id="growth-ai-questions">
+                <div class="growth-header">
+                    <h3><i class="fas fa-magic" style="color:var(--accent);"></i> 智能出题</h3>
+                    <button class="btn btn-secondary" onclick="showAiQuestionSettings()" title="配置 API 密钥">
+                        <i class="fas fa-cog"></i> API 设置
+                    </button>
+                </div>
+
+                <!-- 第1步：选择关联考核项 -->
+                <div style="background:var(--bg-primary);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:16px;">
+                    <h4 style="margin:0 0 12px 0;font-size:15px;"><i class="fas fa-crosshairs" style="color:var(--accent);"></i> 第1步：选择考核项</h4>
+                    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                        <div style="flex:1;min-width:200px;">
+                            <label style="font-size:13px;color:var(--text-secondary);margin-bottom:4px;display:block;">关联培养计划</label>
+                            <select id="aiq-plan" onchange="aiqLoadPhases()" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;">
+                                <option value="">-- 可选关联计划 --</option>
+                            </select>
+                        </div>
+                        <div style="flex:1;min-width:200px;">
+                            <label style="font-size:13px;color:var(--text-secondary);margin-bottom:4px;display:block;">关联考核阶段</label>
+                            <select id="aiq-phase" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;">
+                                <option value="">-- 可选关联阶段 --</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="margin-top:12px;">
+                        <label style="font-size:13px;color:var(--text-secondary);margin-bottom:4px;display:block;">考核知识点（手动输入，多个用逗号分隔）</label>
+                        <input type="text" id="aiq-topics" placeholder="如：房源匹配流程,客户需求分析,合同签署注意事项" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;">
+                    </div>
+                </div>
+
+                <!-- 第2步：上传资料 -->
+                <div style="background:var(--bg-primary);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:16px;">
+                    <h4 style="margin:0 0 12px 0;font-size:15px;"><i class="fas fa-book" style="color:var(--accent);"></i> 第2步：上传资料</h4>
+                    <div style="display:flex;gap:16px;flex-wrap:wrap;">
+                        <div style="flex:1;min-width:250px;">
+                            <label style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;display:block;">📚 学习资料（培训手册、课件等）</label>
+                            <div id="aiq-materials-drop" style="border:2px dashed var(--border);border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:border-color 0.2s;" onclick="document.getElementById('aiq-materials-input').click()" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="event.preventDefault();this.style.borderColor='var(--border)';aiqHandleFiles(event.dataTransfer.files,'materials')">
+                                <i class="fas fa-cloud-upload-alt" style="font-size:24px;color:var(--text-secondary);margin-bottom:8px;"></i>
+                                <p style="margin:0;font-size:13px;color:var(--text-secondary);">点击或拖拽上传（支持 .docx, .pdf, .txt, .md）</p>
+                            </div>
+                            <input type="file" id="aiq-materials-input" multiple accept=".docx,.pdf,.txt,.md" style="display:none;" onchange="aiqHandleFiles(this.files,'materials')">
+                            <div id="aiq-materials-list" style="margin-top:8px;"></div>
+                        </div>
+                        <div style="flex:1;min-width:250px;">
+                            <label style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;display:block;">📝 往年试题参考（可选）</label>
+                            <div id="aiq-reference-drop" style="border:2px dashed var(--border);border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:border-color 0.2s;" onclick="document.getElementById('aiq-reference-input').click()" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="event.preventDefault();this.style.borderColor='var(--border)';aiqHandleFiles(event.dataTransfer.files,'reference')">
+                                <i class="fas fa-cloud-upload-alt" style="font-size:24px;color:var(--text-secondary);margin-bottom:8px;"></i>
+                                <p style="margin:0;font-size:13px;color:var(--text-secondary);">点击或拖拽上传参考试题</p>
+                            </div>
+                            <input type="file" id="aiq-reference-input" multiple accept=".docx,.pdf,.txt,.md" style="display:none;" onchange="aiqHandleFiles(this.files,'reference')">
+                            <div id="aiq-reference-list" style="margin-top:8px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 第3步：题型配置 -->
+                <div style="background:var(--bg-primary);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:16px;">
+                    <h4 style="margin:0 0 12px 0;font-size:15px;"><i class="fas fa-sliders-h" style="color:var(--accent);"></i> 第3步：题型与数量</h4>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;">
+                        <div style="display:flex;align-items:center;gap:8px;padding:10px;background:var(--bg-secondary);border-radius:8px;">
+                            <input type="checkbox" id="aiq-type-single" checked>
+                            <label for="aiq-type-single" style="font-size:13px;flex:1;">单选题</label>
+                            <input type="number" id="aiq-count-single" value="5" min="0" max="50" style="width:50px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;text-align:center;">
+                            <span style="font-size:12px;color:var(--text-secondary);">题</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px;padding:10px;background:var(--bg-secondary);border-radius:8px;">
+                            <input type="checkbox" id="aiq-type-multiple" checked>
+                            <label for="aiq-type-multiple" style="font-size:13px;flex:1;">多选题</label>
+                            <input type="number" id="aiq-count-multiple" value="3" min="0" max="50" style="width:50px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;text-align:center;">
+                            <span style="font-size:12px;color:var(--text-secondary);">题</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px;padding:10px;background:var(--bg-secondary);border-radius:8px;">
+                            <input type="checkbox" id="aiq-type-fill" checked>
+                            <label for="aiq-type-fill" style="font-size:13px;flex:1;">填空题</label>
+                            <input type="number" id="aiq-count-fill" value="3" min="0" max="50" style="width:50px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;text-align:center;">
+                            <span style="font-size:12px;color:var(--text-secondary);">题</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px;padding:10px;background:var(--bg-secondary);border-radius:8px;">
+                            <input type="checkbox" id="aiq-type-essay">
+                            <label for="aiq-type-essay" style="font-size:13px;flex:1;">问答题</label>
+                            <input type="number" id="aiq-count-essay" value="2" min="0" max="50" style="width:50px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;text-align:center;">
+                            <span style="font-size:12px;color:var(--text-secondary);">题</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px;padding:10px;background:var(--bg-secondary);border-radius:8px;">
+                            <input type="checkbox" id="aiq-type-practical">
+                            <label for="aiq-type-practical" style="font-size:13px;flex:1;">实操题</label>
+                            <input type="number" id="aiq-count-practical" value="1" min="0" max="50" style="width:50px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;text-align:center;">
+                            <span style="font-size:12px;color:var(--text-secondary);">题</span>
+                        </div>
+                    </div>
+                    <div style="margin-top:12px;">
+                        <label style="font-size:13px;color:var(--text-secondary);margin-bottom:4px;display:block;">难度等级</label>
+                        <select id="aiq-difficulty" style="padding:6px 12px;border:1px solid var(--border);border-radius:6px;">
+                            <option value="easy">简单（基础概念记忆）</option>
+                            <option value="medium" selected>中等（理解与应用）</option>
+                            <option value="hard">困难（分析与综合）</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 生成按钮 -->
+                <div style="text-align:center;margin-bottom:16px;">
+                    <button class="btn btn-primary" id="aiq-generate-btn" onclick="aiqGenerate()" style="padding:12px 40px;font-size:16px;">
+                        <i class="fas fa-magic"></i> 生成考题
+                    </button>
+                </div>
+
+                <!-- 生成结果 -->
+                <div id="aiq-results" style="display:none;">
+                    <div style="background:var(--bg-primary);border:1px solid var(--border);border-radius:10px;padding:18px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                            <h4 style="margin:0;font-size:15px;"><i class="fas fa-list-ol" style="color:var(--accent);"></i> 生成的考题</h4>
+                            <div style="display:flex;gap:8px;">
+                                <button class="btn btn-secondary" onclick="aiqCopyAll()" style="font-size:13px;padding:6px 14px;">
+                                    <i class="fas fa-copy"></i> 复制全部
+                                </button>
+                                <button class="btn btn-primary" onclick="aiqSaveToExam()" style="font-size:13px;padding:6px 14px;">
+                                    <i class="fas fa-save"></i> 保存到考试题库
+                                </button>
+                            </div>
+                        </div>
+                        <div id="aiq-questions-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI出题 API 设置弹窗 -->
+            <div class="modal" id="aiqSettingsModal">
+                <div class="modal-content" style="max-width:500px;">
+                    <span class="modal-close" onclick="closeModal('aiqSettingsModal')">&times;</span>
+                    <h3><i class="fas fa-cog" style="color:var(--accent);"></i> AI 出题 API 设置</h3>
+                    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">配置 LLM API 用于智能出题功能。支持 OpenAI 兼容接口（如 OpenAI、DeepSeek、通义千问等）。</p>
+                    <div class="form-group">
+                        <label>API 类型</label>
+                        <select id="aiq-api-type" onchange="aiqUpdateApiHint()" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;">
+                            <option value="openai">OpenAI</option>
+                            <option value="deepseek">DeepSeek</option>
+                            <option value="qwen">通义千问</option>
+                            <option value="custom">自定义 (OpenAI 兼容)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>API Base URL</label>
+                        <input type="text" id="aiq-api-url" placeholder="https://api.openai.com/v1" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;">
+                    </div>
+                    <div class="form-group">
+                        <label>API Key</label>
+                        <input type="password" id="aiq-api-key" placeholder="sk-..." style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;">
+                    </div>
+                    <div class="form-group">
+                        <label>模型名称</label>
+                        <input type="text" id="aiq-api-model" placeholder="gpt-4o-mini" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;">
+                    </div>
+                    <div style="text-align:right;margin-top:20px;">
+                        <button class="btn btn-primary" onclick="aiqSaveSettings()">保存设置</button>
+                    </div>
                 </div>
             </div>
 

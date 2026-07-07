@@ -8595,6 +8595,7 @@ function showGrowthTab(tab) {
     if (tab === 'plans') renderPlanList();
     else if (tab === 'employees') renderEmployeeList();
     else if (tab === 'exams') renderExamList();
+    else if (tab === 'ai-questions') aiqInitTab();
 }
 
 // ==================== 培养计划 ====================
@@ -11027,4 +11028,795 @@ function parseDocxTableToPlan(html, fileName) {
         phases: phases,
         unifiedRequirements: unifiedRequirements
     };
+}
+
+
+// ==================== 智能出题功能 ====================
+
+// --- 智能出题状态变量 ---
+let aiqUploadedMaterials = [];   // [{name, text}]
+let aiqUploadedReferences = [];  // [{name, text}]
+let aiqGeneratedQuestions = [];  // 生成的题目数组
+
+// AI 预设配置
+const AIQ_PRESETS = {
+    openai:   { url: 'https://api.openai.com/v1',                    model: 'gpt-4o-mini' },
+    deepseek: { url: 'https://api.deepseek.com/v1',                  model: 'deepseek-chat' },
+    qwen:     { url: 'https://dashscope.aliyuncs.com/compatible-mode/v1', model: 'qwen-plus' },
+    custom:   { url: '', model: '' }
+};
+
+// --- 初始化 Tab ---
+function aiqInitTab() {
+    aiqLoadSettings();
+    aiqLoadPhases();
+}
+
+// --- 根据选中 plan 加载 phases ---
+function aiqLoadPhases() {
+    const planSel = document.getElementById('aiq-plan');
+    const phaseSel = document.getElementById('aiq-phase');
+    if (!planSel || !phaseSel) return;
+
+    // 填充计划下拉
+    if (planSel.options.length <= 1) {
+        planSel.innerHTML = '<option value="">-- 请选择培养计划 --</option>';
+        growthPlans.forEach(function(plan) {
+            var opt = document.createElement('option');
+            opt.value = plan.id;
+            opt.textContent = plan.name;
+            planSel.appendChild(opt);
+        });
+    }
+
+    // 填充阶段下拉
+    var selectedPlanId = planSel.value;
+    phaseSel.innerHTML = '<option value="">-- 请选择阶段（可选）--</option>';
+    if (selectedPlanId) {
+        var plan = growthPlans.find(function(p) { return p.id === selectedPlanId; });
+        if (plan && plan.phases) {
+            plan.phases.forEach(function(phase) {
+                var opt = document.createElement('option');
+                opt.value = phase.id;
+                opt.textContent = phase.name;
+                phaseSel.appendChild(opt);
+            });
+        }
+    }
+}
+
+// ==================== 文件上传与文本提取 ====================
+
+function aiqHandleFiles(files, type) {
+    if (!files || files.length === 0) return;
+    var listEl = document.getElementById(type === 'materials' ? 'aiq-materials-list' : 'aiq-reference-list');
+    var targetArr = type === 'materials' ? aiqUploadedMaterials : aiqUploadedReferences;
+
+    Array.from(files).forEach(function(file) {
+        // 检查重复
+        var exists = targetArr.some(function(f) { return f.name === file.name; });
+        if (exists) {
+            console.warn('文件已存在: ' + file.name);
+            return;
+        }
+
+        // 显示加载中状态
+        var loadingItem = document.createElement('div');
+        loadingItem.className = 'aiq-file-item';
+        loadingItem.id = 'aiq-loading-' + Date.now() + Math.random().toString(36).substr(2, 4);
+        loadingItem.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 正在解析: ' + escHtml(file.name) + '...';
+        loadingItem.style.cssText = 'padding:6px 10px;font-size:12px;color:var(--text-secondary);display:flex;align-items:center;gap:6px;';
+        listEl.appendChild(loadingItem);
+
+        aiqExtractTextFromFile(file).then(function(text) {
+            targetArr.push({ name: file.name, text: text });
+            loadingItem.id = '';
+            loadingItem.innerHTML = '<i class="fas fa-file-alt"></i> ' + escHtml(file.name) +
+                ' <span style="color:var(--text-secondary);font-size:11px;">(' + text.length + ' 字)</span>' +
+                '<button onclick="aiqRemoveFile(this,\'' + type + '\',' + (targetArr.length - 1) + ')" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text-secondary);font-size:14px;" title="移除"><i class="fas fa-times"></i></button>';
+            loadingItem.style.color = 'var(--text-primary)';
+        }).catch(function(err) {
+            loadingItem.innerHTML = '<i class="fas fa-exclamation-triangle" style="color:var(--danger);"></i> ' + escHtml(file.name) + ' 解析失败: ' + escHtml(err.message || '未知错误');
+            loadingItem.style.color = 'var(--danger)';
+            console.warn('文件解析失败:', file.name, err);
+        });
+    });
+}
+
+function aiqRemoveFile(btn, type, index) {
+    var arr = type === 'materials' ? aiqUploadedMaterials : aiqUploadedReferences;
+    arr.splice(index, 1);
+    var item = btn.closest('.aiq-file-item');
+    if (item) item.remove();
+    // 重新渲染列表
+    aiqRenderFileList(type);
+}
+
+function aiqRenderFileList(type) {
+    var arr = type === 'materials' ? aiqUploadedMaterials : aiqUploadedReferences;
+    var listEl = document.getElementById(type === 'materials' ? 'aiq-materials-list' : 'aiq-reference-list');
+    listEl.innerHTML = '';
+    arr.forEach(function(f, idx) {
+        var item = document.createElement('div');
+        item.className = 'aiq-file-item';
+        item.style.cssText = 'padding:6px 10px;font-size:12px;display:flex;align-items:center;gap:6px;';
+        item.innerHTML = '<i class="fas fa-file-alt"></i> ' + escHtml(f.name) +
+            ' <span style="color:var(--text-secondary);font-size:11px;">(' + f.text.length + ' 字)</span>' +
+            '<button onclick="aiqRemoveFile(this,\'' + type + '\',' + idx + ')" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text-secondary);font-size:14px;" title="移除"><i class="fas fa-times"></i></button>';
+        listEl.appendChild(item);
+    });
+}
+
+function aiqExtractTextFromFile(file) {
+    return new Promise(function(resolve, reject) {
+        var ext = file.name.split('.').pop().toLowerCase();
+
+        if (ext === 'txt' || ext === 'md') {
+            var reader = new FileReader();
+            reader.onload = function(e) { resolve(e.target.result); };
+            reader.onerror = function() { reject(new Error('文件读取失败')); };
+            reader.readAsText(file);
+        } else if (ext === 'docx') {
+            // 使用 mammoth.js 提取文本
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    if (typeof mammoth === 'undefined') {
+                        // 尝试动态加载 mammoth
+                        if (typeof ensureLib === 'function') {
+                            ensureLib('mammoth').then(function() {
+                                _aiqExtractDocx(e.target.result).then(resolve).catch(reject);
+                            }).catch(function() { reject(new Error('mammoth.js 库加载失败')); });
+                        } else {
+                            reject(new Error('mammoth.js 未加载'));
+                        }
+                    } else {
+                        _aiqExtractDocx(e.target.result).then(resolve).catch(reject);
+                    }
+                } catch(err) {
+                    reject(err);
+                }
+            };
+            reader.onerror = function() { reject(new Error('文件读取失败')); };
+            reader.readAsArrayBuffer(file);
+        } else if (ext === 'pdf') {
+            reject(new Error('PDF 文件暂不支持，请使用 .txt、.md 或 .docx 格式'));
+        } else {
+            reject(new Error('不支持的文件格式: .' + ext));
+        }
+    });
+}
+
+function _aiqExtractDocx(arrayBuffer) {
+    return mammoth.convertToHtml({ arrayBuffer: arrayBuffer }).then(function(result) {
+        // 从 HTML 中提取纯文本
+        var div = document.createElement('div');
+        div.innerHTML = result.value;
+        return div.textContent || div.innerText || '';
+    });
+}
+
+// ==================== API 设置管理 ====================
+
+function showAiQuestionSettings() {
+    var panel = document.getElementById('aiq-settings-panel');
+    if (panel) {
+        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    }
+}
+
+function aiqSaveSettings() {
+    var settings = {
+        type:  document.getElementById('aiq-api-type').value,
+        url:   document.getElementById('aiq-api-url').value.trim(),
+        key:   document.getElementById('aiq-api-key').value.trim(),
+        model: document.getElementById('aiq-api-model').value.trim()
+    };
+    localStorage.setItem('aiq_api_settings', JSON.stringify(settings));
+    alert('API 设置已保存');
+}
+
+function aiqLoadSettings() {
+    try {
+        var settings = JSON.parse(localStorage.getItem('aiq_api_settings') || 'null');
+        if (settings) {
+            document.getElementById('aiq-api-type').value = settings.type || 'openai';
+            document.getElementById('aiq-api-url').value = settings.url || '';
+            document.getElementById('aiq-api-key').value = settings.key || '';
+            document.getElementById('aiq-api-model').value = settings.model || '';
+        } else {
+            // 使用默认值
+            document.getElementById('aiq-api-type').value = 'openai';
+            aiqUpdateApiHint();
+        }
+    } catch(e) {
+        console.warn('加载 API 设置失败:', e);
+    }
+    aiqUpdateApiHint();
+}
+
+function aiqUpdateApiHint() {
+    var type = document.getElementById('aiq-api-type').value;
+    var preset = AIQ_PRESETS[type];
+    if (preset) {
+        var urlEl = document.getElementById('aiq-api-url');
+        var modelEl = document.getElementById('aiq-api-model');
+        if (!urlEl.value || urlEl.placeholder === urlEl.value) {
+            urlEl.placeholder = preset.url || '请输入 API 地址';
+        }
+        if (!modelEl.value || modelEl.placeholder === modelEl.value) {
+            modelEl.placeholder = preset.model || '请输入模型名称';
+        }
+        // 如果是非 custom 且字段为空，自动填充默认值
+        if (type !== 'custom') {
+            if (!urlEl.value) urlEl.value = preset.url;
+            if (!modelEl.value) modelEl.value = preset.model;
+        }
+    }
+}
+
+function _aiqGetApiSettings() {
+    try {
+        var settings = JSON.parse(localStorage.getItem('aiq_api_settings') || 'null');
+        if (settings && settings.url && settings.key) {
+            return settings;
+        }
+    } catch(e) {}
+    return null;
+}
+
+// ==================== 主生成函数 ====================
+
+function aiqGenerate() {
+    // 1. 收集配置
+    var planId = document.getElementById('aiq-plan').value;
+    var phaseId = document.getElementById('aiq-phase').value;
+    var topics = document.getElementById('aiq-topics').value.trim();
+    var difficulty = document.getElementById('aiq-difficulty').value;
+
+    // 收集题型和数量
+    var questionTypes = {};
+    var typeKeys = ['single', 'multiple', 'fill', 'essay', 'practical'];
+    var totalQuestions = 0;
+    typeKeys.forEach(function(t) {
+        var checked = document.getElementById('aiq-type-' + t).checked;
+        var count = parseInt(document.getElementById('aiq-count-' + t).value) || 0;
+        if (checked && count > 0) {
+            questionTypes[t] = count;
+            totalQuestions += count;
+        }
+    });
+
+    // 2. 校验
+    if (totalQuestions === 0) {
+        alert('请至少选择一种题型并设置数量');
+        return;
+    }
+    if (aiqUploadedMaterials.length === 0 && !topics) {
+        alert('请上传学习资料或输入知识点，至少需要一项作为出题依据');
+        return;
+    }
+
+    // 3. 检查 API 设置
+    var apiSettings = _aiqGetApiSettings();
+    if (!apiSettings) {
+        alert('请先配置 API 设置（点击右上角"API 设置"按钮）');
+        return;
+    }
+
+    // 4. 获取关联的阶段信息
+    var phaseInfo = '';
+    if (planId) {
+        var plan = growthPlans.find(function(p) { return p.id === planId; });
+        if (plan) {
+            phaseInfo = '培养计划: ' + plan.name;
+            if (phaseId && plan.phases) {
+                var phase = plan.phases.find(function(ph) { return ph.id === phaseId; });
+                if (phase) {
+                    phaseInfo += '\n培养阶段: ' + phase.name;
+                    if (phase.goals) phaseInfo += '\n阶段目标: ' + phase.goals;
+                    if (phase.tools) phaseInfo += '\n涉及工具: ' + phase.tools;
+                    if (phase.examCriteria) phaseInfo += '\n考核标准: ' + phase.examCriteria;
+                }
+            }
+        }
+    }
+
+    // 5. 设置 loading 状态
+    var btn = document.getElementById('aiq-generate-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 正在生成考题...';
+    btn.style.opacity = '0.6';
+
+    // 6. 构建 prompt
+    var messages = aiqBuildPrompt({
+        phaseInfo: phaseInfo,
+        topics: topics,
+        questionTypes: questionTypes,
+        difficulty: difficulty,
+        materials: aiqUploadedMaterials,
+        references: aiqUploadedReferences
+    });
+
+    // 7. 调用 LLM
+    aiqCallLLM(messages).then(function(responseText) {
+        // 8. 解析结果
+        var questions = aiqParseResponse(responseText);
+        if (questions.length === 0) {
+            alert('未能从 AI 返回中解析出有效题目，请重试或调整 prompt');
+            return;
+        }
+        // 9. 渲染结果
+        aiqGeneratedQuestions = questions;
+        aiqRenderResults(questions);
+    }).catch(function(err) {
+        alert('生成失败: ' + (err.message || err));
+        console.error('AI 出题失败:', err);
+    }).finally(function() {
+        // 恢复按钮状态
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-magic"></i> 开始生成';
+        btn.style.opacity = '1';
+    });
+}
+
+// ==================== Prompt 构建 ====================
+
+function aiqBuildPrompt(config) {
+    var typeNames = {
+        single: '单选题',
+        multiple: '多选题',
+        fill: '填空题',
+        essay: '问答题',
+        practical: '实操题'
+    };
+    var difficultyNames = {
+        easy: '简单（基础概念和常识）',
+        medium: '中等（需要理解和应用）',
+        hard: '困难（需要综合分析和判断）'
+    };
+
+    var systemPrompt = '你是一位资深的留学行业培训考试专家，精通留学咨询、院校申请、签证办理、留学规划等领域的专业知识。你擅长根据培训资料和考核要求，出高质量的考试题目来检验学员的学习效果。\n\n' +
+        '请严格按照以下 JSON 格式输出题目数组，不要添加任何其他内容：\n' +
+        '```json\n[\n' +
+        '  {\n' +
+        '    "type": "single|multiple|fill|essay|practical",\n' +
+        '    "question": "题目内容",\n' +
+        '    "options": ["A. 选项1", "B. 选项2", "C. 选项3", "D. 选项4"],  // 仅选择题需要\n' +
+        '    "correctAnswer": 0,  // 单选题为选项索引(0-3)，多选题为索引数组[0,2]，填空/问答/实操题为字符串\n' +
+        '    "points": 5,  // 分值\n' +
+        '    "explanation": "答案解析"\n' +
+        '  }\n' +
+        ']\n```';
+
+    var userPrompt = '请根据以下信息生成考题：\n\n';
+
+    // 阶段信息
+    if (config.phaseInfo) {
+        userPrompt += '## 培养阶段信息\n' + config.phaseInfo + '\n\n';
+    }
+
+    // 知识点
+    if (config.topics) {
+        userPrompt += '## 重点知识点\n' + config.topics + '\n\n';
+    }
+
+    // 学习资料
+    if (config.materials && config.materials.length > 0) {
+        userPrompt += '## 学习资料\n';
+        config.materials.forEach(function(m) {
+            var text = m.text.length > 5000 ? m.text.substring(0, 5000) + '\n...（内容过长已截断）' : m.text;
+            userPrompt += '### ' + m.name + '\n' + text + '\n\n';
+        });
+    }
+
+    // 往年试题参考
+    if (config.references && config.references.length > 0) {
+        userPrompt += '## 往年试题参考（请保持相似的风格和难度）\n';
+        config.references.forEach(function(r) {
+            var text = r.text.length > 3000 ? r.text.substring(0, 3000) + '\n...（内容过长已截断）' : r.text;
+            userPrompt += '### ' + r.name + '\n' + text + '\n\n';
+        });
+    }
+
+    // 题型要求
+    userPrompt += '## 出题要求\n';
+    userPrompt += '请按以下题型和数量生成考题：\n';
+    Object.keys(config.questionTypes).forEach(function(type) {
+        userPrompt += '- ' + typeNames[type] + ': ' + config.questionTypes[type] + ' 道\n';
+    });
+    userPrompt += '\n';
+
+    // 难度要求
+    userPrompt += '## 难度要求\n' + (difficultyNames[config.difficulty] || config.difficulty) + '\n\n';
+
+    // 各题型格式要求
+    userPrompt += '## 各题型格式说明\n';
+    userPrompt += '1. 单选题(single): 4个选项，correctAnswer 为正确选项的索引(0=A, 1=B, 2=C, 3=D)\n';
+    userPrompt += '2. 多选题(multiple): 4个选项，correctAnswer 为正确选项索引数组，如 [0,2] 表示 A 和 C\n';
+    userPrompt += '3. 填空题(fill): correctAnswer 为正确答案文本，可在答案中用下划线标记空缺处\n';
+    userPrompt += '4. 问答题(essay): correctAnswer 为参考答案要点\n';
+    userPrompt += '5. 实操题(practical): 模拟真实工作场景的题目，correctAnswer 为参考操作步骤或评估要点\n\n';
+
+    // 分值建议
+    var pointsMap = { single: 3, multiple: 5, fill: 3, essay: 10, practical: 15 };
+    userPrompt += '## 分值建议\n';
+    Object.keys(config.questionTypes).forEach(function(type) {
+        userPrompt += '- ' + typeNames[type] + ': 每题 ' + pointsMap[type] + ' 分\n';
+    });
+
+    userPrompt += '\n请现在生成所有题目，直接输出 JSON 数组，用 markdown code block 包裹。';
+
+    return [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+    ];
+}
+
+// ==================== LLM 调用 ====================
+
+function aiqCallLLM(messages) {
+    var settings = _aiqGetApiSettings();
+    if (!settings) {
+        return Promise.reject(new Error('API 设置未配置，请先点击右上角"API 设置"进行配置'));
+    }
+
+    var url = settings.url.replace(/\/+$/, '') + '/chat/completions';
+    var body = JSON.stringify({
+        model: settings.model,
+        messages: messages,
+        temperature: 0.7,
+        max_tokens: 8000
+    });
+
+    return fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + settings.key
+        },
+        body: body
+    }).then(function(response) {
+        if (!response.ok) {
+            return response.text().then(function(text) {
+                var errMsg = 'API 请求失败 (HTTP ' + response.status + ')';
+                try {
+                    var errJson = JSON.parse(text);
+                    if (errJson.error && errJson.error.message) {
+                        errMsg += ': ' + errJson.error.message;
+                    }
+                } catch(e) {
+                    if (text.length < 200) errMsg += ': ' + text;
+                }
+                throw new Error(errMsg);
+            });
+        }
+        return response.json();
+    }).then(function(data) {
+        if (data.choices && data.choices[0] && data.choices[0].message) {
+            return data.choices[0].message.content;
+        }
+        throw new Error('API 返回格式异常，无法解析回复内容');
+    });
+}
+
+// ==================== 响应解析 ====================
+
+function aiqParseResponse(text) {
+    var jsonStr = '';
+
+    // 1. 尝试从 markdown code block 中提取 JSON
+    var codeBlockMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
+    if (codeBlockMatch) {
+        jsonStr = codeBlockMatch[1].trim();
+    } else {
+        // 2. 尝试找到 JSON 数组
+        var arrayMatch = text.match(/\[[\s\S]*\]/);
+        if (arrayMatch) {
+            jsonStr = arrayMatch[0];
+        } else {
+            jsonStr = text.trim();
+        }
+    }
+
+    // 3. 尝试解析 JSON
+    var questions;
+    try {
+        questions = JSON.parse(jsonStr);
+    } catch(e) {
+        console.warn('JSON 解析失败，尝试修复:', e.message);
+        // 尝试简单修复：移除可能的尾随逗号
+        try {
+            jsonStr = jsonStr.replace(/,\s*([\]}])/g, '$1');
+            questions = JSON.parse(jsonStr);
+        } catch(e2) {
+            console.warn('JSON 修复失败:', e2.message);
+            return [];
+        }
+    }
+
+    // 4. 验证格式
+    if (!Array.isArray(questions)) {
+        console.warn('返回的不是数组格式');
+        return [];
+    }
+
+    var validQuestions = [];
+    var typeMap = { 'single': 'single', 'multiple': 'multiple', 'fill': 'fill', 'essay': 'essay', 'practical': 'practical' };
+    questions.forEach(function(q, idx) {
+        if (!q || !q.question) {
+            console.warn('第' + (idx + 1) + '题缺少 question 字段，跳过');
+            return;
+        }
+        var normalized = {
+            type: typeMap[q.type] || 'single',
+            question: String(q.question),
+            options: Array.isArray(q.options) ? q.options.map(String) : [],
+            correctAnswer: q.correctAnswer !== undefined ? q.correctAnswer : '',
+            points: parseInt(q.points) || 5,
+            explanation: String(q.explanation || '')
+        };
+
+        // 基本验证
+        if ((normalized.type === 'single' || normalized.type === 'multiple') && normalized.options.length < 2) {
+            console.warn('第' + (idx + 1) + '题选项不足，跳过');
+            return;
+        }
+
+        validQuestions.push(normalized);
+    });
+
+    return validQuestions;
+}
+
+// ==================== 结果渲染 ====================
+
+function aiqRenderResults(questions) {
+    var resultsEl = document.getElementById('aiq-results');
+    var listEl = document.getElementById('aiq-questions-list');
+    if (!resultsEl || !listEl) return;
+
+    resultsEl.style.display = 'block';
+
+    // 更新统计
+    var totalPoints = 0;
+    questions.forEach(function(q) { totalPoints += q.points; });
+    var statsEl = document.getElementById('aiq-results-stats');
+    if (statsEl) {
+        statsEl.textContent = '共 ' + questions.length + ' 题，总分 ' + totalPoints + ' 分';
+    }
+
+    // 按题型分组
+    var typeNames = {
+        single: '单选题',
+        multiple: '多选题',
+        fill: '填空题',
+        essay: '问答题',
+        practical: '实操题'
+    };
+    var typeColors = {
+        single: '#3b82f6',
+        multiple: '#8b5cf6',
+        fill: '#10b981',
+        essay: '#f59e0b',
+        practical: '#ef4444'
+    };
+
+    var groups = {};
+    questions.forEach(function(q) {
+        if (!groups[q.type]) groups[q.type] = [];
+        groups[q.type].push(q);
+    });
+
+    var html = '';
+    var qIndex = 0;
+    Object.keys(groups).forEach(function(type) {
+        html += '<div class="aiq-question-group" style="margin-bottom:20px;">';
+        html += '<h4 style="color:' + (typeColors[type] || '#666') + ';margin-bottom:10px;font-size:14px;"><i class="fas fa-list"></i> ' + (typeNames[type] || type) + ' (' + groups[type].length + ' 题)</h4>';
+
+        groups[type].forEach(function(q, gIdx) {
+            var idx = qIndex++;
+            html += '<div class="aiq-question-card" data-index="' + idx + '" style="border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:10px;background:var(--bg-primary,#fff);">';
+
+            // 题头和删除按钮
+            html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">';
+            html += '<span style="font-weight:600;font-size:13px;color:var(--text-secondary);">第 ' + (idx + 1) + ' 题 (' + q.points + ' 分)</span>';
+            html += '<button onclick="aiqDeleteQuestion(' + idx + ')" style="background:none;border:none;cursor:pointer;color:var(--text-secondary);font-size:13px;" title="删除此题"><i class="fas fa-trash-alt"></i></button>';
+            html += '</div>';
+
+            // 题目内容（可编辑）
+            html += '<div style="margin-bottom:8px;">';
+            html += '<textarea class="aiq-q-text" data-index="' + idx + '" style="width:100%;min-height:60px;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;resize:vertical;" onchange="aiqUpdateQuestion(' + idx + ',\'question\',this.value)">' + escHtml(q.question) + '</textarea>';
+            html += '</div>';
+
+            // 选项（选择题）
+            if (type === 'single' || type === 'multiple') {
+                html += '<div class="aiq-options" style="margin-bottom:8px;">';
+                q.options.forEach(function(opt, optIdx) {
+                    var isCorrect = false;
+                    if (type === 'single' && q.correctAnswer === optIdx) isCorrect = true;
+                    if (type === 'multiple' && Array.isArray(q.correctAnswer) && q.correctAnswer.indexOf(optIdx) !== -1) isCorrect = true;
+                    html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">';
+                    html += '<input type="' + (type === 'single' ? 'radio' : 'checkbox') + '" ' + (isCorrect ? 'checked' : '') + ' disabled style="accent-color:' + (isCorrect ? '#10b981' : 'var(--border)') + ';">';
+                    html += '<input type="text" value="' + escAttr(opt) + '" style="flex:1;padding:4px 8px;border:1px solid var(--border);border-radius:4px;font-size:12px;' + (isCorrect ? 'background:#ecfdf5;border-color:#10b981;' : '') + '" onchange="aiqUpdateOption(' + idx + ',' + optIdx + ',this.value)">';
+                    if (isCorrect) html += '<i class="fas fa-check" style="color:#10b981;font-size:11px;"></i>';
+                    html += '</div>';
+                });
+                html += '</div>';
+            }
+
+            // 答案区域
+            html += '<div style="margin-bottom:6px;">';
+            html += '<label style="font-size:11px;color:var(--text-secondary);font-weight:600;">参考答案:</label>';
+            if (type === 'single') {
+                html += '<div style="font-size:12px;color:#10b981;margin-top:2px;">正确选项: ' + String.fromCharCode(65 + q.correctAnswer) + '</div>';
+            } else if (type === 'multiple') {
+                var correctLetters = Array.isArray(q.correctAnswer) ? q.correctAnswer.map(function(i) { return String.fromCharCode(65 + i); }).join(', ') : '';
+                html += '<div style="font-size:12px;color:#10b981;margin-top:2px;">正确选项: ' + escHtml(correctLetters) + '</div>';
+            } else {
+                html += '<textarea class="aiq-answer-text" data-index="' + idx + '" style="width:100%;min-height:40px;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:12px;resize:vertical;margin-top:2px;" onchange="aiqUpdateQuestion(' + idx + ',\'correctAnswer\',this.value)">' + escHtml(String(q.correctAnswer)) + '</textarea>';
+            }
+            html += '</div>';
+
+            // 解析
+            if (q.explanation) {
+                html += '<details style="font-size:12px;"><summary style="cursor:pointer;color:var(--text-secondary);">查看解析</summary>';
+                html += '<div style="padding:6px 8px;margin-top:4px;background:var(--bg-secondary,#f8f9fa);border-radius:4px;color:var(--text-secondary);">';
+                html += '<textarea class="aiq-explanation-text" data-index="' + idx + '" style="width:100%;min-height:30px;padding:4px;border:none;background:transparent;font-size:12px;resize:vertical;" onchange="aiqUpdateQuestion(' + idx + ',\'explanation\',this.value)">' + escHtml(q.explanation) + '</textarea>';
+                html += '</div></details>';
+            }
+
+            html += '</div>'; // end question card
+        });
+
+        html += '</div>'; // end group
+    });
+
+    listEl.innerHTML = html;
+
+    // 滚动到结果区域
+    resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// --- 题目编辑操作 ---
+function aiqUpdateQuestion(index, field, value) {
+    if (aiqGeneratedQuestions[index]) {
+        aiqGeneratedQuestions[index][field] = value;
+    }
+}
+
+function aiqUpdateOption(qIndex, optIndex, value) {
+    if (aiqGeneratedQuestions[qIndex] && aiqGeneratedQuestions[qIndex].options) {
+        aiqGeneratedQuestions[qIndex].options[optIndex] = value;
+    }
+}
+
+function aiqDeleteQuestion(index) {
+    if (confirm('确定要删除这道题吗？')) {
+        aiqGeneratedQuestions.splice(index, 1);
+        aiqRenderResults(aiqGeneratedQuestions);
+    }
+}
+
+// ==================== 复制所有题目 ====================
+
+function aiqCopyAll() {
+    if (aiqGeneratedQuestions.length === 0) {
+        alert('没有可复制的题目');
+        return;
+    }
+
+    var typeNames = {
+        single: '单选题',
+        multiple: '多选题',
+        fill: '填空题',
+        essay: '问答题',
+        practical: '实操题'
+    };
+
+    var text = '';
+    var totalPoints = 0;
+    aiqGeneratedQuestions.forEach(function(q, idx) {
+        totalPoints += q.points;
+        text += (idx + 1) + '. [' + (typeNames[q.type] || q.type) + '] (' + q.points + '分)\n';
+        text += q.question + '\n';
+
+        if ((q.type === 'single' || q.type === 'multiple') && q.options.length > 0) {
+            q.options.forEach(function(opt) {
+                text += '   ' + opt + '\n';
+            });
+        }
+
+        text += '\n参考答案: ';
+        if (q.type === 'single') {
+            text += String.fromCharCode(65 + q.correctAnswer);
+        } else if (q.type === 'multiple' && Array.isArray(q.correctAnswer)) {
+            text += q.correctAnswer.map(function(i) { return String.fromCharCode(65 + i); }).join(', ');
+        } else {
+            text += String(q.correctAnswer);
+        }
+        text += '\n';
+
+        if (q.explanation) {
+            text += '解析: ' + q.explanation + '\n';
+        }
+        text += '\n---\n\n';
+    });
+
+    text = '【智能生成考题】共 ' + aiqGeneratedQuestions.length + ' 题，总分 ' + totalPoints + ' 分\n\n' + text;
+
+    navigator.clipboard.writeText(text).then(function() {
+        var btn = document.querySelector('#aiq-results .btn-secondary');
+        if (btn) {
+            var orig = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i> 已复制';
+            btn.style.color = '#10b981';
+            setTimeout(function() { btn.innerHTML = orig; btn.style.color = ''; }, 2000);
+        }
+    }).catch(function(err) {
+        // 降级：创建 textarea 复制
+        var textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.cssText = 'position:fixed;left:-9999px;';
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+            document.execCommand('copy');
+            alert('已复制到剪贴板');
+        } catch(e) {
+            alert('复制失败，请手动复制');
+        }
+        document.body.removeChild(textarea);
+    });
+}
+
+// ==================== 保存到考试题库 ====================
+
+function aiqSaveToExam() {
+    if (aiqGeneratedQuestions.length === 0) {
+        alert('没有可保存的题目，请先生成考题');
+        return;
+    }
+
+    var planId = document.getElementById('aiq-plan').value;
+    var phaseId = document.getElementById('aiq-phase').value;
+
+    // 计算总分
+    var totalPoints = 0;
+    aiqGeneratedQuestions.forEach(function(q) { totalPoints += q.points; });
+
+    // 弹窗输入考试名称
+    var examName = prompt('请输入考试名称：', 'AI生成考题 - ' + new Date().toLocaleDateString('zh-CN'));
+    if (!examName || !examName.trim()) return;
+
+    // 输入及格分数
+    var passScore = prompt('请输入及格分数（总分 ' + totalPoints + '）：', Math.round(totalPoints * 0.6));
+    if (passScore === null) return;
+    passScore = parseInt(passScore) || Math.round(totalPoints * 0.6);
+
+    // 创建 exam 对象
+    var exam = {
+        id: genGrowthId(),
+        name: examName.trim(),
+        planId: planId || '',
+        phaseId: phaseId || '',
+        passScore: passScore,
+        questions: aiqGeneratedQuestions.map(function(q) {
+            return {
+                type: q.type,
+                question: q.question,
+                options: q.options ? q.options.slice() : [],
+                correctAnswer: q.type === 'multiple' && !Array.isArray(q.correctAnswer) ? [q.correctAnswer] : q.correctAnswer,
+                points: q.points,
+                explanation: q.explanation || ''
+            };
+        }),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    };
+
+    growthExams.push(exam);
+    saveGrowthExams();
+
+    alert('✅ 已成功保存到考试题库！\n\n考试名称: ' + exam.name + '\n题目数量: ' + exam.questions.length + ' 题\n总分: ' + totalPoints + ' 分\n及格分: ' + passScore + ' 分\n\n建议切换到「考核评估」Tab 查看和管理。');
 }
