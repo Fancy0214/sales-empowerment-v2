@@ -9036,13 +9036,34 @@ async function parseDocxZipToPlan(arrayBuffer, fileName) {
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(docXml, 'text/xml');
 
-    const tables = xmlDoc.getElementsByTagNameNS('http://schemas.openxmlformats.org/wordprocessingml/2006/main', 'tbl');
+    const nsW = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+    const tables = xmlDoc.getElementsByTagNameNS(nsW, 'tbl');
     console.log('[DOCX-ZIP] Tables found in raw XML:', tables.length);
     if (tables.length === 0) return null;
 
     const table = tables[0];
-    const rows = table.getElementsByTagNameNS('http://schemas.openxmlformats.org/wordprocessingml/2006/main', 'tr');
-    if (rows.length < 2) return null;
+    const allRows = Array.from(table.getElementsByTagNameNS(nsW, 'tr'));
+    if (allRows.length < 2) return null;
+
+    // 提取单元格文本辅助函数
+    function extractCellText(cell) {
+        const ps = cell.getElementsByTagNameNS(nsW, 'p');
+        if (ps.length <= 1) {
+            const ts = cell.getElementsByTagNameNS(nsW, 't');
+            return Array.from(ts).map(t => t.textContent).join('').trim();
+        }
+        const paraTexts = Array.from(ps).map(p => {
+            const pt = p.getElementsByTagNameNS(nsW, 't');
+            return Array.from(pt).map(t => t.textContent).join('').trim();
+        }).filter(t => t);
+        return paraTexts.join('\n').trim();
+    }
+
+    // 获取一行的所有单元格文本
+    function getRowTexts(row) {
+        const cells = row.getElementsByTagNameNS(nsW, 'tc');
+        return Array.from(cells).map(cell => extractCellText(cell));
+    }
 
     // 提取计划名称
     let planName = '';
@@ -9050,65 +9071,64 @@ async function parseDocxZipToPlan(arrayBuffer, fileName) {
         planName = fileName.replace(/\.docx?$/i, '').replace(/[_-]/g, ' ').trim();
     }
     if (!planName) {
-        const firstP = xmlDoc.getElementsByTagNameNS('http://schemas.openxmlformats.org/wordprocessingml/2006/main', 'p')[0];
+        const firstP = xmlDoc.getElementsByTagNameNS(nsW, 'p')[0];
         if (firstP) {
-            const ts = firstP.getElementsByTagNameNS('http://schemas.openxmlformats.org/wordprocessingml/2006/main', 't');
+            const ts = firstP.getElementsByTagNameNS(nsW, 't');
             planName = Array.from(ts).map(t => t.textContent).join('').trim();
         }
         if (!planName) planName = '导入的培养计划';
     }
 
-    // 检测列结构
-    const headerCells = rows[0].getElementsByTagNameNS('http://schemas.openxmlformats.org/wordprocessingml/2006/main', 'tc');
-    const headerTexts = Array.from(headerCells).map(cell => {
-        const ts = cell.getElementsByTagNameNS('http://schemas.openxmlformats.org/wordprocessingml/2006/main', 't');
-        return Array.from(ts).map(t => t.textContent).join('').trim();
-    });
-    console.log('[DOCX-ZIP] Headers:', headerTexts);
-
+    // 在前几行中查找真正的表头行（包含"序号""考核月份""工作任务"等关键词的行）
+    let headerRowIndex = -1;
+    let headerTexts = [];
     let colIndex = { month: -1, task: -1, criteria: -1 };
-    headerTexts.forEach((text, idx) => {
-        if (colIndex.month === -1 && /月|周期|阶段|时间/i.test(text) && !/衡量|标准|考核/i.test(text)) {
-            colIndex.month = idx;
-        }
-        if (colIndex.task === -1 && /工作|任务|内容|项目/i.test(text) && !/衡量|标准|考核/i.test(text)) {
-            colIndex.task = idx;
-        }
-        if (colIndex.criteria === -1 && /衡量|标准|考核|要求/i.test(text)) {
-            colIndex.criteria = idx;
-        }
-    });
 
-    if (colIndex.month === -1 && colIndex.task === -1 && headerTexts.length >= 3) {
-        if (headerTexts.length === 4) {
-            colIndex.month = 1; colIndex.task = 2; colIndex.criteria = 3;
-        } else if (headerTexts.length === 3) {
-            colIndex.month = 0; colIndex.task = 1; colIndex.criteria = 2;
+    for (let r = 0; r < Math.min(allRows.length, 5); r++) {
+        const texts = getRowTexts(allRows[r]);
+        let isHeader = false;
+        let tempCol = { month: -1, task: -1, criteria: -1 };
+        texts.forEach((text, idx) => {
+            if (tempCol.month === -1 && /^(考核)?月份|周期|阶段$/i.test(text)) {
+                tempCol.month = idx; isHeader = true;
+            }
+            if (tempCol.task === -1 && /^工作任务?$|^内容$/i.test(text)) {
+                tempCol.task = idx; isHeader = true;
+            }
+            if (tempCol.criteria === -1 && /^工作任务衡量标准$|^衡量标准$|^考核标准$|^考核要求$/i.test(text)) {
+                tempCol.criteria = idx; isHeader = true;
+            }
+        });
+        if (isHeader && (tempCol.month >= 0 || tempCol.task >= 0)) {
+            headerRowIndex = r;
+            headerTexts = texts;
+            colIndex = tempCol;
+            break;
         }
     }
+
+    // 回退：如果没找到明确表头，按列数推断
+    if (headerRowIndex === -1) {
+        const texts = getRowTexts(allRows[0]);
+        headerTexts = texts;
+        headerRowIndex = 0;
+        if (texts.length === 4) {
+            colIndex = { month: 1, task: 2, criteria: 3 };
+        } else if (texts.length === 3) {
+            colIndex = { month: 0, task: 1, criteria: 2 };
+        }
+    }
+
+    console.log('[DOCX-ZIP] Header row index:', headerRowIndex, 'Headers:', headerTexts);
     console.log('[DOCX-ZIP] Column mapping:', colIndex);
     if (colIndex.month === -1 && colIndex.task === -1) return null;
 
-    // 提取单元格文本辅助函数
-    function extractCellText(cell) {
-        const ps = cell.getElementsByTagNameNS('http://schemas.openxmlformats.org/wordprocessingml/2006/main', 'p');
-        if (ps.length <= 1) {
-            const ts = cell.getElementsByTagNameNS('http://schemas.openxmlformats.org/wordprocessingml/2006/main', 't');
-            return Array.from(ts).map(t => t.textContent).join('').trim();
-        }
-        const paraTexts = Array.from(ps).map(p => {
-            const pt = p.getElementsByTagNameNS('http://schemas.openxmlformats.org/wordprocessingml/2006/main', 't');
-            return Array.from(pt).map(t => t.textContent).join('').trim();
-        }).filter(t => t);
-        return paraTexts.join('\n').trim();
-    }
-
-    // 解析数据行，按月份分组
+    // 解析数据行（从表头行的下一行开始），按月份分组
     const monthMap = new Map();
     let unifiedRequirements = '';
 
-    for (let i = 1; i < rows.length; i++) {
-        const cells = rows[i].getElementsByTagNameNS('http://schemas.openxmlformats.org/wordprocessingml/2006/main', 'tc');
+    for (let i = headerRowIndex + 1; i < allRows.length; i++) {
+        const cells = allRows[i].getElementsByTagNameNS(nsW, 'tc');
         if (cells.length < 2) continue;
 
         const monthText = colIndex.month >= 0 && colIndex.month < cells.length ? extractCellText(cells[colIndex.month]) : '';
@@ -10908,33 +10928,49 @@ function parseDocxTableToPlan(html, fileName) {
     const rows = table.querySelectorAll('tr');
     if (rows.length < 2) { console.log('[TABLE] Too few rows:', rows.length); return null; }
 
-    // 检测列结构：分析第一行表头
-    const headerCells = Array.from(rows[0].querySelectorAll('td, th'));
-    const headerTexts = headerCells.map(c => c.textContent.trim());
-    console.log('[TABLE] Headers:', headerTexts);
-
+    // 在前几行中查找真正的表头行
+    let headerRowIndex = -1;
+    let headerTexts = [];
     let colIndex = { month: -1, task: -1, criteria: -1 };
-    headerTexts.forEach((text, idx) => {
-        if (colIndex.month === -1 && /月|周期|阶段|时间/i.test(text) && !/衡量|标准|考核/i.test(text)) {
-            colIndex.month = idx;
-        }
-        if (colIndex.task === -1 && /工作|任务|内容|项目/i.test(text) && !/衡量|标准|考核/i.test(text)) {
-            colIndex.task = idx;
-        }
-        if (colIndex.criteria === -1 && /衡量|标准|考核|要求/i.test(text)) {
-            colIndex.criteria = idx;
-        }
-    });
-    console.log('[TABLE] Column mapping:', colIndex);
 
-    // 常见4列布局推测
-    if (colIndex.month === -1 && colIndex.task === -1 && headerTexts.length >= 3) {
-        if (headerTexts.length === 4) {
-            colIndex.month = 1; colIndex.task = 2; colIndex.criteria = 3;
-        } else if (headerTexts.length === 3) {
-            colIndex.month = 0; colIndex.task = 1; colIndex.criteria = 2;
+    for (let r = 0; r < Math.min(rows.length, 5); r++) {
+        const cells = Array.from(rows[r].querySelectorAll('td, th'));
+        const texts = cells.map(c => c.textContent.trim());
+        let isHeader = false;
+        let tempCol = { month: -1, task: -1, criteria: -1 };
+        texts.forEach((text, idx) => {
+            if (tempCol.month === -1 && /^(考核)?月份|周期|阶段$/i.test(text)) {
+                tempCol.month = idx; isHeader = true;
+            }
+            if (tempCol.task === -1 && /^工作任务?$|^内容$/i.test(text)) {
+                tempCol.task = idx; isHeader = true;
+            }
+            if (tempCol.criteria === -1 && /^工作任务衡量标准$|^衡量标准$|^考核标准$|^考核要求$/i.test(text)) {
+                tempCol.criteria = idx; isHeader = true;
+            }
+        });
+        if (isHeader && (tempCol.month >= 0 || tempCol.task >= 0)) {
+            headerRowIndex = r;
+            headerTexts = texts;
+            colIndex = tempCol;
+            break;
         }
     }
+
+    // 回退：如果没找到明确表头，按列数推断
+    if (headerRowIndex === -1) {
+        const cells = Array.from(rows[0].querySelectorAll('td, th'));
+        headerTexts = cells.map(c => c.textContent.trim());
+        headerRowIndex = 0;
+        if (headerTexts.length === 4) {
+            colIndex = { month: 1, task: 2, criteria: 3 };
+        } else if (headerTexts.length === 3) {
+            colIndex = { month: 0, task: 1, criteria: 2 };
+        }
+    }
+
+    console.log('[TABLE] Header row index:', headerRowIndex, 'Headers:', headerTexts);
+    console.log('[TABLE] Column mapping:', colIndex);
     if (colIndex.month === -1 && colIndex.task === -1) { console.log('[TABLE] Failed to detect columns'); return null; }
 
     // 提取统一要求
@@ -10952,9 +10988,9 @@ function parseDocxTableToPlan(html, fileName) {
         }
     }
 
-    // 解析数据行，按月份分组
+    // 解析数据行（从表头行的下一行开始），按月份分组
     const monthMap = new Map();
-    for (let i = 1; i < rows.length; i++) {
+    for (let i = headerRowIndex + 1; i < rows.length; i++) {
         const cells = rows[i].querySelectorAll('td, th');
         if (cells.length < 2) continue;
         const monthText = colIndex.month >= 0 && colIndex.month < cells.length ? cells[colIndex.month].textContent.trim() : '';
