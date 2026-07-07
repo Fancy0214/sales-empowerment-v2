@@ -11185,26 +11185,35 @@ function aiqExtractTextFromFile(file) {
                 reject(new Error('PDF.js 未加载，请刷新页面重试'));
                 return;
             }
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'libs/pdf.worker.min.js';
-            pdfjsLib.getDocument({ data: e.target.result }).promise.then(function(pdf) {
-                var textParts = [];
-                var promises = [];
-                for (var i = 1; i <= pdf.numPages; i++) {
-                    promises.push(pdf.getPage(i).then(function(page) {
-                        return page.getTextContent().then(function(content) {
-                            var pageText = content.items.map(function(item) { return item.str; }).join(' ');
-                            textParts.push(pageText);
+            var pdfReader = new FileReader();
+            pdfReader.onload = function(pdfEvent) {
+                try {
+                    pdfjsLib.GlobalWorkerOptions.workerSrc = 'libs/pdf.worker.min.js';
+                    pdfjsLib.getDocument({ data: pdfEvent.target.result }).promise.then(function(pdf) {
+                        var textParts = [];
+                        var promises = [];
+                        for (var i = 1; i <= pdf.numPages; i++) {
+                            promises.push(pdf.getPage(i).then(function(page) {
+                                return page.getTextContent().then(function(content) {
+                                    var pageText = content.items.map(function(item) { return item.str; }).join(' ');
+                                    textParts.push(pageText);
+                                });
+                            }));
+                        }
+                        return Promise.all(promises).then(function() {
+                            return textParts.join('\n\n');
                         });
-                    }));
+                    }).then(function(text) {
+                        resolve(text.trim());
+                    }).catch(function(err) {
+                        reject(new Error('PDF 解析失败: ' + err.message));
+                    });
+                } catch(err) {
+                    reject(new Error('PDF 解析失败: ' + err.message));
                 }
-                return Promise.all(promises).then(function() {
-                    return textParts.join('\n\n');
-                });
-            }).then(function(text) {
-                resolve(text.trim());
-            }).catch(function(err) {
-                reject(new Error('PDF 解析失败: ' + err.message));
-            });
+            };
+            pdfReader.onerror = function() { reject(new Error('PDF 文件读取失败')); };
+            pdfReader.readAsArrayBuffer(file);
         } else {
             reject(new Error('不支持的文件格式: .' + ext));
         }
