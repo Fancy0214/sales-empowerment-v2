@@ -8856,8 +8856,10 @@ function parseDocxHtmlToPlan(html, fileName) {
 
     // 优先尝试表格解析
     const tables = body.querySelectorAll('table');
+    console.log('[DOCX] Tables found:', tables.length);
     if (tables.length > 0) {
         const tableResult = parseDocxTableToPlan(html, fileName);
+        console.log('[DOCX] Table parser result:', tableResult ? 'OK, phases=' + tableResult.phases.length : 'NULL');
         if (tableResult) {
             return tableResult;
         }
@@ -10747,15 +10749,16 @@ function parseDocxTableToPlan(html, fileName) {
     }
 
     const tables = body.querySelectorAll('table');
-    if (tables.length === 0) return null;
+    if (tables.length === 0) { console.log('[TABLE] No tables found'); return null; }
 
     const table = tables[0];
     const rows = table.querySelectorAll('tr');
-    if (rows.length < 2) return null;
+    if (rows.length < 2) { console.log('[TABLE] Too few rows:', rows.length); return null; }
 
     // 检测列结构：分析第一行表头
     const headerCells = Array.from(rows[0].querySelectorAll('td, th'));
     const headerTexts = headerCells.map(c => c.textContent.trim());
+    console.log('[TABLE] Headers:', headerTexts);
 
     let colIndex = { month: -1, task: -1, criteria: -1 };
     headerTexts.forEach((text, idx) => {
@@ -10769,6 +10772,7 @@ function parseDocxTableToPlan(html, fileName) {
             colIndex.criteria = idx;
         }
     });
+    console.log('[TABLE] Column mapping:', colIndex);
 
     // 常见4列布局推测
     if (colIndex.month === -1 && colIndex.task === -1 && headerTexts.length >= 3) {
@@ -10778,7 +10782,7 @@ function parseDocxTableToPlan(html, fileName) {
             colIndex.month = 0; colIndex.task = 1; colIndex.criteria = 2;
         }
     }
-    if (colIndex.month === -1 && colIndex.task === -1) return null;
+    if (colIndex.month === -1 && colIndex.task === -1) { console.log('[TABLE] Failed to detect columns'); return null; }
 
     // 提取统一要求
     let unifiedRequirements = '';
