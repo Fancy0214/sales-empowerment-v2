@@ -3382,18 +3382,6 @@ g.不接受电子印章和电子签名
     </div>
   </div>
 
-  <div class="st-card">
-    <div class="st-card-header"><span class="st-card-num">10</span><span class="st-card-title">联系方式</span></div>
-    <div class="st-card-body">
-      <ul class="st-bullet-list">
-        <li><strong>联系人：</strong>杨青，Head of ELLT</li>
-        <li><strong>电话：</strong>18551807486</li>
-        <li><strong>邮箱：</strong>qyang@oxfordinternational.com</li>
-        <li><strong>客服邮箱：</strong>ellt@oidigitalinstitute.com</li>
-      </ul>
-    </div>
-  </div>
-
   <div class="st-tool-footer">以上信息仅供参考，具体以官方最新信息为准</div>
 </div>`,
         rawText: `【Oxford ELLT 考试介绍】
@@ -3489,12 +3477,6 @@ g.不接受电子印章和电子签名
 • 官方网站：oxfordellt.cn
 • 免费样题：官网提供
 • 免费备考课：Oxford ELLT Prep+（8个模块，在线异步学习）
-
-📞 联系方式
-• 联系人：杨青，Head of ELLT
-• 电话：18551807486
-• 邮箱：qyang@oxfordinternational.com
-• 客服邮箱：ellt@oidigitalinstitute.com
 
 ━━━━━━━━━━━━━━━━━━━━
 
