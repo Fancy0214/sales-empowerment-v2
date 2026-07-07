@@ -11232,9 +11232,10 @@ function _aiqExtractDocx(arrayBuffer) {
 // ==================== API 设置管理 ====================
 
 function showAiQuestionSettings() {
-    var panel = document.getElementById('aiq-settings-panel');
-    if (panel) {
-        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    aiqLoadSettings();
+    var modal = document.getElementById('aiqSettingsModal');
+    if (modal) {
+        modal.classList.add('active');
     }
 }
 
