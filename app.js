@@ -8213,7 +8213,8 @@ async function initToolFilesBucket() {
                 fileSizeLimit: MAX_FILE_SIZE
             });
             if (createError) {
-                console.warn('创建 Storage Bucket 失败（可能已存在）:', createError.message);
+                // RLS 策略限制导致创建失败是正常的（anon key 无 DDL 权限），静默处理
+                console.log('Storage Bucket 创建跳过:', createError.message);
             } else {
                 console.log('Storage Bucket 创建成功:', TOOL_FILES_BUCKET);
             }
@@ -11242,14 +11243,26 @@ function showAiQuestionSettings() {
 }
 
 function aiqSaveSettings() {
-    var settings = {
-        type:  document.getElementById('aiq-api-type').value,
-        url:   document.getElementById('aiq-api-url').value.trim(),
-        key:   document.getElementById('aiq-api-key').value.trim(),
-        model: document.getElementById('aiq-api-model').value.trim()
-    };
+    var type = document.getElementById('aiq-api-type').value;
+    var url = document.getElementById('aiq-api-url').value.trim();
+    var key = document.getElementById('aiq-api-key').value.trim();
+    var model = document.getElementById('aiq-api-model').value.trim();
+
+    // 扣子 Bot 必须填 Bot ID
+    if (type === 'coze_bot' && !model) {
+        alert('扣子 Bot 类型必须填写 Bot ID！\n\n请在下方"Bot ID"栏填入你的 Bot ID，例如：bot_7660414825549955123');
+        document.getElementById('aiq-api-model').focus();
+        return;
+    }
+    if (!key) {
+        alert('请填写 API Key / Token！');
+        document.getElementById('aiq-api-key').focus();
+        return;
+    }
+
+    var settings = { type: type, url: url, key: key, model: model };
     localStorage.setItem('aiq_api_settings', JSON.stringify(settings));
-    alert('API 设置已保存');
+    alert('API 设置已保存 ✅\n类型: ' + type + '\nBot ID/模型: ' + (model || '(未填)'));
 }
 
 function aiqLoadSettings() {
@@ -11310,9 +11323,15 @@ function aiqUpdateApiHint() {
 function _aiqGetApiSettings() {
     try {
         var settings = JSON.parse(localStorage.getItem('aiq_api_settings') || 'null');
-        if (settings && settings.url && settings.key) {
+        if (!settings || !settings.key) return null;
+        // coze_bot 类型不需要检查 url（固定端点），只需 key（token）和 model（bot_id）
+        if (settings.type === 'coze_bot') {
+            if (!settings.model) return null;
+            // 自动补全固定 URL
+            if (!settings.url) settings.url = 'https://api.coze.cn/v3/chat';
             return settings;
         }
+        if (settings.url && settings.key) return settings;
     } catch(e) {}
     return null;
 }
