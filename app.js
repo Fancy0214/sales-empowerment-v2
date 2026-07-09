@@ -11250,7 +11250,7 @@ function aiqSaveSettings() {
 
     // 扣子 Bot 必须填 Bot ID
     if (type === 'coze_bot' && !model) {
-        alert('扣子 Bot 类型必须填写 Bot ID！\n\n请在下方"Bot ID"栏填入你的 Bot ID，例如：bot_7660414825549955123');
+        alert('扣子 Bot 类型必须填写 Bot ID！\n\n请在下方"Bot ID"栏填入你的 Bot ID 纯数字部分，例如：7660414825549955123');
         document.getElementById('aiq-api-model').focus();
         return;
     }
@@ -11301,7 +11301,7 @@ function aiqUpdateApiHint() {
         urlEl.value = 'https://api.coze.cn/v3/chat';
         urlEl.placeholder = 'https://api.coze.cn/v3/chat';
         modelLabel.textContent = 'Bot ID';
-        modelEl.placeholder = '例如：bot_7660414825549955123';
+        modelEl.placeholder = '例如：7660414825549955123';
     } else {
         modelLabel.textContent = '模型名称';
         if (preset) {
@@ -11704,9 +11704,11 @@ function aiqCallCozeBot(settings, messages) {
     var url = 'https://api.coze.cn/v3/chat';
     var botId = settings.model; // model 字段存储的是 bot_id
     if (!botId || botId.trim() === '') {
-        return Promise.reject(new Error('Bot ID 未配置，请在 API 设置中填写 Bot ID（如 bot_7660414825549955123）'));
+        return Promise.reject(new Error('Bot ID 未配置，请在 API 设置中填写 Bot ID（如 7660414825549955123）'));
     }
     botId = botId.trim();
+    // Coze API 要求 bot_id 为纯数字，去掉可能的 "bot_" 前缀
+    botId = botId.replace(/^bot_/, '');
     var userId = 'user_aiq_' + Date.now();
 
     // 将 messages 数组合并为单个 prompt 文本
