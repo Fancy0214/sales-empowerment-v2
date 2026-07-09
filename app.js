@@ -11553,7 +11553,7 @@ function aiqCallLLM(messages) {
 
 // 扣子编程项目 API 调用
 function aiqCallCozeCoding(settings, messages) {
-    var url = settings.url.replace(/\/+$/, '');
+    var baseUrl = settings.url.replace(/\/+$/, '');
     var projectId = settings.model; // model 字段存储的是 project_id
     var sessionId = 'aiq_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
 
@@ -11574,7 +11574,10 @@ function aiqCallCozeCoding(settings, messages) {
         project_id: projectId
     });
 
-    return fetch(url, {
+    // 使用 CORS 代理解决跨域问题
+    var requestUrl = 'https://corsproxy.io/?' + encodeURIComponent(baseUrl);
+
+    return fetch(requestUrl, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -11611,7 +11614,6 @@ function aiqCallCozeCoding(settings, messages) {
             function read() {
                 return reader.read().then(function(result) {
                     if (result.done) {
-                        // 处理 buffer 中剩余内容
                         if (buffer.trim()) {
                             fullText += aiqParseCozeChunk(buffer);
                         }
@@ -11619,7 +11621,6 @@ function aiqCallCozeCoding(settings, messages) {
                     }
                     buffer += decoder.decode(result.value, { stream: true });
                     var lines = buffer.split('\n');
-                    // 最后一段可能不完整，保留在 buffer
                     buffer = lines.pop() || '';
 
                     for (var i = 0; i < lines.length; i++) {
@@ -11644,7 +11645,6 @@ function aiqCallCozeCoding(settings, messages) {
 
         // 处理普通 JSON 响应
         return response.json().then(function(data) {
-            // 尝试多种响应格式
             if (data.choices && data.choices[0] && data.choices[0].message) {
                 return data.choices[0].message.content;
             }
@@ -11657,7 +11657,6 @@ function aiqCallCozeCoding(settings, messages) {
             if (data.output) {
                 return typeof data.output === 'string' ? data.output : (data.output.text || JSON.stringify(data.output));
             }
-            // 最后尝试：直接把整个 JSON 转成文本看看有没有有用的内容
             var rawStr = JSON.stringify(data);
             if (rawStr.length > 50) {
                 return rawStr;
@@ -11668,10 +11667,14 @@ function aiqCallCozeCoding(settings, messages) {
 }
 
 // 解析扣子编程 SSE 单个 chunk
+// 实际返回格式：{"type": "answer", "content": {"answer": "文字片段", ...}, ...}
 function aiqParseCozeChunk(dataStr) {
     try {
         var data = JSON.parse(dataStr);
-        // 尝试多种可能的字段结构
+        // 优先匹配扣子编程的实际格式
+        if (data.type === 'answer' && data.content && data.content.answer) {
+            return data.content.answer;
+        }
         if (data.content_type === 'text' && data.content) {
             return data.content;
         }
@@ -11693,7 +11696,6 @@ function aiqParseCozeChunk(dataStr) {
             if (choice.message && choice.message.content) return choice.message.content;
         }
     } catch(e) {
-        // 不是 JSON，可能是纯文本 chunk
         if (dataStr && dataStr !== '[DONE]') {
             return dataStr;
         }
