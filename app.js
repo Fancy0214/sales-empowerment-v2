@@ -11512,6 +11512,7 @@ function aiqCallLLM(messages) {
     if (!settings) {
         return Promise.reject(new Error('API 设置未配置，请先点击右上角"API 设置"进行配置'));
     }
+    console.log('[AIQ] API Settings:', { type: settings.type, url: settings.url, model: settings.model, key: settings.key ? '(已设置)' : '(空)' });
 
     // 扣子编程 API 调用
     if (settings.type === 'coze_coding') {
@@ -11683,6 +11684,10 @@ function aiqCallCozeCoding(settings, messages) {
 function aiqCallCozeBot(settings, messages) {
     var url = 'https://api.coze.cn/v3/chat';
     var botId = settings.model; // model 字段存储的是 bot_id
+    if (!botId || botId.trim() === '') {
+        return Promise.reject(new Error('Bot ID 未配置，请在 API 设置中填写 Bot ID（如 bot_7660414825549955123）'));
+    }
+    botId = botId.trim();
     var userId = 'user_aiq_' + Date.now();
 
     // 将 messages 数组合并为单个 prompt 文本
