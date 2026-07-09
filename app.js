@@ -11044,6 +11044,7 @@ const AIQ_PRESETS = {
     deepseek:    { url: 'https://api.deepseek.com/v1',                  model: 'deepseek-chat' },
     qwen:        { url: 'https://dashscope.aliyuncs.com/compatible-mode/v1', model: 'qwen-plus' },
     coze_coding: { url: '', model: '' },
+    coze_bot:    { url: 'https://api.coze.cn/v3/chat', model: '' },
     custom:      { url: '', model: '' }
 };
 
@@ -11282,6 +11283,12 @@ function aiqUpdateApiHint() {
         urlEl.placeholder = 'https://xxxxx.coze.site/stream_run';
         modelLabel.textContent = '项目 ID (Project ID)';
         modelEl.placeholder = '例如：7658110643714867215';
+    } else if (type === 'coze_bot') {
+        // 扣子 Bot 模式：URL 固定，model 字段变为 Bot ID
+        urlEl.value = 'https://api.coze.cn/v3/chat';
+        urlEl.placeholder = 'https://api.coze.cn/v3/chat';
+        modelLabel.textContent = 'Bot ID';
+        modelEl.placeholder = '例如：bot_7660414825549955123';
     } else {
         modelLabel.textContent = '模型名称';
         if (preset) {
@@ -11511,6 +11518,11 @@ function aiqCallLLM(messages) {
         return aiqCallCozeCoding(settings, messages);
     }
 
+    // 扣子 Bot API 调用
+    if (settings.type === 'coze_bot') {
+        return aiqCallCozeBot(settings, messages);
+    }
+
     // OpenAI 兼容接口调用
     var url = settings.url.replace(/\/+$/, '') + '/chat/completions';
     var body = JSON.stringify({
@@ -11664,6 +11676,130 @@ function aiqCallCozeCoding(settings, messages) {
             throw new Error('扣子编程返回格式异常，无法解析回复内容');
         });
     });
+}
+
+// 扣子 Bot API 调用（Coze 常规 Bot，非编程项目）
+// API 文档：https://www.coze.cn/docs/developer_guides/chat_v3
+function aiqCallCozeBot(settings, messages) {
+    var url = 'https://api.coze.cn/v3/chat';
+    var botId = settings.model; // model 字段存储的是 bot_id
+    var userId = 'user_aiq_' + Date.now();
+
+    // 将 messages 数组合并为单个 prompt 文本
+    var promptText = messages.map(function(m) { return m.content; }).join('\n\n');
+
+    var body = JSON.stringify({
+        bot_id: botId,
+        user_id: userId,
+        stream: true,
+        auto_save_history: false,
+        additional_messages: [{
+            role: 'user',
+            content: promptText,
+            content_type: 'text'
+        }]
+    });
+
+    return fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + settings.key,
+            'Accept': 'text/event-stream'
+        },
+        body: body
+    }).then(function(response) {
+        if (!response.ok) {
+            return response.text().then(function(text) {
+                var errMsg = 'Coze Bot API 请求失败 (HTTP ' + response.status + ')';
+                try {
+                    var errJson = JSON.parse(text);
+                    if (errJson.msg) errMsg += ': ' + errJson.msg;
+                } catch(e) {
+                    if (text.length < 200) errMsg += ': ' + text;
+                }
+                throw new Error(errMsg);
+            });
+        }
+
+        var contentType = response.headers.get('content-type') || '';
+
+        // 处理 SSE 流式响应
+        if (contentType.indexOf('text/event-stream') !== -1 || contentType.indexOf('text/plain') !== -1) {
+            var reader = response.body.getReader();
+            var decoder = new TextDecoder();
+            var fullText = '';
+            var buffer = '';
+
+            function read() {
+                return reader.read().then(function(result) {
+                    if (result.done) {
+                        if (buffer.trim()) {
+                            fullText += aiqParseCozeBotChunk(buffer);
+                        }
+                        return fullText;
+                    }
+                    buffer += decoder.decode(result.value, { stream: true });
+                    var lines = buffer.split('\n');
+                    buffer = lines.pop() || '';
+
+                    for (var i = 0; i < lines.length; i++) {
+                        var line = lines[i].trim();
+                        if (line.startsWith('data:')) {
+                            var dataStr = line.substring(5).trim();
+                            if (dataStr && dataStr !== '[DONE]') {
+                                fullText += aiqParseCozeBotChunk(dataStr);
+                            }
+                        }
+                    }
+                    return read();
+                });
+            }
+            return read().then(function(text) {
+                if (!text.trim()) {
+                    throw new Error('Coze Bot 返回内容为空，请检查 Bot ID 和 Token 是否正确');
+                }
+                return text;
+            });
+        }
+
+        // 处理普通 JSON 响应（非流式）
+        return response.json().then(function(data) {
+            if (data.messages && data.messages.length > 0) {
+                return data.messages[data.messages.length - 1].content;
+            }
+            if (data.content) {
+                return typeof data.content === 'string' ? data.content : JSON.stringify(data.content);
+            }
+            throw new Error('Coze Bot 返回格式异常');
+        });
+    });
+}
+
+// 解析 Coze Bot SSE 响应
+// 事件格式：event:conversation.message.delta
+// data: {"id":"...","conversation_id":"...","bot_id":"...","role":"assistant","type":"answer","content":"文字","content_type":"text","chat_id":"..."}
+function aiqParseCozeBotChunk(dataStr) {
+    try {
+        var data = JSON.parse(dataStr);
+        // Coze Bot 的流式响应：type 为 answer 或 tool_call，content 字段包含文本
+        if (data.type === 'answer' && data.content) {
+            return data.content;
+        }
+        if (data.content_type === 'text' && data.content) {
+            return data.content;
+        }
+        // 兼容其他可能的格式
+        if (data.content && typeof data.content === 'string') {
+            return data.content;
+        }
+        if (data.text) {
+            return data.text;
+        }
+    } catch(e) {
+        // 忽略非 JSON 行
+    }
+    return '';
 }
 
 // 解析扣子编程 SSE 单个 chunk
