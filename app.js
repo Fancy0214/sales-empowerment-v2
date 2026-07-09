@@ -11040,10 +11040,11 @@ let aiqGeneratedQuestions = [];  // 生成的题目数组
 
 // AI 预设配置
 const AIQ_PRESETS = {
-    openai:   { url: 'https://api.openai.com/v1',                    model: 'gpt-4o-mini' },
-    deepseek: { url: 'https://api.deepseek.com/v1',                  model: 'deepseek-chat' },
-    qwen:     { url: 'https://dashscope.aliyuncs.com/compatible-mode/v1', model: 'qwen-plus' },
-    custom:   { url: '', model: '' }
+    openai:      { url: 'https://api.openai.com/v1',                    model: 'gpt-4o-mini' },
+    deepseek:    { url: 'https://api.deepseek.com/v1',                  model: 'deepseek-chat' },
+    qwen:        { url: 'https://dashscope.aliyuncs.com/compatible-mode/v1', model: 'qwen-plus' },
+    coze_coding: { url: '', model: '' },
+    custom:      { url: '', model: '' }
 };
 
 // --- 初始化 Tab ---
@@ -11272,19 +11273,29 @@ function aiqLoadSettings() {
 function aiqUpdateApiHint() {
     var type = document.getElementById('aiq-api-type').value;
     var preset = AIQ_PRESETS[type];
-    if (preset) {
-        var urlEl = document.getElementById('aiq-api-url');
-        var modelEl = document.getElementById('aiq-api-model');
-        if (!urlEl.value || urlEl.placeholder === urlEl.value) {
-            urlEl.placeholder = preset.url || '请输入 API 地址';
-        }
-        if (!modelEl.value || modelEl.placeholder === modelEl.value) {
-            modelEl.placeholder = preset.model || '请输入模型名称';
-        }
-        // 如果是非 custom 且字段为空，自动填充默认值
-        if (type !== 'custom') {
-            if (!urlEl.value) urlEl.value = preset.url;
-            if (!modelEl.value) modelEl.value = preset.model;
+    var urlEl = document.getElementById('aiq-api-url');
+    var modelEl = document.getElementById('aiq-api-model');
+    var modelLabel = document.getElementById('aiq-api-model-label');
+
+    if (type === 'coze_coding') {
+        // 扣子编程模式：URL 是完整 endpoint，model 字段变为项目 ID
+        urlEl.placeholder = 'https://xxxxx.coze.site/stream_run';
+        modelLabel.textContent = '项目 ID (Project ID)';
+        modelEl.placeholder = '例如：7658110643714867215';
+    } else {
+        modelLabel.textContent = '模型名称';
+        if (preset) {
+            if (!urlEl.value || urlEl.placeholder === urlEl.value) {
+                urlEl.placeholder = preset.url || '请输入 API 地址';
+            }
+            if (!modelEl.value || modelEl.placeholder === modelEl.value) {
+                modelEl.placeholder = preset.model || '请输入模型名称';
+            }
+            // 如果是非 custom 且字段为空，自动填充默认值
+            if (type !== 'custom') {
+                if (!urlEl.value) urlEl.value = preset.url;
+                if (!modelEl.value) modelEl.value = preset.model;
+            }
         }
     }
 }
@@ -11495,6 +11506,12 @@ function aiqCallLLM(messages) {
         return Promise.reject(new Error('API 设置未配置，请先点击右上角"API 设置"进行配置'));
     }
 
+    // 扣子编程 API 调用
+    if (settings.type === 'coze_coding') {
+        return aiqCallCozeCoding(settings, messages);
+    }
+
+    // OpenAI 兼容接口调用
     var url = settings.url.replace(/\/+$/, '') + '/chat/completions';
     var body = JSON.stringify({
         model: settings.model,
@@ -11532,6 +11549,156 @@ function aiqCallLLM(messages) {
         }
         throw new Error('API 返回格式异常，无法解析回复内容');
     });
+}
+
+// 扣子编程项目 API 调用
+function aiqCallCozeCoding(settings, messages) {
+    var url = settings.url.replace(/\/+$/, '');
+    var projectId = settings.model; // model 字段存储的是 project_id
+    var sessionId = 'aiq_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+
+    // 将 messages 数组合并为单个 prompt 文本
+    var promptText = messages.map(function(m) { return m.content; }).join('\n\n');
+
+    var body = JSON.stringify({
+        content: {
+            query: {
+                prompt: [{
+                    type: 'text',
+                    content: { text: promptText }
+                }]
+            },
+            type: 'query'
+        },
+        session_id: sessionId,
+        project_id: projectId
+    });
+
+    return fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + settings.key
+        },
+        body: body
+    }).then(function(response) {
+        if (!response.ok) {
+            return response.text().then(function(text) {
+                var errMsg = '扣子编程 API 请求失败 (HTTP ' + response.status + ')';
+                try {
+                    var errJson = JSON.parse(text);
+                    if (errJson.error && errJson.error.message) {
+                        errMsg += ': ' + errJson.error.message;
+                    } else if (errJson.msg) {
+                        errMsg += ': ' + errJson.msg;
+                    }
+                } catch(e) {
+                    if (text.length < 200) errMsg += ': ' + text;
+                }
+                throw new Error(errMsg);
+            });
+        }
+
+        var contentType = response.headers.get('content-type') || '';
+
+        // 处理 SSE 流式响应
+        if (contentType.indexOf('text/event-stream') !== -1 || contentType.indexOf('text/plain') !== -1) {
+            var reader = response.body.getReader();
+            var decoder = new TextDecoder();
+            var fullText = '';
+            var buffer = '';
+
+            function read() {
+                return reader.read().then(function(result) {
+                    if (result.done) {
+                        // 处理 buffer 中剩余内容
+                        if (buffer.trim()) {
+                            fullText += aiqParseCozeChunk(buffer);
+                        }
+                        return fullText;
+                    }
+                    buffer += decoder.decode(result.value, { stream: true });
+                    var lines = buffer.split('\n');
+                    // 最后一段可能不完整，保留在 buffer
+                    buffer = lines.pop() || '';
+
+                    for (var i = 0; i < lines.length; i++) {
+                        var line = lines[i].trim();
+                        if (line.startsWith('data:')) {
+                            var dataStr = line.substring(5).trim();
+                            if (dataStr && dataStr !== '[DONE]') {
+                                fullText += aiqParseCozeChunk(dataStr);
+                            }
+                        }
+                    }
+                    return read();
+                });
+            }
+            return read().then(function(text) {
+                if (!text.trim()) {
+                    throw new Error('扣子编程返回内容为空，请检查 Bot 配置和 Project ID 是否正确');
+                }
+                return text;
+            });
+        }
+
+        // 处理普通 JSON 响应
+        return response.json().then(function(data) {
+            // 尝试多种响应格式
+            if (data.choices && data.choices[0] && data.choices[0].message) {
+                return data.choices[0].message.content;
+            }
+            if (data.data && data.data.content) {
+                return data.data.content;
+            }
+            if (data.content) {
+                return typeof data.content === 'string' ? data.content : JSON.stringify(data.content);
+            }
+            if (data.output) {
+                return typeof data.output === 'string' ? data.output : (data.output.text || JSON.stringify(data.output));
+            }
+            // 最后尝试：直接把整个 JSON 转成文本看看有没有有用的内容
+            var rawStr = JSON.stringify(data);
+            if (rawStr.length > 50) {
+                return rawStr;
+            }
+            throw new Error('扣子编程返回格式异常，无法解析回复内容');
+        });
+    });
+}
+
+// 解析扣子编程 SSE 单个 chunk
+function aiqParseCozeChunk(dataStr) {
+    try {
+        var data = JSON.parse(dataStr);
+        // 尝试多种可能的字段结构
+        if (data.content_type === 'text' && data.content) {
+            return data.content;
+        }
+        if (data.content && typeof data.content === 'string') {
+            return data.content;
+        }
+        if (data.output && typeof data.output === 'string') {
+            return data.output;
+        }
+        if (data.text) {
+            return data.text;
+        }
+        if (data.delta && data.delta.content) {
+            return data.delta.content;
+        }
+        if (data.choices && data.choices[0]) {
+            var choice = data.choices[0];
+            if (choice.delta && choice.delta.content) return choice.delta.content;
+            if (choice.message && choice.message.content) return choice.message.content;
+        }
+    } catch(e) {
+        // 不是 JSON，可能是纯文本 chunk
+        if (dataStr && dataStr !== '[DONE]') {
+            return dataStr;
+        }
+    }
+    return '';
 }
 
 // ==================== 响应解析 ====================

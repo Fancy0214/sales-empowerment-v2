@@ -1083,13 +1083,14 @@
                 <div class="modal-content" style="max-width:500px;">
                     <span class="modal-close" onclick="closeModal('aiqSettingsModal')">&times;</span>
                     <h3><i class="fas fa-cog" style="color:var(--accent);"></i> AI 出题 API 设置</h3>
-                    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">配置 LLM API 用于智能出题功能。支持 OpenAI 兼容接口（如 OpenAI、DeepSeek、通义千问等）。</p>
+                    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">配置 LLM API 用于智能出题功能。支持 OpenAI 兼容接口及扣子编程项目。</p>
                     <div class="form-group">
                         <label>API 类型</label>
                         <select id="aiq-api-type" onchange="aiqUpdateApiHint()" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;">
                             <option value="openai">OpenAI</option>
                             <option value="deepseek">DeepSeek</option>
                             <option value="qwen">通义千问</option>
+                            <option value="coze_coding">扣子编程</option>
                             <option value="custom">自定义 (OpenAI 兼容)</option>
                         </select>
                     </div>
@@ -1102,7 +1103,7 @@
                         <input type="password" id="aiq-api-key" placeholder="sk-..." style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;">
                     </div>
                     <div class="form-group">
-                        <label>模型名称</label>
+                        <label id="aiq-api-model-label">模型名称</label>
                         <input type="text" id="aiq-api-model" placeholder="gpt-4o-mini" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;">
                     </div>
                     <div style="text-align:right;margin-top:20px;">
