@@ -11723,61 +11723,124 @@ function aiqCallCozeBot(settings, messages) {
         }
 
         var contentType = response.headers.get('content-type') || '';
+        var isSSE = contentType.indexOf('text/event-stream') !== -1 || contentType.indexOf('text/plain') !== -1;
 
-        // 处理 SSE 流式响应
-        if (contentType.indexOf('text/event-stream') !== -1 || contentType.indexOf('text/plain') !== -1) {
-            var reader = response.body.getReader();
-            var decoder = new TextDecoder();
-            var fullText = '';
-            var buffer = '';
-
-            function read() {
-                return reader.read().then(function(result) {
-                    if (result.done) {
-                        if (buffer.trim()) {
-                            fullText += aiqParseCozeBotChunk(buffer);
-                        }
-                        return fullText;
-                    }
-                    buffer += decoder.decode(result.value, { stream: true });
-                    var lines = buffer.split('\n');
-                    buffer = lines.pop() || '';
-
-                    for (var i = 0; i < lines.length; i++) {
-                        var line = lines[i].trim();
-                        if (line.startsWith('data:')) {
-                            var dataStr = line.substring(5).trim();
-                            if (dataStr && dataStr !== '[DONE]') {
-                                fullText += aiqParseCozeBotChunk(dataStr);
-                            }
-                        }
-                    }
-                    return read();
-                });
-            }
-            return read().then(function(text) {
-                if (!text.trim()) {
-                    throw new Error('Coze Bot 返回内容为空，请检查 Bot ID 和 Token 是否正确');
-                }
-                return text;
-            });
+        // 如果 content-type 不确定，先尝试按 SSE 解析
+        if (isSSE || !contentType) {
+            return aiqParseCozeBotSSE(response);
         }
 
         // 处理普通 JSON 响应（非流式）
         return response.json().then(function(data) {
+            if (data.code === 0 && data.data) {
+                // 非流式 Coze 响应：需要轮询获取消息
+                var chatId = data.data.id;
+                var convId = data.data.conversation_id;
+                return aiqPollCozeChatResult(chatId, convId, settings.key);
+            }
             if (data.messages && data.messages.length > 0) {
                 return data.messages[data.messages.length - 1].content;
             }
             if (data.content) {
                 return typeof data.content === 'string' ? data.content : JSON.stringify(data.content);
             }
-            throw new Error('Coze Bot 返回格式异常');
+            var debugInfo = 'content-type: ' + contentType + ', response: ' + JSON.stringify(data).substring(0, 300);
+            throw new Error('Coze Bot 返回格式异常 (' + debugInfo + ')');
         });
     });
 }
 
+// 解析 Coze Bot SSE 流式响应（提取为独立函数）
+function aiqParseCozeBotSSE(response) {
+    var reader = response.body.getReader();
+    var decoder = new TextDecoder();
+    var fullText = '';
+    var buffer = '';
+
+    function read() {
+        return reader.read().then(function(result) {
+            if (result.done) {
+                if (buffer.trim()) {
+                    fullText += aiqParseCozeBotChunk(buffer);
+                }
+                return fullText;
+            }
+            buffer += decoder.decode(result.value, { stream: true });
+            var lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i].trim();
+                if (line.startsWith('data:')) {
+                    var dataStr = line.substring(5).trim();
+                    if (dataStr && dataStr !== '[DONE]') {
+                        fullText += aiqParseCozeBotChunk(dataStr);
+                    }
+                }
+            }
+            return read();
+        });
+    }
+    return read().then(function(text) {
+        if (!text.trim()) {
+            throw new Error('Coze Bot 返回内容为空，请检查 Bot ID 和 Token 是否正确');
+        }
+        return text;
+    });
+}
+
+// 轮询 Coze 非流式对话结果
+function aiqPollCozeChatResult(chatId, convId, token) {
+    var maxAttempts = 30;
+    var attempt = 0;
+    function poll() {
+        attempt++;
+        return fetch('https://api.coze.cn/v3/chat/retrieve?conversation_id=' + convId + '&chat_id=' + chatId, {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            }
+        }).then(function(resp) { return resp.json(); }).then(function(data) {
+            if (data.code === 0 && data.data) {
+                var status = data.data.status;
+                if (status === 'completed') {
+                    // 对话完成，获取消息
+                    return fetch('https://api.coze.cn/v3/chat/message/list?conversation_id=' + convId + '&chat_id=' + chatId, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': 'Bearer ' + token,
+                            'Content-Type': 'application/json'
+                        }
+                    }).then(function(msgResp) { return msgResp.json(); }).then(function(msgData) {
+                        if (msgData.code === 0 && msgData.data && msgData.data.length > 0) {
+                            var answer = '';
+                            for (var i = 0; i < msgData.data.length; i++) {
+                                var msg = msgData.data[i];
+                                if (msg.role === 'assistant' && msg.type === 'answer') {
+                                    answer += msg.content;
+                                }
+                            }
+                            if (answer) return answer;
+                        }
+                        throw new Error('Coze Bot 未返回有效回复');
+                    });
+                } else if (status === 'failed') {
+                    var errMsg = data.data.last_error ? data.data.last_error.msg || '' : '';
+                    throw new Error('Coze Bot 对话失败: ' + errMsg);
+                } else if (attempt < maxAttempts) {
+                    return new Promise(function(resolve) { setTimeout(resolve, 1500); }).then(poll);
+                }
+            }
+            throw new Error('Coze Bot 轮询超时');
+        });
+    }
+    return poll();
+}
+
 // 解析 Coze Bot SSE 响应
-// 事件格式：event:conversation.message.delta
+// 官方 SSE 格式：
+// event:conversation.message.delta
 // data: {"id":"...","conversation_id":"...","bot_id":"...","role":"assistant","type":"answer","content":"文字","content_type":"text","chat_id":"..."}
 function aiqParseCozeBotChunk(dataStr) {
     try {
