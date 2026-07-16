@@ -11035,9 +11035,14 @@ function parseDocxTableToPlan(html, fileName) {
 // ==================== 智能出题功能 ====================
 
 // --- 智能出题状态变量 ---
-let aiqUploadedMaterials = [];   // [{name, text}]
-let aiqUploadedReferences = [];  // [{name, text}]
+let aiqUploadedMaterials = [];   // [{name, text}] — 本次上传的临时资料（上传后自动存入资料库）
+let aiqUploadedReferences = [];  // [{name, text}] — 本次上传的临时参考试题
 let aiqGeneratedQuestions = [];  // 生成的题目数组
+// 资料库（从 Supabase 加载）
+let aiqMaterialsLibrary = [];    // [{id, name, content, category, created_at}] — category='materials'
+let aiqReferencesLibrary = [];   // [{id, name, content, category, created_at}] — category='reference'
+let aiqSelectedMaterialIds = new Set();  // 勾选的学习资料 id
+let aiqSelectedReferenceIds = new Set(); // 勾选的参考试题 id
 
 // AI 预设配置
 const AIQ_PRESETS = {
@@ -11053,6 +11058,7 @@ const AIQ_PRESETS = {
 function aiqInitTab() {
     aiqLoadSettings();
     aiqLoadPhases();
+    aiqLoadLibrary();  // 从 Supabase 加载资料库
 }
 
 // --- 根据选中 plan 加载 phases ---
@@ -11093,13 +11099,13 @@ function aiqLoadPhases() {
 function aiqHandleFiles(files, type) {
     if (!files || files.length === 0) return;
     var listEl = document.getElementById(type === 'materials' ? 'aiq-materials-list' : 'aiq-reference-list');
-    var targetArr = type === 'materials' ? aiqUploadedMaterials : aiqUploadedReferences;
 
     Array.from(files).forEach(function(file) {
-        // 检查重复
-        var exists = targetArr.some(function(f) { return f.name === file.name; });
+        // 检查重复（资料库级别）
+        var lib = type === 'materials' ? aiqMaterialsLibrary : aiqReferencesLibrary;
+        var exists = lib.some(function(f) { return f.name === file.name; });
         if (exists) {
-            console.warn('文件已存在: ' + file.name);
+            console.warn('资料库中已存在: ' + file.name);
             return;
         }
 
@@ -11107,35 +11113,38 @@ function aiqHandleFiles(files, type) {
         var loadingItem = document.createElement('div');
         loadingItem.className = 'aiq-file-item';
         loadingItem.id = 'aiq-loading-' + Date.now() + Math.random().toString(36).substr(2, 4);
-        loadingItem.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 正在解析: ' + escHtml(file.name) + '...';
+        loadingItem.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 正在解析并保存: ' + escHtml(file.name) + '...';
         loadingItem.style.cssText = 'padding:6px 10px;font-size:12px;color:var(--text-secondary);display:flex;align-items:center;gap:6px;';
         listEl.appendChild(loadingItem);
 
         aiqExtractTextFromFile(file).then(function(text) {
-            targetArr.push({ name: file.name, text: text });
-            loadingItem.id = '';
-            loadingItem.innerHTML = '<i class="fas fa-file-alt"></i> ' + escHtml(file.name) +
-                ' <span style="color:var(--text-secondary);font-size:11px;">(' + text.length + ' 字)</span>' +
-                '<button onclick="aiqRemoveFile(this,\'' + type + '\',' + (targetArr.length - 1) + ')" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text-secondary);font-size:14px;" title="移除"><i class="fas fa-times"></i></button>';
-            loadingItem.style.color = 'var(--text-primary)';
+            // 存入 Supabase 资料库
+            return aiqSaveToLibrary(file.name, text, type).then(function(savedRow) {
+                loadingItem.id = '';
+                loadingItem.innerHTML = '<i class="fas fa-check-circle" style="color:var(--success,#27ae60);"></i> ' + escHtml(file.name) +
+                    ' <span style="color:var(--success,#27ae60);font-size:11px;">已存入资料库 (' + text.length + ' 字)</span>';
+                loadingItem.style.color = 'var(--text-primary)';
+                // 刷新资料库列表
+                aiqLoadLibrary();
+            });
         }).catch(function(err) {
-            loadingItem.innerHTML = '<i class="fas fa-exclamation-triangle" style="color:var(--danger);"></i> ' + escHtml(file.name) + ' 解析失败: ' + escHtml(err.message || '未知错误');
+            loadingItem.innerHTML = '<i class="fas fa-exclamation-triangle" style="color:var(--danger);"></i> ' + escHtml(file.name) + ' 失败: ' + escHtml(err.message || '未知错误');
             loadingItem.style.color = 'var(--danger)';
-            console.warn('文件解析失败:', file.name, err);
+            console.warn('文件处理失败:', file.name, err);
         });
     });
 }
 
 function aiqRemoveFile(btn, type, index) {
+    // 旧接口保留兼容，但资料库模式下实际不再使用
     var arr = type === 'materials' ? aiqUploadedMaterials : aiqUploadedReferences;
     arr.splice(index, 1);
     var item = btn.closest('.aiq-file-item');
     if (item) item.remove();
-    // 重新渲染列表
-    aiqRenderFileList(type);
 }
 
 function aiqRenderFileList(type) {
+    // 旧接口保留兼容，上传区域的文件列表
     var arr = type === 'materials' ? aiqUploadedMaterials : aiqUploadedReferences;
     var listEl = document.getElementById(type === 'materials' ? 'aiq-materials-list' : 'aiq-reference-list');
     listEl.innerHTML = '';
@@ -11148,6 +11157,230 @@ function aiqRenderFileList(type) {
             '<button onclick="aiqRemoveFile(this,\'' + type + '\',' + idx + ')" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text-secondary);font-size:14px;" title="移除"><i class="fas fa-times"></i></button>';
         listEl.appendChild(item);
     });
+}
+
+// ==================== 资料库功能（Supabase 持久化） ====================
+
+// 从 Supabase 加载资料库
+async function aiqLoadLibrary() {
+    if (!supabaseClient) {
+        aiqRenderLibrary('materials');
+        aiqRenderLibrary('reference');
+        return;
+    }
+    try {
+        var { data, error } = await supabaseClient
+            .from('quiz_materials')
+            .select('*')
+            .order('created_at', { ascending: false });
+        if (error) {
+            console.warn('[AIQ] 加载资料库失败:', error.message);
+            // 如果是表不存在的错误，显示设置引导
+            if (error.code === 'PGRST205' || (error.message && error.message.indexOf('Could not find') >= 0)) {
+                aiqShowSetupGuide();
+            }
+            aiqRenderLibrary('materials');
+            aiqRenderLibrary('reference');
+            return;
+        }
+        // 标记资料库表已就绪
+        window._aiqLibraryReady = true;
+        // 分类存储
+        aiqMaterialsLibrary = (data || []).filter(function(r) { return r.category === 'materials'; });
+        aiqReferencesLibrary = (data || []).filter(function(r) { return r.category === 'reference'; });
+        // 渲染
+        aiqRenderLibrary('materials');
+        aiqRenderLibrary('reference');
+    } catch (e) {
+        console.warn('[AIQ] 加载资料库异常:', e);
+        if (e.message && e.message.indexOf('Could not find') >= 0) {
+            aiqShowSetupGuide();
+        }
+        aiqRenderLibrary('materials');
+        aiqRenderLibrary('reference');
+    }
+}
+
+// 显示资料库设置引导（表不存在时）
+function aiqShowSetupGuide() {
+    var containers = ['aiq-materials-library', 'aiq-reference-library'];
+    containers.forEach(function(id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.innerHTML = '<div style="text-align:center;padding:12px;font-size:12px;">' +
+            '<i class="fas fa-exclamation-circle" style="color:var(--warning,#f39c12);font-size:20px;margin-bottom:6px;display:block;"></i>' +
+            '<p style="margin:0 0 8px 0;color:var(--text-primary);font-weight:500;">资料库尚未初始化</p>' +
+            '<p style="margin:0 0 8px 0;color:var(--text-secondary);">请在 Supabase Dashboard → SQL Editor 中执行建表 SQL</p>' +
+            '<button onclick="aiqCopySetupSQL()" style="padding:6px 14px;font-size:12px;border:1px solid var(--accent);background:var(--accent);color:white;border-radius:4px;cursor:pointer;">' +
+            '<i class="fas fa-copy"></i> 复制建表 SQL</button></div>';
+    });
+}
+
+// 复制建表 SQL 到剪贴板
+function aiqCopySetupSQL() {
+    var sql = "CREATE TABLE IF NOT EXISTS quiz_materials (\n" +
+        "    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,\n" +
+        "    name TEXT NOT NULL,\n" +
+        "    content TEXT NOT NULL DEFAULT '',\n" +
+        "    category TEXT NOT NULL DEFAULT 'materials' CHECK (category IN ('materials', 'reference')),\n" +
+        "    created_at TIMESTAMPTZ DEFAULT now()\n" +
+        ");\n" +
+        "CREATE INDEX IF NOT EXISTS idx_quiz_materials_category ON quiz_materials(category);\n" +
+        "ALTER TABLE quiz_materials ENABLE ROW LEVEL SECURITY;\n" +
+        "CREATE POLICY \"quiz_materials_select_all\" ON quiz_materials FOR SELECT USING (true);\n" +
+        "CREATE POLICY \"quiz_materials_insert_all\" ON quiz_materials FOR INSERT WITH CHECK (true);\n" +
+        "CREATE POLICY \"quiz_materials_update_all\" ON quiz_materials FOR UPDATE USING (true) WITH CHECK (true);\n" +
+        "CREATE POLICY \"quiz_materials_delete_all\" ON quiz_materials FOR DELETE USING (true);";
+    navigator.clipboard.writeText(sql).then(function() {
+        alert('SQL 已复制到剪贴板！\n\n请前往 Supabase Dashboard → SQL Editor 粘贴并执行，然后刷新此页面。');
+    }).catch(function() {
+        // 降级：用 prompt 显示
+        prompt('请复制以下 SQL，到 Supabase Dashboard → SQL Editor 中执行：', sql);
+    });
+}
+
+// 保存资料到 Supabase 资料库
+async function aiqSaveToLibrary(name, content, type) {
+    if (!supabaseClient || !window._aiqLibraryReady) {
+        // 表未就绪：降级存入内存数组（本次会话有效）
+        var arr = type === 'materials' ? aiqUploadedMaterials : aiqUploadedReferences;
+        arr.push({ name: name, text: content });
+        return { name: name, text: content };
+    }
+    var row = { name: name, content: content, category: type };
+    var { data, error } = await supabaseClient.from('quiz_materials').insert([row]).select().single();
+    if (error) {
+        // 降级：存入内存数组
+        console.warn('[AIQ] Supabase 保存失败，降级到内存:', error.message);
+        var arr2 = type === 'materials' ? aiqUploadedMaterials : aiqUploadedReferences;
+        arr2.push({ name: name, text: content });
+        return { name: name, text: content };
+    }
+    return data;
+}
+
+// 从资料库删除
+async function aiqDeleteFromLibrary(id, type) {
+    if (!confirm('确定从资料库删除此资料？')) return;
+    if (supabaseClient) {
+        var { error } = await supabaseClient.from('quiz_materials').delete().eq('id', id);
+        if (error) {
+            alert('删除失败: ' + error.message);
+            return;
+        }
+    }
+    // 从本地状态移除
+    if (type === 'materials') {
+        aiqMaterialsLibrary = aiqMaterialsLibrary.filter(function(r) { return r.id !== id; });
+        aiqSelectedMaterialIds.delete(id);
+    } else {
+        aiqReferencesLibrary = aiqReferencesLibrary.filter(function(r) { return r.id !== id; });
+        aiqSelectedReferenceIds.delete(id);
+    }
+    aiqRenderLibrary(type);
+}
+
+// 渲染资料库列表
+function aiqRenderLibrary(type) {
+    var lib = type === 'materials' ? aiqMaterialsLibrary : aiqReferencesLibrary;
+    var selectedIds = type === 'materials' ? aiqSelectedMaterialIds : aiqSelectedReferenceIds;
+    var containerEl = document.getElementById(type === 'materials' ? 'aiq-materials-library' : 'aiq-reference-library');
+    if (!containerEl) return;
+    containerEl.innerHTML = '';
+
+    if (lib.length === 0) {
+        containerEl.innerHTML = '<div style="text-align:center;padding:10px;font-size:12px;color:var(--text-secondary);">' +
+            '<i class="fas fa-inbox"></i> 资料库为空，点击右上角「上传新资料」添加</div>';
+        return;
+    }
+
+    // 全选/取消全选
+    var allSelected = lib.every(function(r) { return selectedIds.has(r.id); });
+    var headerDiv = document.createElement('div');
+    headerDiv.style.cssText = 'display:flex;align-items:center;gap:6px;padding:4px 0;margin-bottom:4px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-secondary);';
+    headerDiv.innerHTML = '<input type="checkbox" ' + (allSelected ? 'checked' : '') + ' onchange="aiqToggleSelectAll(\'' + type + '\',this.checked)" style="cursor:pointer;"> ' +
+        '<span>全选 (' + lib.length + ' 份)</span>' +
+        '<span style="margin-left:auto;">已选 ' + lib.filter(function(r) { return selectedIds.has(r.id); }).length + ' 份</span>';
+    containerEl.appendChild(headerDiv);
+
+    // 资料项列表
+    lib.forEach(function(item) {
+        var isChecked = selectedIds.has(item.id);
+        var itemDiv = document.createElement('div');
+        itemDiv.style.cssText = 'display:flex;align-items:center;gap:6px;padding:5px 4px;font-size:12px;border-radius:4px;' +
+            (isChecked ? 'background:rgba(var(--accent-rgb,52,152,219),0.08);' : '');
+        itemDiv.onmouseover = function() { this.style.background = 'var(--bg-secondary)'; };
+        itemDiv.onmouseout = function() { this.style.background = isChecked ? 'rgba(var(--accent-rgb,52,152,219),0.08)' : ''; };
+
+        var charCount = (item.content || '').length;
+        var dateStr = '';
+        if (item.created_at) {
+            try { dateStr = new Date(item.created_at).toLocaleDateString('zh-CN', {month:'short', day:'numeric'}); } catch(e) {}
+        }
+
+        itemDiv.innerHTML = '<input type="checkbox" ' + (isChecked ? 'checked' : '') + ' onchange="aiqToggleSelectItem(\'' + type + '\',\'' + item.id + '\',this.checked)" style="cursor:pointer;flex-shrink:0;">' +
+            '<i class="fas fa-file-alt" style="color:var(--accent);flex-shrink:0;"></i>' +
+            '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + escHtml(item.name) + '">' + escHtml(item.name) + '</span>' +
+            '<span style="color:var(--text-secondary);font-size:10px;flex-shrink:0;">' + charCount + '字</span>' +
+            (dateStr ? '<span style="color:var(--text-secondary);font-size:10px;flex-shrink:0;">' + dateStr + '</span>' : '') +
+            '<button onclick="event.stopPropagation();aiqDeleteFromLibrary(\'' + item.id + '\',\'' + type + '\')" style="background:none;border:none;cursor:pointer;color:var(--text-secondary);font-size:12px;flex-shrink:0;padding:0 2px;" title="从资料库删除"><i class="fas fa-trash-alt"></i></button>';
+        containerEl.appendChild(itemDiv);
+    });
+}
+
+// 勾选/取消单个资料
+function aiqToggleSelectItem(type, id, checked) {
+    var selectedIds = type === 'materials' ? aiqSelectedMaterialIds : aiqSelectedReferenceIds;
+    if (checked) {
+        selectedIds.add(id);
+    } else {
+        selectedIds.delete(id);
+    }
+    aiqRenderLibrary(type);
+}
+
+// 全选/取消全选
+function aiqToggleSelectAll(type, checked) {
+    var lib = type === 'materials' ? aiqMaterialsLibrary : aiqReferencesLibrary;
+    var selectedIds = type === 'materials' ? aiqSelectedMaterialIds : aiqSelectedReferenceIds;
+    selectedIds.clear();
+    if (checked) {
+        lib.forEach(function(r) { selectedIds.add(r.id); });
+    }
+    aiqRenderLibrary(type);
+}
+
+// 切换上传区域显示/隐藏
+function aiqToggleUpload(type) {
+    var area = document.getElementById(type === 'materials' ? 'aiq-materials-upload-area' : 'aiq-reference-upload-area');
+    if (!area) return;
+    if (area.style.display === 'none') {
+        area.style.display = 'block';
+    } else {
+        area.style.display = 'none';
+    }
+}
+
+// 获取勾选的资料（用于出题）
+function aiqGetSelectedMaterials() {
+    var selected = aiqMaterialsLibrary
+        .filter(function(r) { return aiqSelectedMaterialIds.has(r.id); })
+        .map(function(r) { return { name: r.name, text: r.content }; });
+    // 合并内存降级数据（表未就绪时上传的资料）
+    if (!window._aiqLibraryReady) {
+        selected = selected.concat(aiqUploadedMaterials);
+    }
+    return selected;
+}
+
+function aiqGetSelectedReferences() {
+    var selected = aiqReferencesLibrary
+        .filter(function(r) { return aiqSelectedReferenceIds.has(r.id); })
+        .map(function(r) { return { name: r.name, text: r.content }; });
+    if (!window._aiqLibraryReady) {
+        selected = selected.concat(aiqUploadedReferences);
+    }
+    return selected;
 }
 
 function aiqExtractTextFromFile(file) {
@@ -11363,8 +11596,8 @@ function aiqGenerate() {
         alert('请至少选择一种题型并设置数量');
         return;
     }
-    if (aiqUploadedMaterials.length === 0 && !topics) {
-        alert('请上传学习资料或输入知识点，至少需要一项作为出题依据');
+    if (aiqGetSelectedMaterials().length === 0 && !topics) {
+        alert('请在资料库中勾选学习资料，或输入知识点，至少需要一项作为出题依据');
         return;
     }
 
@@ -11405,8 +11638,8 @@ function aiqGenerate() {
         topics: topics,
         questionTypes: questionTypes,
         difficulty: difficulty,
-        materials: aiqUploadedMaterials,
-        references: aiqUploadedReferences
+        materials: aiqGetSelectedMaterials(),
+        references: aiqGetSelectedReferences()
     });
 
     // 7. 调用 LLM

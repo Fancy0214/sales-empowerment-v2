@@ -982,27 +982,53 @@
                     </div>
                 </div>
 
-                <!-- 第2步：上传资料 -->
+                <!-- 第2步：选择资料（资料库模式） -->
                 <div style="background:var(--bg-primary);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:16px;">
-                    <h4 style="margin:0 0 12px 0;font-size:15px;"><i class="fas fa-book" style="color:var(--accent);"></i> 第2步：上传资料</h4>
+                    <h4 style="margin:0 0 12px 0;font-size:15px;"><i class="fas fa-book" style="color:var(--accent);"></i> 第2步：选择资料</h4>
                     <div style="display:flex;gap:16px;flex-wrap:wrap;">
+                        <!-- 学习资料库 -->
                         <div style="flex:1;min-width:250px;">
-                            <label style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;display:block;">📚 学习资料（培训手册、课件等）</label>
-                            <div id="aiq-materials-drop" style="border:2px dashed var(--border);border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:border-color 0.2s;" onclick="document.getElementById('aiq-materials-input').click()" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="event.preventDefault();this.style.borderColor='var(--border)';aiqHandleFiles(event.dataTransfer.files,'materials')">
-                                <i class="fas fa-cloud-upload-alt" style="font-size:24px;color:var(--text-secondary);margin-bottom:8px;"></i>
-                                <p style="margin:0;font-size:13px;color:var(--text-secondary);">点击或拖拽上传（支持 .docx, .pdf, .txt, .md）</p>
+                            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                                <label style="font-size:13px;color:var(--text-secondary);display:flex;align-items:center;gap:4px;">📚 学习资料（培训手册、课件等）</label>
+                                <button onclick="aiqToggleUpload('materials')" style="background:none;border:1px solid var(--border);border-radius:4px;padding:2px 8px;font-size:12px;cursor:pointer;color:var(--accent);display:flex;align-items:center;gap:4px;" title="上传新资料到资料库">
+                                    <i class="fas fa-plus"></i> 上传新资料
+                                </button>
                             </div>
-                            <input type="file" id="aiq-materials-input" multiple accept=".docx,.pdf,.txt,.md" style="display:none;" onchange="aiqHandleFiles(this.files,'materials')">
-                            <div id="aiq-materials-list" style="margin-top:8px;"></div>
+                            <!-- 资料库列表 -->
+                            <div id="aiq-materials-library" style="min-height:40px;border:1px solid var(--border);border-radius:8px;padding:8px;max-height:200px;overflow-y:auto;">
+                                <div style="text-align:center;padding:8px;font-size:12px;color:var(--text-secondary);"><i class="fas fa-spinner fa-spin"></i> 加载资料库...</div>
+                            </div>
+                            <!-- 上传区域（默认隐藏） -->
+                            <div id="aiq-materials-upload-area" style="display:none;margin-top:8px;">
+                                <div id="aiq-materials-drop" style="border:2px dashed var(--border);border-radius:8px;padding:16px;text-align:center;cursor:pointer;transition:border-color 0.2s;" onclick="document.getElementById('aiq-materials-input').click()" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="event.preventDefault();this.style.borderColor='var(--border)';aiqHandleFiles(event.dataTransfer.files,'materials')">
+                                    <i class="fas fa-cloud-upload-alt" style="font-size:20px;color:var(--text-secondary);margin-bottom:6px;"></i>
+                                    <p style="margin:0;font-size:12px;color:var(--text-secondary);">点击或拖拽上传（.docx, .pdf, .txt, .md）</p>
+                                </div>
+                                <input type="file" id="aiq-materials-input" multiple accept=".docx,.pdf,.txt,.md" style="display:none;" onchange="aiqHandleFiles(this.files,'materials')">
+                                <div id="aiq-materials-list" style="margin-top:6px;"></div>
+                            </div>
                         </div>
+                        <!-- 参考试题库 -->
                         <div style="flex:1;min-width:250px;">
-                            <label style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;display:block;">📝 往年试题参考（可选）</label>
-                            <div id="aiq-reference-drop" style="border:2px dashed var(--border);border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:border-color 0.2s;" onclick="document.getElementById('aiq-reference-input').click()" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="event.preventDefault();this.style.borderColor='var(--border)';aiqHandleFiles(event.dataTransfer.files,'reference')">
-                                <i class="fas fa-cloud-upload-alt" style="font-size:24px;color:var(--text-secondary);margin-bottom:8px;"></i>
-                                <p style="margin:0;font-size:13px;color:var(--text-secondary);">点击或拖拽上传参考试题</p>
+                            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                                <label style="font-size:13px;color:var(--text-secondary);display:flex;align-items:center;gap:4px;">📝 往年试题参考（可选）</label>
+                                <button onclick="aiqToggleUpload('reference')" style="background:none;border:1px solid var(--border);border-radius:4px;padding:2px 8px;font-size:12px;cursor:pointer;color:var(--accent);display:flex;align-items:center;gap:4px;" title="上传新参考试题到资料库">
+                                    <i class="fas fa-plus"></i> 上传新资料
+                                </button>
                             </div>
-                            <input type="file" id="aiq-reference-input" multiple accept=".docx,.pdf,.txt,.md" style="display:none;" onchange="aiqHandleFiles(this.files,'reference')">
-                            <div id="aiq-reference-list" style="margin-top:8px;"></div>
+                            <!-- 资料库列表 -->
+                            <div id="aiq-reference-library" style="min-height:40px;border:1px solid var(--border);border-radius:8px;padding:8px;max-height:200px;overflow-y:auto;">
+                                <div style="text-align:center;padding:8px;font-size:12px;color:var(--text-secondary);"><i class="fas fa-spinner fa-spin"></i> 加载资料库...</div>
+                            </div>
+                            <!-- 上传区域（默认隐藏） -->
+                            <div id="aiq-reference-upload-area" style="display:none;margin-top:8px;">
+                                <div id="aiq-reference-drop" style="border:2px dashed var(--border);border-radius:8px;padding:16px;text-align:center;cursor:pointer;transition:border-color 0.2s;" onclick="document.getElementById('aiq-reference-input').click()" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="event.preventDefault();this.style.borderColor='var(--border)';aiqHandleFiles(event.dataTransfer.files,'reference')">
+                                    <i class="fas fa-cloud-upload-alt" style="font-size:20px;color:var(--text-secondary);margin-bottom:6px;"></i>
+                                    <p style="margin:0;font-size:12px;color:var(--text-secondary);">点击或拖拽上传参考试题</p>
+                                </div>
+                                <input type="file" id="aiq-reference-input" multiple accept=".docx,.pdf,.txt,.md" style="display:none;" onchange="aiqHandleFiles(this.files,'reference')">
+                                <div id="aiq-reference-list" style="margin-top:6px;"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
