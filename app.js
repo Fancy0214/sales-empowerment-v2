@@ -48,6 +48,8 @@ function doLogin() {
         sessionStorage.setItem('salesEmpowerment_user', username);
         document.documentElement.classList.remove('not-logged-in');
         errEl.style.display = 'none';
+        // 登录成功后弹出每日一案
+        setTimeout(function() { showDailyCase(); }, 600);
     } else {
         errEl.style.display = 'block';
         document.getElementById('loginUsername').value = '';
@@ -4021,6 +4023,11 @@ function switchPage(pageName) {
             else if (activeTab.id === 'growth-employees') renderEmployeeList();
             else if (activeTab.id === 'growth-exams') renderExamList();
         }
+    }
+    
+    // 切换到实战案例时，渲染卡片墙
+    if (pageName === 'cases') {
+        renderCasesCardWall();
     }
     
     // 移动端收起侧边栏
@@ -12481,3 +12488,247 @@ function aiqSaveToExam() {
 
     alert('✅ 已成功保存到考试题库！\n\n考试名称: ' + exam.name + '\n题目数量: ' + exam.questions.length + ' 题\n总分: ' + totalPoints + ' 分\n及格分: ' + passScore + ' 分\n\n建议切换到「考核评估」Tab 查看和管理。');
 }
+
+// ==================== 实战案例数据与功能 ====================
+
+// 案例数据（后续可迁Supabase）
+const casesData = [
+    {
+        id: "case-001",
+        title: "Essex插读语言危机救援",
+        basket: "green",
+        tags: ["语言条件", "紧急救援", "替代考试", "拼分方案"],
+        scenario: "学生插读Essex本科最后一年，Offer拿到了，但雅思死活考不出来。更要命的是，语言班配读截止时间也过了——常规路全堵死了。",
+        challenge: "雅思多次未过、语言班截止已过、学生信心崩溃、合作方投入面临打水漂",
+        thinking: "雅思短期内不可能突破，时间也不等人。必须换赛道——找一条更简单、出分更快、且Essex认可的路。把所有替代语言考试拉出来过了一遍，锁定牛津国际Spotlight：第一次免费、门槛低、出分快。",
+        twist: "学生去考了Spotlight，眼看有希望——结果口语考试录屏出了问题，成绩没出来。好不容易看到一扇门打开了，又砰地关上了。",
+        solution: "没有让学生换其他考试重考（又要等），直接联系牛津国际谈了拼分方案：用雅思成绩拼上Spotlight其他单项分数。学校同意，语言班也赶上了学生最想上的班次。",
+        result: "学生顺利入学，合作方直呼不可思议。",
+        story: "6月，一个学生插读Essex本科最后一年，Offer拿到了，偏偏雅思死活考不出来，一而再再而三地没过。更要命的是，Essex语言班的配读截止时间也过了，常规路全堵死了。\n\n合作方找到我们时，学生已经考了好几次雅思，信心快被磨没了。合作方也很急——这个case跟了很久，投入了大量精力，如果现在凉了，不仅学生浪费一年，合作方的投入也将打水漂。\n\n我们接手后判断：雅思短期内不可能突破了，时间也不等人，再耗下去只会把学生彻底拖垮。必须换赛道——找一条更简单、出分更快、且Essex认可的路。\n\n我们把目标院校认可的替代语言考试全部拉出来过了一遍，最终锁定牛津国际的Spotlight：第一次免费、门槛低、出分快，正好适合这种\"只求达标\"的紧急情况。\n\n学生去考了，眼看有希望了——结果口语考试录屏出了问题，成绩没出来。你能想象学生当时的心情吗？折腾了这么久，好不容易看到一扇门打开了，又\"砰\"地关上了。\n\n但我们没有放弃，也没让学生再换其他考试重考——重考又要等，时间真的耗不起了。我们直接联系牛津国际，谈了一个拼分方案：用学生已有的雅思成绩拼上Spotlight其他单项的分数。学校那边也理解情况，同意了这个方案。最后语言班也赶上了学生最想上的那个班次。\n\n合作方后来跟我说，这case能成她真的觉得不可思议。其实回过头看，这种case中间任何一个人松一下手——学生放弃、我们说没办法、或者没有找对那条路——结局就完全不同了。但我们都撑住了，学生也顺利入学了。"
+    }
+];
+
+// 篮子颜色映射
+const basketColorMap = {
+    green: { label: '绿篮子', color: 'var(--success)' },
+    yellow: { label: '黄篮子', color: '#ECC94B' },
+    gray: { label: '灰篮子', color: '#A0AEC0' },
+    purple: { label: '紫篮子', color: '#805AD5' }
+};
+
+// 当前筛选状态
+let casesCurrentFilter = 'all';
+
+// ==================== 卡片墙渲染 ====================
+
+function renderCasesCardWall(filter) {
+    if (typeof filter === 'undefined') filter = casesCurrentFilter;
+    casesCurrentFilter = filter;
+    
+    var grid = document.getElementById('casesCardGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    
+    var filtered = filter === 'all' ? casesData : casesData.filter(function(c) { return c.basket === filter; });
+    
+    if (filtered.length === 0) {
+        grid.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--text-secondary);"><i class="fas fa-inbox" style="font-size:48px;opacity:0.3;display:block;margin-bottom:16px;"></i><p>暂无此分类案例</p></div>';
+        return;
+    }
+    
+    filtered.forEach(function(c) {
+        var card = document.createElement('div');
+        card.className = 'cases-card';
+        card.onclick = function() { openCaseDetail(c.id); };
+        
+        var tagsHtml = c.tags.map(function(t) {
+            var isHighlight = t.indexOf('语言') >= 0 || t.indexOf('紧急') >= 0 || t.indexOf('拼分') >= 0;
+            return '<span class="tag' + (isHighlight ? ' highlight' : '') + '">' + t + '</span>';
+        }).join('');
+        
+        card.innerHTML = 
+            '<div class="cases-card-top">' +
+                '<span class="cases-basket-dot ' + c.basket + '"></span>' +
+                '<span class="cases-card-title">' + c.title + '</span>' +
+            '</div>' +
+            '<div class="cases-card-scenario">' + c.scenario + '</div>' +
+            '<div class="cases-card-tags">' + tagsHtml + '</div>';
+        
+        grid.appendChild(card);
+    });
+}
+
+// ==================== 篮子筛选 ====================
+
+function filterCasesByBasket(basket, btn) {
+    document.querySelectorAll('.cases-filter-btn').forEach(function(b) {
+        b.classList.remove('active');
+    });
+    if (btn) btn.classList.add('active');
+    renderCasesCardWall(basket);
+}
+
+// ==================== 案例详情弹窗 ====================
+
+function openCaseDetail(caseId) {
+    var c = casesData.find(function(item) { return item.id === caseId; });
+    if (!c) return;
+    
+    var basketInfo = basketColorMap[c.basket] || { label: c.basket, color: '#999' };
+    
+    var html = 
+        '<div style="margin-bottom:24px;">' +
+            '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">' +
+                '<span class="cases-basket-dot ' + c.basket + '" style="width:12px;height:12px;"></span>' +
+                '<span style="font-size:13px;font-weight:500;color:var(--text-secondary);">' + basketInfo.label + '</span>' +
+            '</div>' +
+            '<h2 style="font-size:22px;font-weight:700;font-family:var(--font-display);color:var(--primary);line-height:1.4;">' + c.title + '</h2>' +
+        '</div>' +
+        
+        '<div class="cases-detail-section">' +
+            '<div class="cases-detail-section-label"><i class="fas fa-crosshairs"></i> 场景</div>' +
+            '<div class="cases-detail-text">' + c.scenario + '</div>' +
+        '</div>' +
+        
+        '<div class="cases-detail-section">' +
+            '<div class="cases-detail-section-label"><i class="fas fa-exclamation-triangle"></i> 难点</div>' +
+            '<div class="cases-detail-challenge-box">' + c.challenge + '</div>' +
+        '</div>' +
+        
+        '<div class="cases-detail-section">' +
+            '<div class="cases-detail-section-label"><i class="fas fa-brain"></i> 破题思路</div>' +
+            '<div class="cases-detail-thinking-box">' + c.thinking + '</div>' +
+        '</div>';
+    
+    if (c.twist) {
+        html += 
+            '<div class="cases-detail-section">' +
+                '<div class="cases-detail-section-label"><i class="fas fa-bolt"></i> 意外转折</div>' +
+                '<div class="cases-detail-twist-box">' + c.twist + '</div>' +
+            '</div>';
+    }
+    
+    html += 
+        '<div class="cases-detail-section">' +
+            '<div class="cases-detail-section-label"><i class="fas fa-check-circle"></i> 解决方案</div>' +
+            '<div class="cases-detail-solution-box">' + c.solution + '</div>' +
+        '</div>' +
+        
+        '<div class="cases-detail-section">' +
+            '<div class="cases-detail-section-label"><i class="fas fa-trophy"></i> 结果</div>' +
+            '<div class="cases-detail-result-box">' + c.result + '</div>' +
+        '</div>';
+    
+    if (c.story) {
+        html += 
+            '<div class="cases-detail-section">' +
+                '<div class="cases-detail-story-title"><i class="fas fa-feather-alt"></i> 故事版</div>' +
+                '<div class="cases-detail-story-box">' + c.story + '</div>' +
+            '</div>';
+    }
+    
+    // 标签
+    var tagsHtml = c.tags.map(function(t) {
+        return '<span class="tag" style="font-size:11px;padding:3px 10px;border-radius:12px;background:var(--bg-primary);color:var(--text-secondary);border:1px solid var(--border);">' + t + '</span>';
+    }).join('');
+    
+    html += 
+        '<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">' + tagsHtml + '</div>';
+    
+    document.getElementById('caseDetailContent').innerHTML = html;
+    document.getElementById('caseDetailModal').classList.add('active');
+}
+
+// ==================== 每日一案弹窗 ====================
+
+function showDailyCase() {
+    // 仅在已登录时弹出
+    if (!sessionStorage.getItem('salesEmpowerment_loggedIn')) return;
+    
+    // 今天只弹一次
+    var today = new Date();
+    var dateKey = 'salesEmpowerment_dailyCase_' + today.getFullYear() + '-' + (today.getMonth()+1) + '-' + today.getDate();
+    if (sessionStorage.getItem(dateKey)) return;
+    
+    // 没有案例数据则不弹
+    if (!casesData || casesData.length === 0) return;
+    
+    // 根据日期选择当日案例（循环取）
+    var dayOfYear = Math.floor((today - new Date(today.getFullYear(),0,0)) / 86400000);
+    var caseIndex = dayOfYear % casesData.length;
+    var c = casesData[caseIndex];
+    
+    // 标记今日已弹
+    sessionStorage.setItem(dateKey, 'shown');
+    
+    // 渲染弹窗
+    var dateStr = today.getFullYear() + '年' + (today.getMonth()+1) + '月' + today.getDate() + '日';
+    document.getElementById('dailyCaseDate').innerHTML = '<i class="fas fa-calendar-day"></i> 每日一案 · ' + dateStr;
+    
+    var basketInfo = basketColorMap[c.basket] || { label: c.basket };
+    
+    // 正面
+    document.getElementById('dailyCardFront').innerHTML = 
+        '<div class="cases-daily-basket-row">' +
+            '<span class="cases-basket-dot ' + c.basket + '" style="width:12px;height:12px;"></span>' +
+            '<span class="cases-daily-basket-label">' + basketInfo.label + '</span>' +
+        '</div>' +
+        '<div class="cases-daily-case-title">' + c.title + '</div>' +
+        '<div class="cases-daily-case-scenario">' + c.scenario + '</div>' +
+        '<div class="cases-daily-front-hint">想好了？点击下方按钮翻转看答案</div>';
+    
+    // 背面
+    var backHtml = 
+        '<div class="section-label"><i class="fas fa-exclamation-triangle"></i> 难点</div>' +
+        '<div class="cases-detail-challenge-box" style="margin-top:6px;">' + c.challenge + '</div>' +
+        '<div class="section-label"><i class="fas fa-brain"></i> 破题思路</div>' +
+        '<div class="cases-daily-thinking-block">' + c.thinking + '</div>';
+    
+    if (c.twist) {
+        backHtml += 
+            '<div class="section-label"><i class="fas fa-bolt"></i> 意外转折</div>' +
+            '<div class="cases-daily-twist-block">' + c.twist + '</div>';
+    }
+    
+    backHtml += 
+        '<div class="section-label"><i class="fas fa-check-circle"></i> 解决方案</div>' +
+        '<div class="cases-daily-solution-block">' + c.solution + '</div>' +
+        '<div class="section-label"><i class="fas fa-trophy"></i> 结果</div>' +
+        '<div class="cases-daily-result-block">' + c.result + '</div>' +
+        '<div class="cases-daily-back-hint">点击翻转按钮回到题目</div>';
+    
+    document.getElementById('dailyCardBack').innerHTML = backHtml;
+    
+    // 确保卡片未翻转
+    document.getElementById('dailyFlipCard').classList.remove('flipped');
+    
+    // 更新翻转按钮文案
+    document.getElementById('dailyFlipBtn').innerHTML = '<i class="fas fa-sync-alt"></i> 翻转查看解题思路';
+    
+    // 显示弹窗
+    document.getElementById('dailyCaseOverlay').style.display = 'flex';
+}
+
+function closeDailyCase() {
+    document.getElementById('dailyCaseOverlay').style.display = 'none';
+    document.getElementById('dailyFlipCard').classList.remove('flipped');
+}
+
+function flipDailyCard() {
+    var flipCard = document.getElementById('dailyFlipCard');
+    var flipBtn = document.getElementById('dailyFlipBtn');
+    flipCard.classList.toggle('flipped');
+    
+    if (flipCard.classList.contains('flipped')) {
+        flipBtn.innerHTML = '<i class="fas fa-undo"></i> 翻回题目';
+    } else {
+        flipBtn.innerHTML = '<i class="fas fa-sync-alt"></i> 翻转查看解题思路';
+    }
+}
+
+// 初始化：如果已登录（页面刷新），也触发每日一案检查
+(function initDailyCase() {
+    if (sessionStorage.getItem('salesEmpowerment_loggedIn')) {
+        setTimeout(function() { showDailyCase(); }, 1000);
+    }
+})();

@@ -5366,3 +5366,471 @@ html.share-loading .share-loading-mask {
     max-height: 90vh;
     overflow-y: auto;
 }
+
+/* ==================== 实战案例板块 ==================== */
+
+/* --- 篮子筛选器 --- */
+.cases-filter-bar {
+    display: flex;
+    gap: 10px;
+    padding: 16px 0 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.cases-filter-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 18px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: var(--bg-primary);
+    font-size: 13px;
+    font-family: var(--font-body);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.cases-filter-btn:hover {
+    border-color: var(--primary-mid);
+    color: var(--primary-mid);
+}
+.cases-filter-btn.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+}
+
+/* --- 篮子圆点 --- */
+.cases-basket-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.cases-basket-dot.green { background: var(--success); }
+.cases-basket-dot.yellow { background: #ECC94B; }
+.cases-basket-dot.gray { background: #A0AEC0; }
+.cases-basket-dot.purple { background: #805AD5; }
+
+/* --- 卡片墙网格 --- */
+.cases-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+    padding: 16px 0 40px;
+}
+
+/* --- 单个卡片 --- */
+.cases-card {
+    background: #fff;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(27,43,75,0.06);
+    cursor: pointer;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    border: 1px solid var(--border);
+}
+.cases-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(27,43,75,0.12);
+}
+.cases-card-top {
+    padding: 18px 20px 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.cases-card-title {
+    font-size: 15px;
+    font-weight: 600;
+    font-family: var(--font-display);
+    color: var(--primary);
+    line-height: 1.4;
+}
+.cases-card-scenario {
+    padding: 0 20px 16px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.cases-card-tags {
+    padding: 0 20px 18px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.cases-card-tags .tag {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+}
+.cases-card-tags .tag.highlight {
+    background: rgba(45,74,122,0.08);
+    color: var(--primary-mid);
+    border-color: transparent;
+}
+
+/* --- 案例详情弹窗 --- */
+.cases-detail-modal {
+    max-width: 680px;
+}
+.cases-detail-section {
+    margin-bottom: 24px;
+}
+.cases-detail-section-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.cases-detail-section-label i {
+    font-size: 13px;
+}
+.cases-detail-text {
+    font-size: 14px;
+    color: #4A5568;
+    line-height: 1.8;
+}
+.cases-detail-challenge-box {
+    padding: 14px 18px;
+    background: #FFF5F5;
+    border-radius: 10px;
+    border-left: 3px solid #E53E3E;
+    font-size: 13px;
+    color: #742A2A;
+    line-height: 1.7;
+}
+.cases-detail-thinking-box {
+    padding: 14px 18px;
+    background: rgba(45,74,122,0.06);
+    border-radius: 10px;
+    border-left: 3px solid var(--primary-mid);
+    font-size: 13px;
+    color: var(--primary);
+    line-height: 1.7;
+}
+.cases-detail-twist-box {
+    padding: 14px 18px;
+    background: #FFFAF0;
+    border-radius: 10px;
+    border-left: 3px solid #DD6B20;
+    font-size: 13px;
+    color: #7B341E;
+    line-height: 1.7;
+}
+.cases-detail-solution-box {
+    padding: 14px 18px;
+    background: #F0FFF4;
+    border-radius: 10px;
+    border-left: 3px solid var(--success);
+    font-size: 13px;
+    color: #276749;
+    line-height: 1.7;
+}
+.cases-detail-result-box {
+    padding: 14px 18px;
+    background: rgba(196,150,60,0.08);
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+    text-align: center;
+}
+.cases-detail-story-box {
+    padding: 18px 22px;
+    background: var(--bg-primary);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    font-size: 14px;
+    color: #4A5568;
+    line-height: 2;
+    white-space: pre-line;
+}
+.cases-detail-story-title {
+    font-size: 14px;
+    font-weight: 600;
+    font-family: var(--font-display);
+    color: var(--primary);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.cases-detail-story-title i {
+    color: var(--accent);
+}
+
+/* ==================== 每日一案弹窗 ==================== */
+
+.cases-daily-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(27,43,75,0.5);
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: casesDailyFadeIn 0.3s ease;
+}
+@keyframes casesDailyFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.cases-daily-modal {
+    background: #fff;
+    border-radius: 20px;
+    max-width: 440px;
+    width: 92%;
+    box-shadow: 0 20px 60px rgba(27,43,75,0.2);
+    overflow: hidden;
+    animation: casesDailySlideUp 0.4s ease;
+}
+@keyframes casesDailySlideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.cases-daily-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px 0;
+}
+.cases-daily-date-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(45,74,122,0.08);
+    color: var(--primary-mid);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 14px;
+    border-radius: 14px;
+    font-family: var(--font-body);
+}
+.cases-daily-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: var(--bg-primary);
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    font-family: var(--font-body);
+}
+.cases-daily-close:hover {
+    background: #E2E8F0;
+    color: var(--primary);
+}
+
+/* --- 翻转卡片容器 --- */
+.cases-daily-card-container {
+    perspective: 1200px;
+    padding: 20px 24px;
+}
+.cases-daily-flip-card {
+    width: 100%;
+    min-height: 340px;
+    position: relative;
+    transition: transform 0.6s ease;
+    transform-style: preserve-3d;
+}
+.cases-daily-flip-card.flipped {
+    transform: rotateY(180deg);
+}
+.cases-daily-front,
+.cases-daily-back {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 14px;
+    padding: 24px 22px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+.cases-daily-front {
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+}
+.cases-daily-back {
+    background: #fff;
+    border: 1px solid var(--border);
+    transform: rotateY(180deg);
+}
+
+/* --- 卡片正面内容 --- */
+.cases-daily-basket-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+.cases-daily-basket-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+.cases-daily-case-title {
+    font-size: 18px;
+    font-weight: 700;
+    font-family: var(--font-display);
+    color: var(--primary);
+    margin-bottom: 16px;
+    line-height: 1.4;
+}
+.cases-daily-case-scenario {
+    font-size: 13px;
+    color: #4A5568;
+    line-height: 1.8;
+    background: #fff;
+    border-radius: 10px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    flex-grow: 1;
+}
+.cases-daily-front-hint {
+    text-align: center;
+    font-size: 12px;
+    color: #A0AEC0;
+    padding-top: 14px;
+    margin-top: auto;
+}
+
+/* --- 卡片背面内容 --- */
+.cases-daily-back .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 8px;
+    margin-top: 18px;
+}
+.cases-daily-back .section-label:first-child {
+    margin-top: 0;
+}
+.cases-daily-back .back-text {
+    font-size: 13px;
+    color: #4A5568;
+    line-height: 1.7;
+}
+.cases-daily-thinking-block {
+    padding: 12px 16px;
+    background: rgba(45,74,122,0.06);
+    border-radius: 10px;
+    border-left: 3px solid var(--primary-mid);
+    font-size: 12px;
+    color: var(--primary);
+    line-height: 1.7;
+    margin-top: 6px;
+}
+.cases-daily-twist-block {
+    padding: 12px 16px;
+    background: #FFFAF0;
+    border-radius: 10px;
+    border-left: 3px solid #DD6B20;
+    font-size: 12px;
+    color: #7B341E;
+    line-height: 1.7;
+    margin-top: 6px;
+}
+.cases-daily-solution-block {
+    padding: 12px 16px;
+    background: #F0FFF4;
+    border-radius: 10px;
+    border-left: 3px solid var(--success);
+    font-size: 12px;
+    color: #276749;
+    line-height: 1.7;
+    margin-top: 6px;
+}
+.cases-daily-result-block {
+    padding: 12px 16px;
+    background: rgba(196,150,60,0.08);
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    margin-top: 6px;
+    text-align: center;
+}
+.cases-daily-back-hint {
+    text-align: center;
+    font-size: 12px;
+    color: #A0AEC0;
+    padding-top: 14px;
+    margin-top: auto;
+    border-top: 1px solid var(--border);
+}
+
+/* --- 翻转按钮 --- */
+.cases-daily-flip-hint {
+    text-align: center;
+    padding: 0 24px 20px;
+}
+.cases-daily-flip-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    border-radius: 24px;
+    border: none;
+    background: var(--primary);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: var(--font-body);
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(27,43,75,0.2);
+}
+.cases-daily-flip-btn:hover {
+    background: var(--primary-mid);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(27,43,75,0.25);
+}
+
+/* ==================== 响应式：实战案例 ==================== */
+@media (max-width: 768px) {
+    .cases-card-grid {
+        grid-template-columns: 1fr;
+    }
+    .cases-daily-modal {
+        max-width: 100%;
+        width: 100%;
+        border-radius: 0;
+        min-height: 100vh;
+    }
+    .cases-daily-overlay {
+        align-items: stretch;
+    }
+    .cases-filter-bar {
+        gap: 8px;
+    }
+    .cases-filter-btn {
+        padding: 6px 14px;
+        font-size: 12px;
+    }
+}

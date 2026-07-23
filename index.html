@@ -141,6 +141,10 @@
                 <i class="fas fa-seedling"></i>
                 <span>成长天地</span>
             </li>
+            <li class="nav-item" data-page="cases">
+                <i class="fas fa-book-open"></i>
+                <span>实战案例</span>
+            </li>
             <li class="nav-item" data-page="plan-generator" style="display:none;">
                 <i class="fas fa-graduation-cap"></i>
                 <span>方案生成</span>
@@ -1288,6 +1292,62 @@
                 <div class="modal-content modal-lg">
                     <span class="modal-close" onclick="closeModal('examResultModal')">&times;</span>
                     <div id="examResultContent"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 实战案例 ==================== -->
+        <div class="page" id="page-cases">
+            <h1 class="page-title"><i class="fas fa-book-open"></i> 实战案例</h1>
+
+            <!-- 篮子筛选器 -->
+            <div class="cases-filter-bar">
+                <button class="cases-filter-btn active" data-basket="all" onclick="filterCasesByBasket('all',this)">
+                    <i class="fas fa-layer-group"></i> 全部
+                </button>
+                <button class="cases-filter-btn" data-basket="green" onclick="filterCasesByBasket('green',this)">
+                    <span class="cases-basket-dot green"></span> 绿篮子
+                </button>
+                <button class="cases-filter-btn" data-basket="yellow" onclick="filterCasesByBasket('yellow',this)">
+                    <span class="cases-basket-dot yellow"></span> 黄篮子
+                </button>
+                <button class="cases-filter-btn" data-basket="gray" onclick="filterCasesByBasket('gray',this)">
+                    <span class="cases-basket-dot gray"></span> 灰篮子
+                </button>
+                <button class="cases-filter-btn" data-basket="purple" onclick="filterCasesByBasket('purple',this)">
+                    <span class="cases-basket-dot purple"></span> 紫篮子
+                </button>
+            </div>
+
+            <!-- 卡片墙 -->
+            <div class="cases-card-grid" id="casesCardGrid"></div>
+
+            <!-- 案例详情弹窗 -->
+            <div class="modal" id="caseDetailModal">
+                <div class="modal-content modal-lg cases-detail-modal">
+                    <span class="modal-close" onclick="closeModal('caseDetailModal')">&times;</span>
+                    <div id="caseDetailContent"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 每日一案弹窗（全局模态） ==================== -->
+        <div class="cases-daily-overlay" id="dailyCaseOverlay" style="display:none;">
+            <div class="cases-daily-modal">
+                <div class="cases-daily-header">
+                    <div class="cases-daily-date-badge" id="dailyCaseDate"></div>
+                    <button class="cases-daily-close" onclick="closeDailyCase()">&times;</button>
+                </div>
+                <div class="cases-daily-card-container">
+                    <div class="cases-daily-flip-card" id="dailyFlipCard">
+                        <div class="cases-daily-front" id="dailyCardFront"></div>
+                        <div class="cases-daily-back" id="dailyCardBack"></div>
+                    </div>
+                </div>
+                <div class="cases-daily-flip-hint">
+                    <button class="cases-daily-flip-btn" id="dailyFlipBtn" onclick="flipDailyCard()">
+                        <i class="fas fa-sync-alt"></i> 翻转查看解题思路
+                    </button>
                 </div>
             </div>
         </div>
