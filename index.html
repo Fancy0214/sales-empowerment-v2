@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Noto+Sans+SC:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
     <script>
         // 同步检测分享/收集参数，在body渲染前隐藏内容防止闪烁
         var _urlParams = new URLSearchParams(window.location.search);
@@ -152,6 +153,10 @@
             <li class="nav-item" data-page="admin" id="adminNavItem">
                 <i class="fas fa-shield-alt"></i>
                 <span>后台管理</span>
+            </li>
+            <li class="nav-item" data-page="data-management" id="dataMgmtNavItem" style="display:none;">
+                <i class="fas fa-chart-line"></i>
+                <span>数据管理</span>
             </li>
         </ul>
     </nav>
@@ -1638,6 +1643,242 @@
                         <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> 保存</button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <!-- ==================== 数据管理专区 ==================== -->
+        <div class="page" id="page-data-management">
+            <h1 class="page-title"><i class="fas fa-chart-line"></i> 数据管理专区</h1>
+
+            <!-- 子Tab导航 -->
+            <div class="dm-subtabs">
+                <button class="dm-subtab-btn active" data-dmtab="dm-global" onclick="switchDmTab('dm-global')">
+                    <i class="fas fa-globe"></i> 团队全局
+                </button>
+                <button class="dm-subtab-btn" data-dmtab="dm-personal" onclick="switchDmTab('dm-personal')">
+                    <i class="fas fa-user-tie"></i> 销售个人
+                </button>
+                <button class="dm-subtab-btn" data-dmtab="dm-anchor" onclick="switchDmTab('dm-anchor')">
+                    <i class="fas fa-bullseye"></i> 锚点测算
+                </button>
+                <button class="dm-subtab-btn" data-dmtab="dm-entry" onclick="switchDmTab('dm-entry')">
+                    <i class="fas fa-keyboard"></i> 数据录入
+                </button>
+            </div>
+
+            <!-- ====== Tab 1: 团队全局 ====== -->
+            <div class="dm-tab-content active" id="dm-global">
+                <div class="dm-filter-bar">
+                    <button class="dm-filter-btn active" data-dmfilter="all" onclick="setDmGlobalFilter('all')">全部</button>
+                    <button class="dm-filter-btn" data-dmfilter="referral" onclick="setDmGlobalFilter('referral')">仅口碑</button>
+                    <button class="dm-filter-btn" data-dmfilter="direct" onclick="setDmGlobalFilter('direct')">仅非口碑</button>
+                </div>
+                <!-- 汇总卡片 -->
+                <div class="dm-summary-cards" id="dmGlobalSummaryCards">
+                    <div class="dm-summary-card"><div class="dm-card-icon"><i class="fas fa-handshake"></i></div><div class="dm-card-value" id="dmGlobalSigned">-</div><div class="dm-card-label">签约量</div></div>
+                    <div class="dm-summary-card"><div class="dm-card-icon"><i class="fas fa-file-alt"></i></div><div class="dm-card-value" id="dmGlobalOutput">-</div><div class="dm-card-label">出产量</div></div>
+                    <div class="dm-summary-card"><div class="dm-card-icon"><i class="fas fa-paper-plane"></i></div><div class="dm-card-value" id="dmGlobalApp">-</div><div class="dm-card-label">申请量</div></div>
+                    <div class="dm-summary-card"><div class="dm-card-icon"><i class="fas fa-building"></i></div><div class="dm-card-value" id="dmGlobalAgencies">-</div><div class="dm-card-label">机构总数</div></div>
+                </div>
+                <!-- 图表区 -->
+                <div class="dm-charts-row">
+                    <div class="dm-chart-card"><h3 class="dm-chart-title">级别分布</h3><div class="dm-chart-wrap"><canvas id="dmGlobalLevelChart"></canvas></div></div>
+                    <div class="dm-chart-card"><h3 class="dm-chart-title">城市分布</h3><div class="dm-chart-wrap"><canvas id="dmGlobalCityChart"></canvas></div></div>
+                </div>
+                <div class="dm-charts-row">
+                    <div class="dm-chart-card dm-chart-full"><h3 class="dm-chart-title">月度趋势</h3><div class="dm-chart-wrap"><canvas id="dmGlobalTrendChart"></canvas></div></div>
+                </div>
+                <div class="dm-charts-row">
+                    <div class="dm-chart-card dm-chart-full"><h3 class="dm-chart-title">口碑 vs 非口碑对比</h3><div class="dm-chart-wrap"><canvas id="dmGlobalReferralChart"></canvas></div></div>
+                </div>
+            </div>
+
+            <!-- ====== Tab 2: 销售个人 ====== -->
+            <div class="dm-tab-content" id="dm-personal">
+                <div class="dm-personal-header">
+                    <div class="dm-field">
+                        <label>选择销售人员</label>
+                        <select id="dmPersonalSales" onchange="onDmPersonalChange()">
+                            <option value="">-- 请选择 --</option>
+                        </select>
+                    </div>
+                    <div class="dm-filter-bar">
+                        <button class="dm-filter-btn active" data-dmfilter="all" onclick="setDmPersonalFilter('all')">全部</button>
+                        <button class="dm-filter-btn" data-dmfilter="referral" onclick="setDmPersonalFilter('referral')">仅口碑</button>
+                        <button class="dm-filter-btn" data-dmfilter="direct" onclick="setDmPersonalFilter('direct')">仅非口碑</button>
+                    </div>
+                </div>
+                <div class="dm-summary-cards" id="dmPersonalSummaryCards">
+                    <div class="dm-summary-card"><div class="dm-card-icon"><i class="fas fa-building"></i></div><div class="dm-card-value" id="dmPersonalAgencies">-</div><div class="dm-card-label">名下机构数</div></div>
+                    <div class="dm-summary-card"><div class="dm-card-icon"><i class="fas fa-handshake"></i></div><div class="dm-card-value" id="dmPersonalSigned">-</div><div class="dm-card-label">签约量</div></div>
+                    <div class="dm-summary-card"><div class="dm-card-icon"><i class="fas fa-file-alt"></i></div><div class="dm-card-value" id="dmPersonalOutput">-</div><div class="dm-card-label">出产量</div></div>
+                    <div class="dm-summary-card"><div class="dm-card-icon"><i class="fas fa-paper-plane"></i></div><div class="dm-card-value" id="dmPersonalApp">-</div><div class="dm-card-label">申请量</div></div>
+                </div>
+                <div class="dm-charts-row">
+                    <div class="dm-chart-card"><h3 class="dm-chart-title">级别分布</h3><div class="dm-chart-wrap"><canvas id="dmPersonalLevelChart"></canvas></div></div>
+                    <div class="dm-chart-card"><h3 class="dm-chart-title">城市分布</h3><div class="dm-chart-wrap"><canvas id="dmPersonalCityChart"></canvas></div></div>
+                </div>
+                <div class="dm-charts-row">
+                    <div class="dm-chart-card"><h3 class="dm-chart-title">月度趋势</h3><div class="dm-chart-wrap"><canvas id="dmPersonalTrendChart"></canvas></div></div>
+                    <div class="dm-chart-card"><h3 class="dm-chart-title">锚点达成率（实际 vs 目标）</h3><div class="dm-chart-wrap"><canvas id="dmPersonalAnchorChart"></canvas></div></div>
+                </div>
+                <div class="dm-health-section">
+                    <h3 class="dm-chart-title"><i class="fas fa-heartbeat"></i> 机构健康度</h3>
+                    <div class="dm-health-list" id="dmPersonalHealthList">
+                        <p class="hint">请选择销售人员</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====== Tab 3: 锚点测算 ====== -->
+            <div class="dm-tab-content" id="dm-anchor">
+                <div class="dm-anchor-header">
+                    <div class="dm-field">
+                        <label>选择销售人员</label>
+                        <select id="dmAnchorSales" onchange="calcDmAnchor()">
+                            <option value="">-- 请选择 --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="dm-anchor-result" id="dmAnchorResult">
+                    <div class="dm-anchor-cards">
+                        <div class="dm-anchor-card">
+                            <div class="dm-anchor-label">出产锚点</div>
+                            <div class="dm-anchor-value" id="dmAnchorOutput">-</div>
+                        </div>
+                        <div class="dm-anchor-card">
+                            <div class="dm-anchor-label">申请锚点</div>
+                            <div class="dm-anchor-value" id="dmAnchorApp">-</div>
+                        </div>
+                    </div>
+                    <div class="dm-anchor-detail" id="dmAnchorDetail">
+                        <p class="hint">请选择销售人员以查看锚点计算详情</p>
+                    </div>
+                </div>
+                <!-- 模拟功能 -->
+                <div class="dm-anchor-sim">
+                    <h3 class="dm-chart-title"><i class="fas fa-flask"></i> 模拟：假设新签机构</h3>
+                    <div class="dm-sim-form" id="dmSimForm">
+                        <div class="dm-field-inline">
+                            <label>新增数量</label>
+                            <input type="number" id="dmSimCount" min="1" value="1" class="dm-input-sm">
+                        </div>
+                        <div class="dm-field-inline">
+                            <label>级别</label>
+                            <select id="dmSimLevel" class="dm-input-sm">
+                                <option value="A">A</option><option value="B">B</option><option value="C" selected>C</option>
+                                <option value="D">D</option><option value="E">E</option><option value="F">F</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary dm-btn-sm" onclick="applyDmSim()"><i class="fas fa-play"></i> 应用模拟</button>
+                        <button class="btn btn-outline dm-btn-sm" onclick="resetDmSim()"><i class="fas fa-undo"></i> 重置</button>
+                    </div>
+                    <div class="dm-sim-result" id="dmSimResult"></div>
+                </div>
+                <!-- 参数编辑 -->
+                <div class="dm-anchor-params">
+                    <h3 class="dm-chart-title"><i class="fas fa-cog"></i> 各级别平均参数（可编辑）</h3>
+                    <div class="dm-params-table" id="dmParamsTable">
+                        <p class="hint">加载中...</p>
+                    </div>
+                    <button class="btn btn-primary dm-btn-sm" onclick="saveDmParams()" style="margin-top:12px;"><i class="fas fa-save"></i> 保存参数</button>
+                </div>
+            </div>
+
+            <!-- ====== Tab 4: 数据录入 ====== -->
+            <div class="dm-tab-content" id="dm-entry">
+                <div class="dm-entry-sections">
+                    <!-- 手动录入区 -->
+                    <div class="dm-entry-section">
+                        <h3 class="dm-chart-title"><i class="fas fa-edit"></i> 手动录入</h3>
+                        <!-- 添加团队成员 -->
+                        <div class="dm-entry-block">
+                            <h4>添加团队成员</h4>
+                            <div class="dm-form-row">
+                                <div class="dm-field"><label>姓名</label><input type="text" id="dmAddMemberName" class="dm-input" placeholder="成员姓名"></div>
+                                <div class="dm-field"><label>角色</label>
+                                    <select id="dmAddMemberRole" class="dm-input"><option value="sales">销售</option><option value="manager">经理</option><option value="admin">管理员</option></select>
+                                </div>
+                                <div class="dm-field dm-field-btn"><button class="btn btn-primary dm-btn-sm" onclick="dmAddMember()"><i class="fas fa-plus"></i> 添加</button></div>
+                            </div>
+                        </div>
+                        <!-- 添加合作机构 -->
+                        <div class="dm-entry-block">
+                            <h4>添加合作机构</h4>
+                            <div class="dm-form-row dm-form-row-wide">
+                                <div class="dm-field"><label>机构名称</label><input type="text" id="dmAddAgencyName" class="dm-input" placeholder="机构名称"></div>
+                                <div class="dm-field"><label>级别</label>
+                                    <select id="dmAddAgencyLevel" class="dm-input"><option value="A">A</option><option value="B">B</option><option value="C" selected>C</option><option value="D">D</option><option value="E">E</option><option value="F">F</option></select>
+                                </div>
+                                <div class="dm-field"><label>城市</label><input type="text" id="dmAddAgencyCity" class="dm-input" placeholder="城市"></div>
+                                <div class="dm-field"><label>来源类型</label>
+                                    <select id="dmAddAgencySource" class="dm-input"><option value="direct">自有</option><option value="referral">口碑</option></select>
+                                </div>
+                            </div>
+                            <div class="dm-form-row dm-form-row-wide">
+                                <div class="dm-field"><label>口碑来源</label><input type="text" id="dmAddAgencyReferral" class="dm-input" placeholder="来源机构（选填）"></div>
+                                <div class="dm-field"><label>负责销售</label><select id="dmAddAgencySales" class="dm-input"><option value="">-- 选择 --</option></select></div>
+                                <div class="dm-field"><label>签约日期</label><input type="date" id="dmAddAgencyDate" class="dm-input"></div>
+                                <div class="dm-field"><label>联系人</label><input type="text" id="dmAddAgencyContact" class="dm-input" placeholder="联系人"></div>
+                            </div>
+                            <div class="dm-form-row">
+                                <div class="dm-field" style="flex:1"><label>备注</label><input type="text" id="dmAddAgencyNotes" class="dm-input" placeholder="备注"></div>
+                                <div class="dm-field dm-field-btn"><button class="btn btn-primary dm-btn-sm" onclick="dmAddAgency()"><i class="fas fa-plus"></i> 添加机构</button></div>
+                            </div>
+                        </div>
+                        <!-- 录入月度业绩 -->
+                        <div class="dm-entry-block">
+                            <h4>录入月度业绩</h4>
+                            <div class="dm-form-row dm-form-row-wide">
+                                <div class="dm-field"><label>选择机构</label><select id="dmAddPerfAgency" class="dm-input"><option value="">-- 选择 --</option></select></div>
+                                <div class="dm-field"><label>年</label><input type="number" id="dmAddPerfYear" class="dm-input" value="2026"></div>
+                                <div class="dm-field"><label>月</label>
+                                    <select id="dmAddPerfMonth" class="dm-input">
+                                        <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option><option value="4">4月</option><option value="5">5月</option><option value="6">6月</option>
+                                        <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
+                                    </select>
+                                </div>
+                                <div class="dm-field"><label>出产量</label><input type="number" id="dmAddPerfOutput" class="dm-input" value="0" min="0"></div>
+                                <div class="dm-field"><label>申请量</label><input type="number" id="dmAddPerfApp" class="dm-input" value="0" min="0"></div>
+                                <div class="dm-field dm-field-btn"><button class="btn btn-primary dm-btn-sm" onclick="dmAddPerformance()"><i class="fas fa-plus"></i> 录入</button></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Excel导入区 -->
+                    <div class="dm-entry-section">
+                        <h3 class="dm-chart-title"><i class="fas fa-file-excel"></i> Excel导入</h3>
+                        <div class="dm-entry-block">
+                            <div class="dm-import-area" id="dmImportArea">
+                                <i class="fas fa-cloud-upload-alt" style="font-size:36px;color:var(--secondary);margin-bottom:12px;"></i>
+                                <p>点击或拖拽Excel文件到此处</p>
+                                <input type="file" id="dmImportFile" accept=".xlsx,.xls,.csv" style="display:none;" onchange="dmHandleImportFile(event)">
+                                <button class="btn btn-outline dm-btn-sm" onclick="document.getElementById('dmImportFile').click()" style="margin-top:8px;"><i class="fas fa-upload"></i> 选择文件</button>
+                            </div>
+                            <div class="dm-import-preview" id="dmImportPreview" style="display:none;">
+                                <h4>导入预览</h4>
+                                <div class="dm-import-table-wrap" id="dmImportTableWrap"></div>
+                                <div class="dm-import-actions">
+                                    <button class="btn btn-primary dm-btn-sm" onclick="dmConfirmImport()"><i class="fas fa-check"></i> 确认导入</button>
+                                    <button class="btn btn-outline dm-btn-sm" onclick="dmCancelImport()"><i class="fas fa-times"></i> 取消</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 数据管理区 -->
+                    <div class="dm-entry-section">
+                        <h3 class="dm-chart-title"><i class="fas fa-database"></i> 数据管理</h3>
+                        <div class="dm-entry-block">
+                            <div class="dm-data-tabs">
+                                <button class="dm-data-tab-btn active" onclick="switchDmDataTab('members')">团队成员</button>
+                                <button class="dm-data-tab-btn" onclick="switchDmDataTab('agencies')">合作机构</button>
+                                <button class="dm-data-tab-btn" onclick="switchDmDataTab('performance')">月度业绩</button>
+                            </div>
+                            <div class="dm-data-table-wrap" id="dmDataManageTable">
+                                <p class="hint">加载中...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 

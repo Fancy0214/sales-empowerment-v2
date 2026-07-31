@@ -4029,6 +4029,11 @@ function switchPage(pageName) {
     if (pageName === 'cases') {
         renderCasesCardWall();
     }
+
+    // 切换到数据管理专区时，初始化数据
+    if (pageName === 'data-management') {
+        initDmModule();
+    }
     
     // 移动端收起侧边栏
     if (window.innerWidth <= 768) {
@@ -7416,6 +7421,9 @@ function enableAdminMode() {
     isAdminMode = true;
     const navItem = document.getElementById('adminNavItem');
     if (navItem) navItem.style.display = 'flex';
+    // 显示数据管理专区入口
+    const dmNavItem = document.getElementById('dataMgmtNavItem');
+    if (dmNavItem) dmNavItem.style.display = 'flex';
     
     // 切换到admin页面
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -12731,4 +12739,756 @@ function flipDailyCard() {
     if (sessionStorage.getItem('salesEmpowerment_loggedIn')) {
         setTimeout(function() { showDailyCase(); }, 1000);
     }
+})();
+
+// ==================== 数据管理专区 ====================
+
+// ---- 全局状态 ----
+const _dm = {
+    initialized: false,
+    members: [],       // team_members
+    agencies: [],      // partner_agencies
+    performance: [],   // monthly_performance
+    anchorParams: [],  // anchor_parameters
+    globalFilter: 'all',
+    personalFilter: 'all',
+    charts: {},        // Chart.js instances keyed by canvas id
+    importData: null,   // pending import rows
+    importTarget: null, // target table for import
+    currentDataTab: 'members',
+    simExtra: {}       // simulation extra counts per level
+};
+
+// 配色方案
+const DM_COLORS = ['#1B2B4B','#2D4A7A','#6B8DAD','#C4963C','#5A9E6F','#8B3A4A','#7B6B8D'];
+
+// ---- 初始化入口 ----
+async function initDmModule() {
+    if (_dm.initialized) return;
+    if (!supabaseClient) {
+        console.warn('[DM] supabaseClient not ready');
+        return;
+    }
+    _dm.initialized = true;
+    await dmLoadAllData();
+    dmPopulateSalesDropdowns();
+    loadDmParams();
+    switchDmDataTab('members');
+}
+
+async function dmLoadAllData() {
+    try {
+        const [mRes, aRes, pRes] = await Promise.all([
+            supabaseClient.from('team_members').select('*').order('name'),
+            supabaseClient.from('partner_agencies').select('*').order('agency_name'),
+            supabaseClient.from('monthly_performance').select('*').order('year').order('month')
+        ]);
+        if (mRes.data) _dm.members = mRes.data;
+        if (aRes.data) _dm.agencies = aRes.data;
+        if (pRes.data) _dm.performance = pRes.data;
+    } catch (e) {
+        console.error('[DM] load data error:', e);
+    }
+}
+
+// ---- 子Tab切换 ----
+function switchDmTab(tabId) {
+    document.querySelectorAll('.dm-subtab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.dm-tab-content').forEach(c => c.classList.remove('active'));
+    const btn = document.querySelector(`.dm-subtab-btn[data-dmtab="${tabId}"]`);
+    if (btn) btn.classList.add('active');
+    const content = document.getElementById(tabId);
+    if (content) content.classList.add('active');
+    // refresh data for specific tabs
+    if (tabId === 'dm-global') renderDmGlobal();
+    if (tabId === 'dm-personal') renderDmPersonal();
+    if (tabId === 'dm-anchor') { dmPopulateSalesDropdowns(); }
+}
+
+// ---- 数据筛选工具 ----
+function dmFilterAgencies(filter) {
+    if (filter === 'all') return _dm.agencies;
+    return _dm.agencies.filter(a => a.source_type === filter);
+}
+function dmFilterAgenciesBySales(agencies, salesId) {
+    return agencies.filter(a => a.assigned_sales_id === salesId);
+}
+
+// ---- Tab1: 团队全局 ----
+function setDmGlobalFilter(f) {
+    _dm.globalFilter = f;
+    document.querySelectorAll('#dm-global .dm-filter-btn').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('data-dmfilter') === f);
+    });
+    renderDmGlobal();
+}
+
+function renderDmGlobal() {
+    const agencies = dmFilterAgencies(_dm.globalFilter);
+    const agencyIds = new Set(agencies.map(a => a.id));
+    const perf = _dm.performance.filter(p => agencyIds.has(p.agency_id));
+    const totalOutput = perf.reduce((s, p) => s + (p.output_count || 0), 0);
+    const totalApp = perf.reduce((s, p) => s + (p.application_count || 0), 0);
+    // Summary
+    document.getElementById('dmGlobalSigned').textContent = agencies.length;
+    document.getElementById('dmGlobalOutput').textContent = totalOutput;
+    document.getElementById('dmGlobalApp').textContent = totalApp;
+    document.getElementById('dmGlobalAgencies').textContent = agencies.length;
+    // Level distribution
+    const levelCounts = {};
+    ['A','B','C','D','E','F'].forEach(l => levelCounts[l] = 0);
+    agencies.forEach(a => { if (levelCounts[a.level] !== undefined) levelCounts[a.level]++; });
+    renderDmPieChart('dmGlobalLevelChart', Object.keys(levelCounts), Object.values(levelCounts));
+    // City distribution
+    const cityCounts = {};
+    agencies.forEach(a => { const c = a.city || '未知'; cityCounts[c] = (cityCounts[c] || 0) + 1; });
+    const cityLabels = Object.keys(cityCounts).sort((a, b) => cityCounts[b] - cityCounts[a]).slice(0, 15);
+    renderDmBarChart('dmGlobalCityChart', cityLabels, cityLabels.map(c => cityCounts[c]));
+    // Monthly trend
+    renderDmTrendChart('dmGlobalTrendChart', perf);
+    // Referral vs direct
+    const refAgencies = agencies.filter(a => a.source_type === 'referral');
+    const dirAgencies = agencies.filter(a => a.source_type === 'direct');
+    const refIds = new Set(refAgencies.map(a => a.id));
+    const dirIds = new Set(dirAgencies.map(a => a.id));
+    const refOutput = _dm.performance.filter(p => refIds.has(p.agency_id)).reduce((s, p) => s + (p.output_count || 0), 0);
+    const dirOutput = _dm.performance.filter(p => dirIds.has(p.agency_id)).reduce((s, p) => s + (p.output_count || 0), 0);
+    const refApp = _dm.performance.filter(p => refIds.has(p.agency_id)).reduce((s, p) => s + (p.application_count || 0), 0);
+    const dirApp = _dm.performance.filter(p => dirIds.has(p.agency_id)).reduce((s, p) => s + (p.application_count || 0), 0);
+    renderDmGroupBarChart('dmGlobalReferralChart',
+        ['机构数', '出产量', '申请量'],
+        [{ label: '口碑', values: [refAgencies.length, refOutput, refApp] },
+         { label: '非口碑', values: [dirAgencies.length, dirOutput, dirApp] }]
+    );
+}
+
+// ---- Tab2: 销售个人 ----
+function setDmPersonalFilter(f) {
+    _dm.personalFilter = f;
+    document.querySelectorAll('#dm-personal .dm-filter-btn').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('data-dmfilter') === f);
+    });
+    renderDmPersonal();
+}
+
+function onDmPersonalChange() {
+    renderDmPersonal();
+}
+
+function renderDmPersonal() {
+    const salesId = document.getElementById('dmPersonalSales').value;
+    if (!salesId) return;
+    const allAg = dmFilterAgenciesBySales(_dm.agencies, salesId);
+    const agencies = _dm.personalFilter === 'all' ? allAg : allAg.filter(a => a.source_type === _dm.personalFilter);
+    const agencyIds = new Set(agencies.map(a => a.id));
+    const perf = _dm.performance.filter(p => agencyIds.has(p.agency_id));
+    const totalOutput = perf.reduce((s, p) => s + (p.output_count || 0), 0);
+    const totalApp = perf.reduce((s, p) => s + (p.application_count || 0), 0);
+    document.getElementById('dmPersonalAgencies').textContent = agencies.length;
+    document.getElementById('dmPersonalSigned').textContent = agencies.length;
+    document.getElementById('dmPersonalOutput').textContent = totalOutput;
+    document.getElementById('dmPersonalApp').textContent = totalApp;
+    // Level distribution
+    const levelCounts = {};
+    ['A','B','C','D','E','F'].forEach(l => levelCounts[l] = 0);
+    agencies.forEach(a => { if (levelCounts[a.level] !== undefined) levelCounts[a.level]++; });
+    renderDmPieChart('dmPersonalLevelChart', Object.keys(levelCounts), Object.values(levelCounts));
+    // City distribution
+    const cityCounts = {};
+    agencies.forEach(a => { const c = a.city || '未知'; cityCounts[c] = (cityCounts[c] || 0) + 1; });
+    const cityLabels = Object.keys(cityCounts).sort((a, b) => cityCounts[b] - cityCounts[a]).slice(0, 10);
+    renderDmBarChart('dmPersonalCityChart', cityLabels, cityLabels.map(c => cityCounts[c]));
+    // Monthly trend
+    renderDmTrendChart('dmPersonalTrendChart', perf);
+    // Anchor achievement
+    renderDmPersonalAnchor(salesId, agencies, perf);
+    // Health list
+    renderDmHealthList(agencies, perf);
+}
+
+function renderDmPersonalAnchor(salesId, agencies, perf) {
+    const levelCounts = {};
+    ['A','B','C','D','E','F'].forEach(l => levelCounts[l] = 0);
+    agencies.forEach(a => { if (levelCounts[a.level] !== undefined) levelCounts[a.level]++; });
+    let targetOutput = 0, targetApp = 0;
+    _dm.anchorParams.forEach(p => {
+        targetOutput += (levelCounts[p.level] || 0) * (parseFloat(p.avg_output) || 0);
+        targetApp += (levelCounts[p.level] || 0) * (parseFloat(p.avg_application) || 0);
+    });
+    const actualOutput = perf.reduce((s, p) => s + (p.output_count || 0), 0);
+    const actualApp = perf.reduce((s, p) => s + (p.application_count || 0), 0);
+    const labels = ['出产量', '申请量'];
+    const actualData = [actualOutput, actualApp];
+    const targetData = [Math.round(targetOutput), Math.round(targetApp)];
+    renderDmGroupBarChart('dmPersonalAnchorChart', labels,
+        [{ label: '实际', values: actualData }, { label: '目标', values: targetData }]);
+}
+
+function renderDmHealthList(agencies, perf) {
+    const container = document.getElementById('dmPersonalHealthList');
+    if (!agencies.length) {
+        container.innerHTML = '<p class="hint">暂无名下机构</p>';
+        return;
+    }
+    // Determine health based on latest 3 months perf
+    const now = new Date();
+    const recentMonths = [];
+    for (let i = 0; i < 3; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        recentMonths.push({ year: d.getFullYear(), month: d.getMonth() + 1 });
+    }
+    let html = '';
+    agencies.forEach(a => {
+        const aPerf = perf.filter(p => p.agency_id === a.id &&
+            recentMonths.some(m => m.year === p.year && m.month === p.month));
+        const hasOutput = aPerf.some(p => p.output_count > 0);
+        let status = '🔴', statusText = '流失';
+        if (a.status === 'dormant') { status = '🟡'; statusText = '休眠'; }
+        else if (a.status === 'active' && hasOutput) { status = '🟢'; statusText = '活跃'; }
+        else if (a.status === 'active' && !hasOutput) { status = '🟡'; statusText = '休眠'; }
+        html += `<div class="dm-health-item">
+            <span class="dm-health-status">${status}</span>
+            <div>
+                <div class="dm-health-name">${a.agency_name}</div>
+                <div class="dm-health-meta">${a.level}级 · ${a.city || '未知'} · ${statusText}</div>
+            </div>
+        </div>`;
+    });
+    container.innerHTML = html;
+}
+
+// ---- Tab3: 锚点测算 ----
+function dmPopulateSalesDropdowns() {
+    const selectors = ['dmPersonalSales', 'dmAnchorSales', 'dmAddAgencySales'];
+    selectors.forEach(id => {
+        const sel = document.getElementById(id);
+        if (!sel) return;
+        const cur = sel.value;
+        sel.innerHTML = '<option value="">-- 请选择 --</option>';
+        _dm.members.forEach(m => {
+            sel.innerHTML += `<option value="${m.id}">${m.name}</option>`;
+        });
+        if (cur) sel.value = cur;
+    });
+}
+
+async function loadDmParams() {
+    if (!supabaseClient) return;
+    try {
+        const { data } = await supabaseClient.from('anchor_parameters').select('*').order('level');
+        if (data) _dm.anchorParams = data;
+    } catch (e) { console.error('[DM] load params error:', e); }
+    renderDmParamsTable();
+}
+
+function calcDmAnchor() {
+    const salesId = document.getElementById('dmAnchorSales').value;
+    if (!salesId) {
+        document.getElementById('dmAnchorOutput').textContent = '-';
+        document.getElementById('dmAnchorApp').textContent = '-';
+        document.getElementById('dmAnchorDetail').innerHTML = '<p class="hint">请选择销售人员以查看锚点计算详情</p>';
+        return;
+    }
+    const agencies = _dm.agencies.filter(a => a.assigned_sales_id === salesId);
+    const levelCounts = {};
+    ['A','B','C','D','E','F'].forEach(l => levelCounts[l] = 0);
+    agencies.forEach(a => { if (levelCounts[a.level] !== undefined) levelCounts[a.level]++; });
+    // Add simulation extras
+    const simLevelCounts = { ...levelCounts };
+    Object.keys(_dm.simExtra).forEach(l => {
+        simLevelCounts[l] = (simLevelCounts[l] || 0) + _dm.simExtra[l];
+    });
+    let totalOutput = 0, totalApp = 0;
+    let detailHtml = '<table><tr><th>级别</th><th>机构数</th><th>平均出产量</th><th>平均申请量</th><th>出产贡献</th><th>申请贡献</th></tr>';
+    _dm.anchorParams.forEach(p => {
+        const cnt = simLevelCounts[p.level] || 0;
+        const avgOut = parseFloat(p.avg_output) || 0;
+        const avgApp = parseFloat(p.avg_application) || 0;
+        const outContrib = cnt * avgOut;
+        const appContrib = cnt * avgApp;
+        totalOutput += outContrib;
+        totalApp += appContrib;
+        detailHtml += `<tr><td>${p.level}</td><td>${cnt}</td><td>${avgOut.toFixed(2)}</td><td>${avgApp.toFixed(2)}</td><td>${outContrib.toFixed(2)}</td><td>${appContrib.toFixed(2)}</td></tr>`;
+    });
+    detailHtml += `<tr style="font-weight:700;background:var(--bg-primary);"><td>合计</td><td>${Object.values(simLevelCounts).reduce((a, b) => a + b, 0)}</td><td>-</td><td>-</td><td>${totalOutput.toFixed(2)}</td><td>${totalApp.toFixed(2)}</td></tr>`;
+    detailHtml += '</table>';
+    document.getElementById('dmAnchorOutput').textContent = totalOutput.toFixed(2);
+    document.getElementById('dmAnchorApp').textContent = totalApp.toFixed(2);
+    document.getElementById('dmAnchorDetail').innerHTML = detailHtml;
+}
+
+function renderDmParamsTable() {
+    const container = document.getElementById('dmParamsTable');
+    if (!_dm.anchorParams.length) {
+        container.innerHTML = '<p class="hint">暂无参数数据</p>';
+        return;
+    }
+    let html = '<table><tr><th>级别</th><th>平均出产量</th><th>平均申请量</th></tr>';
+    _dm.anchorParams.forEach((p, idx) => {
+        html += `<tr>
+            <td>${p.level}</td>
+            <td><input type="number" step="0.01" value="${p.avg_output || 0}" data-param-idx="${idx}" data-field="avg_output"></td>
+            <td><input type="number" step="0.01" value="${p.avg_application || 0}" data-param-idx="${idx}" data-field="avg_application"></td>
+        </tr>`;
+    });
+    html += '</table>';
+    container.innerHTML = html;
+}
+
+async function saveDmParams() {
+    const inputs = document.querySelectorAll('#dmParamsTable input[data-param-idx]');
+    inputs.forEach(inp => {
+        const idx = parseInt(inp.getAttribute('data-param-idx'));
+        const field = inp.getAttribute('data-field');
+        _dm.anchorParams[idx][field] = parseFloat(inp.value) || 0;
+    });
+    try {
+        for (const p of _dm.anchorParams) {
+            await supabaseClient.from('anchor_parameters').update({
+                avg_output: p.avg_output,
+                avg_application: p.avg_application,
+                updated_at: new Date().toISOString()
+            }).eq('id', p.id);
+        }
+        alert('参数已保存');
+        calcDmAnchor();
+    } catch (e) {
+        console.error('[DM] save params error:', e);
+        alert('保存失败：' + e.message);
+    }
+}
+
+function applyDmSim() {
+    const count = parseInt(document.getElementById('dmSimCount').value) || 0;
+    const level = document.getElementById('dmSimLevel').value;
+    if (!count || count <= 0) return;
+    if (!_dm.simExtra[level]) _dm.simExtra[level] = 0;
+    _dm.simExtra[level] += count;
+    calcDmAnchor();
+    // show simulation result
+    const result = document.getElementById('dmSimResult');
+    result.innerHTML = `<strong>已模拟：</strong>新增 ${count} 家 ${level} 级机构（累计模拟新增：${Object.entries(_dm.simExtra).map(([l,c]) => `${l}级${c}家`).join('、')}）`;
+}
+
+function resetDmSim() {
+    _dm.simExtra = {};
+    document.getElementById('dmSimResult').innerHTML = '';
+    calcDmAnchor();
+}
+
+// ---- Tab4: 数据录入 ----
+async function dmAddMember() {
+    const name = document.getElementById('dmAddMemberName').value.trim();
+    const role = document.getElementById('dmAddMemberRole').value;
+    if (!name) return alert('请输入姓名');
+    try {
+        const { data, error } = await supabaseClient.from('team_members').insert({ name, role }).select();
+        if (error) throw error;
+        _dm.members.push(data[0]);
+        document.getElementById('dmAddMemberName').value = '';
+        dmPopulateSalesDropdowns();
+        switchDmDataTab('members');
+        alert('成员已添加');
+    } catch (e) { alert('添加失败：' + e.message); }
+}
+
+async function dmAddAgency() {
+    const name = document.getElementById('dmAddAgencyName').value.trim();
+    if (!name) return alert('请输入机构名称');
+    const payload = {
+        agency_name: name,
+        level: document.getElementById('dmAddAgencyLevel').value,
+        city: document.getElementById('dmAddAgencyCity').value.trim(),
+        source_type: document.getElementById('dmAddAgencySource').value,
+        referral_from: document.getElementById('dmAddAgencyReferral').value.trim(),
+        assigned_sales_id: document.getElementById('dmAddAgencySales').value || null,
+        signed_date: document.getElementById('dmAddAgencyDate').value || null,
+        contact_person: document.getElementById('dmAddAgencyContact').value.trim(),
+        notes: document.getElementById('dmAddAgencyNotes').value.trim()
+    };
+    try {
+        const { data, error } = await supabaseClient.from('partner_agencies').insert(payload).select();
+        if (error) throw error;
+        _dm.agencies.push(data[0]);
+        // Clear form
+        ['dmAddAgencyName','dmAddAgencyCity','dmAddAgencyReferral','dmAddAgencyDate','dmAddAgencyContact','dmAddAgencyNotes'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+        dmPopulateAgencySelects();
+        alert('机构已添加');
+    } catch (e) { alert('添加失败：' + e.message); }
+}
+
+async function dmAddPerformance() {
+    const agencyId = document.getElementById('dmAddPerfAgency').value;
+    if (!agencyId) return alert('请选择机构');
+    const year = parseInt(document.getElementById('dmAddPerfYear').value);
+    const month = parseInt(document.getElementById('dmAddPerfMonth').value);
+    const payload = {
+        agency_id: agencyId,
+        year, month,
+        output_count: parseInt(document.getElementById('dmAddPerfOutput').value) || 0,
+        application_count: parseInt(document.getElementById('dmAddPerfApp').value) || 0
+    };
+    try {
+        const { data, error } = await supabaseClient.from('monthly_performance').insert(payload).select();
+        if (error) {
+            // If unique constraint, try upsert
+            if (error.code === '23505') {
+                const { data: updData, error: updErr } = await supabaseClient
+                    .from('monthly_performance')
+                    .update({ output_count: payload.output_count, application_count: payload.application_count })
+                    .eq('agency_id', agencyId).eq('year', year).eq('month', month)
+                    .select();
+                if (updErr) throw updErr;
+                // update local
+                const idx = _dm.performance.findIndex(p => p.agency_id === agencyId && p.year === year && p.month === month);
+                if (idx >= 0) _dm.performance[idx] = { ..._dm.performance[idx], ...updData[0] };
+                alert('已更新该月业绩');
+                return;
+            }
+            throw error;
+        }
+        _dm.performance.push(data[0]);
+        alert('业绩已录入');
+    } catch (e) { alert('录入失败：' + e.message); }
+}
+
+function dmPopulateAgencySelects() {
+    const sel = document.getElementById('dmAddPerfAgency');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">-- 选择 --</option>';
+    _dm.agencies.forEach(a => {
+        sel.innerHTML += `<option value="${a.id}">${a.agency_name} (${a.level}级)</option>`;
+    });
+}
+
+// ---- Excel导入 ----
+async function dmHandleImportFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    await ensureLib('xlsx');
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = new XLSX.read(e.target.result, { type: 'array' });
+            const sheet = data.Sheets[data.SheetNames[0]];
+            const json = XLSX.utils.sheet_to_json(sheet);
+            if (!json.length) { alert('文件为空或格式不正确'); return; }
+            _dm.importData = json;
+            // Auto detect target
+            const headers = Object.keys(json[0]);
+            // Determine target table based on headers
+            if (headers.some(h => h.includes('机构') || h.includes('agency'))) {
+                _dm.importTarget = 'agencies';
+            } else if (headers.some(h => h.includes('出产') || h.includes('申请') || h.includes('月份'))) {
+                _dm.importTarget = 'performance';
+            } else {
+                _dm.importTarget = 'members';
+            }
+            // Show preview
+            let html = '<table><tr>';
+            headers.forEach(h => html += `<th>${h}</th>`);
+            html += '</tr>';
+            json.slice(0, 50).forEach(row => {
+                html += '<tr>';
+                headers.forEach(h => html += `<td>${row[h] !== undefined ? row[h] : ''}</td>`);
+                html += '</tr>';
+            });
+            html += '</table>';
+            if (json.length > 50) html += `<p class="hint">仅预览前50条，共${json.length}条</p>`;
+            document.getElementById('dmImportTableWrap').innerHTML = html;
+            document.getElementById('dmImportPreview').style.display = 'block';
+        } catch (err) {
+            alert('文件解析失败：' + err.message);
+        }
+    };
+    reader.readAsArrayBuffer(file);
+    event.target.value = '';
+}
+
+async function dmConfirmImport() {
+    if (!_dm.importData || !_dm.importData.length) return;
+    const rows = _dm.importData;
+    try {
+        if (_dm.importTarget === 'members') {
+            const inserts = rows.map(r => ({
+                name: r['姓名'] || r['name'] || r['名称'] || '',
+                role: r['角色'] || r['role'] || 'sales'
+            })).filter(r => r.name);
+            if (inserts.length) {
+                const { error } = await supabaseClient.from('team_members').insert(inserts);
+                if (error) throw error;
+            }
+        } else if (_dm.importTarget === 'agencies') {
+            const inserts = rows.map(r => ({
+                agency_name: r['机构名称'] || r['agency_name'] || r['机构'] || '',
+                level: r['级别'] || r['level'] || 'C',
+                city: r['城市'] || r['city'] || '',
+                source_type: r['来源类型'] || r['source_type'] || (r['来源'] && r['来源'].includes('口碑') ? 'referral' : 'direct'),
+                referral_from: r['口碑来源'] || r['referral_from'] || '',
+                contact_person: r['联系人'] || r['contact_person'] || '',
+                notes: r['备注'] || r['notes'] || '',
+                signed_date: r['签约日期'] || r['signed_date'] || null
+            })).filter(r => r.agency_name);
+            if (inserts.length) {
+                const { error } = await supabaseClient.from('partner_agencies').insert(inserts);
+                if (error) throw error;
+            }
+        } else if (_dm.importTarget === 'performance') {
+            const inserts = rows.map(r => ({
+                agency_id: r['agency_id'] || r['机构ID'] || '',
+                year: parseInt(r['年'] || r['year'] || new Date().getFullYear()),
+                month: parseInt(r['月'] || r['month'] || 1),
+                output_count: parseInt(r['出产量'] || r['output_count'] || 0),
+                application_count: parseInt(r['申请量'] || r['application_count'] || 0)
+            })).filter(r => r.agency_id && r.year && r.month);
+            if (inserts.length) {
+                const { error } = await supabaseClient.from('monthly_performance').insert(inserts);
+                if (error) throw error;
+            }
+        }
+        alert(`成功导入 ${rows.length} 条数据`);
+        await dmLoadAllData();
+        dmPopulateSalesDropdowns();
+        dmPopulateAgencySelects();
+        dmCancelImport();
+        switchDmDataTab(_dm.currentDataTab);
+    } catch (e) {
+        alert('导入失败：' + e.message);
+    }
+}
+
+function dmCancelImport() {
+    _dm.importData = null;
+    _dm.importTarget = null;
+    document.getElementById('dmImportPreview').style.display = 'none';
+    document.getElementById('dmImportTableWrap').innerHTML = '';
+}
+
+// ---- 数据管理表格 ----
+function switchDmDataTab(tab) {
+    _dm.currentDataTab = tab;
+    document.querySelectorAll('.dm-data-tab-btn').forEach(b => b.classList.remove('active'));
+    event && event.target && event.target.classList.add('active');
+    renderDmDataTable(tab);
+}
+
+function renderDmDataTable(tab) {
+    const container = document.getElementById('dmDataManageTable');
+    if (tab === 'members') {
+        let html = '<table><tr><th>姓名</th><th>角色</th><th>创建时间</th><th>操作</th></tr>';
+        _dm.members.forEach(m => {
+            html += `<tr>
+                <td>${m.name}</td>
+                <td>${m.role}</td>
+                <td>${m.created_at ? new Date(m.created_at).toLocaleDateString() : '-'}</td>
+                <td><button class="dm-action-btn delete" onclick="dmDelete('team_members','${m.id}')"><i class="fas fa-trash"></i></button></td>
+            </tr>`;
+        });
+        html += '</table>';
+        container.innerHTML = html;
+    } else if (tab === 'agencies') {
+        let html = '<table><tr><th>机构名称</th><th>级别</th><th>城市</th><th>来源</th><th>负责销售</th><th>状态</th><th>操作</th></tr>';
+        _dm.agencies.forEach(a => {
+            const sales = _dm.members.find(m => m.id === a.assigned_sales_id);
+            html += `<tr>
+                <td>${a.agency_name}</td>
+                <td>${a.level}</td>
+                <td>${a.city || '-'}</td>
+                <td>${a.source_type === 'referral' ? '口碑' : '自有'}</td>
+                <td>${sales ? sales.name : '-'}</td>
+                <td>${a.status === 'active' ? '🟢活跃' : a.status === 'dormant' ? '🟡休眠' : '🔴流失'}</td>
+                <td><button class="dm-action-btn delete" onclick="dmDelete('partner_agencies','${a.id}')"><i class="fas fa-trash"></i></button></td>
+            </tr>`;
+        });
+        html += '</table>';
+        container.innerHTML = html;
+    } else if (tab === 'performance') {
+        let html = '<table><tr><th>机构</th><th>年月</th><th>出产量</th><th>申请量</th><th>操作</th></tr>';
+        _dm.performance.forEach(p => {
+            const agency = _dm.agencies.find(a => a.id === p.agency_id);
+            html += `<tr>
+                <td>${agency ? agency.agency_name : p.agency_id}</td>
+                <td>${p.year}-${String(p.month).padStart(2, '0')}</td>
+                <td>${p.output_count}</td>
+                <td>${p.application_count}</td>
+                <td><button class="dm-action-btn delete" onclick="dmDelete('monthly_performance','${p.id}')"><i class="fas fa-trash"></i></button></td>
+            </tr>`;
+        });
+        html += '</table>';
+        container.innerHTML = html;
+    }
+}
+
+async function dmDelete(table, id) {
+    if (!confirm('确定要删除这条记录吗？')) return;
+    try {
+        const { error } = await supabaseClient.from(table).delete().eq('id', id);
+        if (error) throw error;
+        await dmLoadAllData();
+        dmPopulateSalesDropdowns();
+        dmPopulateAgencySelects();
+        renderDmDataTable(_dm.currentDataTab);
+    } catch (e) {
+        alert('删除失败：' + e.message);
+    }
+}
+
+// ---- Chart.js 图表渲染 ----
+function dmDestroyChart(canvasId) {
+    if (_dm.charts[canvasId]) {
+        _dm.charts[canvasId].destroy();
+        delete _dm.charts[canvasId];
+    }
+}
+
+function renderDmPieChart(canvasId, labels, data) {
+    dmDestroyChart(canvasId);
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    _dm.charts[canvasId] = new Chart(canvas.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels,
+            datasets: [{
+                data,
+                backgroundColor: DM_COLORS,
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { position: 'bottom', labels: { padding: 12, font: { size: 12 } } }
+            }
+        }
+    });
+}
+
+function renderDmBarChart(canvasId, labels, data) {
+    dmDestroyChart(canvasId);
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    _dm.charts[canvasId] = new Chart(canvas.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: '机构数',
+                data,
+                backgroundColor: DM_COLORS[0] + 'CC',
+                borderColor: DM_COLORS[0],
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1 } },
+                x: { ticks: { maxRotation: 45 } }
+            }
+        }
+    });
+}
+
+function renderDmTrendChart(canvasId, perfData) {
+    dmDestroyChart(canvasId);
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    // Group by year-month
+    const monthMap = {};
+    perfData.forEach(p => {
+        const key = `${p.year}-${String(p.month).padStart(2, '0')}`;
+        if (!monthMap[key]) monthMap[key] = { signed: 0, output: 0, app: 0 };
+        monthMap[key].output += (p.output_count || 0);
+        monthMap[key].app += (p.application_count || 0);
+    });
+    const sortedKeys = Object.keys(monthMap).sort();
+    const labels = sortedKeys;
+    _dm.charts[canvasId] = new Chart(canvas.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [
+                { label: '出产量', data: labels.map(k => monthMap[k].output), borderColor: DM_COLORS[0], backgroundColor: DM_COLORS[0] + '20', fill: true, tension: 0.3 },
+                { label: '申请量', data: labels.map(k => monthMap[k].app), borderColor: DM_COLORS[3], backgroundColor: DM_COLORS[3] + '20', fill: true, tension: 0.3 }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { legend: { position: 'bottom' } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+}
+
+function renderDmGroupBarChart(canvasId, labels, groups) {
+    dmDestroyChart(canvasId);
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const datasets = groups.map((g, i) => ({
+        label: g.label,
+        data: g.values,
+        backgroundColor: DM_COLORS[i] + 'CC',
+        borderColor: DM_COLORS[i],
+        borderWidth: 1,
+        borderRadius: 4
+    }));
+    _dm.charts[canvasId] = new Chart(canvas.getContext('2d'), {
+        type: 'bar',
+        data: { labels, datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { legend: { position: 'bottom' } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+}
+
+// ---- Excel拖拽支持 ----
+(function initDmDragDrop() {
+    const area = document.getElementById('dmImportArea');
+    if (!area) return;
+    area.addEventListener('dragover', e => { e.preventDefault(); area.style.borderColor = 'var(--accent)'; });
+    area.addEventListener('dragleave', () => { area.style.borderColor = 'var(--border)'; });
+    area.addEventListener('drop', e => {
+        e.preventDefault();
+        area.style.borderColor = 'var(--border)';
+        const file = e.dataTransfer.files[0];
+        if (file) {
+            const input = document.getElementById('dmImportFile');
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            input.files = dt.files;
+            input.dispatchEvent(new Event('change'));
+        }
+    });
+    area.addEventListener('click', function(e) {
+        if (e.target.tagName !== 'BUTTON') {
+            document.getElementById('dmImportFile').click();
+        }
+    });
+})();
+
+// ---- 初始化机构下拉 ----
+(function initDmAgencySelects() {
+    // This will be called when the page loads, but agencies may not be loaded yet.
+    // It will be re-called after data loads.
+    const obs = new MutationObserver(function() {
+        if (_dm.agencies.length) {
+            dmPopulateAgencySelects();
+            obs.disconnect();
+        }
+    });
+    const page = document.getElementById('page-data-management');
+    if (page) obs.observe(page, { childList: true, subtree: true });
 })();
