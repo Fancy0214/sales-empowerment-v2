@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据管理专区 - 部门维度 Demo</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f0f2f5;color:#1a1a2e}
+.header{background:linear-gradient(135deg,#1a365d 0%,#2b6cb0 100%);color:#fff;padding:24px 32px}
+.header h1{font-size:22px;font-weight:600}
+.header .sub{font-size:13px;opacity:.8;margin-top:4px}
+.container{max-width:1280px;margin:0 auto;padding:20px}
+
+.tabs{display:flex;gap:0;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.1);margin-bottom:20px}
+.tab{flex:1;padding:14px 16px;text-align:center;cursor:pointer;font-size:13px;font-weight:500;color:#666;border-bottom:3px solid transparent;transition:.2s}
+.tab:hover{background:#f7fafc;color:#2b6cb0}
+.tab.active{color:#2b6cb0;border-bottom-color:#2b6cb0;background:#ebf4ff}
+.tab .ico{font-size:18px;display:block;margin-bottom:4px}
+.tab-content{display:none}.tab-content.active{display:block}
+
+/* ===== 7列指标卡片区 ===== */
+.metric-cards{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:6px}
+@media(max-width:1200px){.metric-cards{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:768px){.metric-cards{grid-template-columns:repeat(2,1fr)}}
+
+.m-card{background:#fff;border-radius:12px;padding:16px 10px;box-shadow:0 1px 3px rgba(0,0,0,.08);cursor:pointer;transition:box-shadow .2s,border-color .2s,transform .15s;border:2px solid transparent;user-select:none;text-align:center}
+.m-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.12);border-color:#bee3f8;transform:translateY(-2px)}
+.m-card.expanded{border-color:#3182ce;box-shadow:0 4px 14px rgba(49,130,206,.18);transform:translateY(-2px)}
+.m-card .label{font-size:11px;color:#718096;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m-card .val{font-size:24px;font-weight:700;color:#1a365d}
+.m-card .detail{font-size:10px;color:#a0aec0;margin-top:3px}
+.m-card .arrow-down{font-size:10px;color:#a0aec0;margin-top:4px;transition:transform .25s}
+.m-card.expanded .arrow-down{transform:rotate(180deg)}
+.m-card.green .val{color:#38a169}
+.m-card.orange .val{color:#dd6b20}
+.m-card.blue .val{color:#3182ce}
+
+/* 卡片展开详情面板 */
+.card-detail{display:none;background:#f7fafc;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 10px 10px;padding:14px 16px;margin-top:-6px;margin-bottom:16px;box-shadow:0 2px 6px rgba(0,0,0,.04)}
+.card-detail.open{display:block}
+.detail-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.detail-item{background:#fff;border-radius:8px;padding:10px 14px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.detail-item .dl{font-size:11px;color:#718096}
+.detail-item .dv{font-size:18px;font-weight:600;color:#2d3748;margin-top:2px}
+.detail-item .dd{font-size:10px;color:#a0aec0;margin-top:2px}
+.detail-item.missing{background:#fffbeb}
+.detail-item.missing .dv{color:#a0aec0;font-size:13px;font-weight:500}
+
+/* ===== 销售个人三列卡片 ===== */
+.sales-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px}
+@media(max-width:900px){.sales-grid{grid-template-columns:1fr}}
+.sales-card{background:#fff;border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.sales-card .sc-header{display:flex;align-items:center;gap:8px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #e2e8f0}
+.sales-card .sc-name{font-size:15px;font-weight:700;color:#1a365d}
+.sales-card .sc-badge{font-size:11px;padding:2px 10px;border-radius:10px;color:#fff;font-weight:600}
+.sales-card .sc-badge.d{background:#3182ce}
+.sales-card .sc-badge.m{background:#dd6b20}
+.sales-card .sc-badge.f{background:#38a169}
+.sales-card .sc-count{font-size:11px;color:#718096;margin-left:auto}
+
+.sc-row{margin-bottom:14px}
+.sc-row:last-child{margin-bottom:0}
+.sc-row-label{font-size:12px;color:#718096;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.sc-bar-track{height:22px;background:#edf2f7;border-radius:11px;position:relative;overflow:hidden}
+.sc-bar-fill{height:100%;border-radius:11px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;font-size:11px;font-weight:600;color:#fff;transition:width .6s ease}
+.sc-bar-fill.blue{background:linear-gradient(90deg,#3182ce,#63b3ed)}
+.sc-bar-fill.green{background:linear-gradient(90deg,#38a169,#68d391)}
+.sc-bar-fill.orange{background:linear-gradient(90deg,#dd6b20,#f6ad55)}
+.sc-bar-stats{font-size:11px;color:#a0aec0;margin-top:3px;text-align:right}
+
+/* ===== 机构级别表 ===== */
+.section{background:#fff;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.section-title{font-size:15px;font-weight:600;color:#1a365d;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:8px}
+
+.data-table{width:100%;border-collapse:collapse;font-size:13px}
+.data-table th{background:#1a365d;color:#fff;padding:10px 12px;text-align:center;font-weight:500}
+.data-table td{padding:9px 12px;text-align:center;border-bottom:1px solid #e2e8f0}
+.data-table tr:nth-child(even){background:#f7fafc}
+.data-table tr:hover{background:#edf2f7}
+.data-table tr.total-row{background:#ebf4ff!important;font-weight:600}
+.data-table .grade-cell,.data-table .city-cell{text-align:left;font-weight:600}
+
+.anon-box{background:#ebf4ff;border:1px solid #90cdf4;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:#2b6cb0}
+.anon-box .desc{font-size:11px;color:#4a5568;margin-top:4px}
+
+.ph{display:inline-block;background:#fef3c7;color:#92400e;font-size:10px;padding:2px 8px;border-radius:10px;margin-left:6px}
+
+.insight{background:linear-gradient(135deg,#f0fff4,#ebf8ff);border:1px solid #9ae6b4;border-radius:10px;padding:16px;margin-top:16px}
+.insight .it{font-size:13px;font-weight:600;color:#276749;margin-bottom:10px}
+.insight ul{list-style:none}
+.insight li{font-size:12px;color:#4a5568;padding:3px 0 3px 16px;position:relative}
+.insight li::before{content:"•";position:absolute;left:0;color:#38a169;font-weight:bold}
+
+/* ===== 城市图表 ===== */
+.triple-chart{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px}
+@media(max-width:900px){.triple-chart{grid-template-columns:1fr}}
+.chart-box{background:#fff;border-radius:12px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.chart-box .chart-label{font-size:13px;font-weight:600;color:#1a365d;margin-bottom:12px;text-align:center}
+.chart-box canvas{max-height:320px}
+/* 深度分析板块样式 */
+.deep-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px}
+@media(max-width:900px){.deep-grid{grid-template-columns:1fr}}
+.cross-table{width:100%;border-collapse:collapse;font-size:13px}
+.cross-table th,.cross-table td{padding:8px 10px;text-align:center;border:1px solid #e2e8f0}
+.cross-table th{background:#f7fafc;color:#2d3748;font-weight:600;font-size:12px}
+.cross-table .row-header{text-align:left;font-weight:600;color:#1a365d;background:#f7fafc;min-width:70px}
+.cross-table .total-row{background:#ebf8ff;font-weight:700}
+.cross-table .total-row .row-header{background:#bee3f8}
+.ct-green{color:#22543d;background:#c6f6d5;font-weight:600}
+.ct-yellow{color:#744210;background:#fefcbf}
+.ct-red{color:#742a2a;background:#fed7d7}
+.ct-na{color:#a0aec0;background:#f7fafc}
+.insight-list{list-style:none;padding:0;margin:0}
+.insight-list li{padding:10px 14px;border-radius:8px;margin-bottom:8px;font-size:13px;line-height:1.6;display:flex;align-items:flex-start;gap:8px}
+.insight-list li.pro{background:#f0fff4;border-left:3px solid #38a169}
+.insight-list li.con{background:#fff5f5;border-left:3px solid #e53e3e}
+.insight-tag{font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;white-space:nowrap;flex-shrink:0}
+.insight-tag.pro{background:#38a169;color:#fff}
+.insight-tag.con{background:#e53e3e;color:#fff}
+.cross-table .sub-header{background:#edf2f7;font-size:11px;color:#4a5568;font-weight:600}
+.donut-legend{display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:center;margin-top:8px;font-size:12px;color:#4a5568}
+.donut-legend span{display:flex;align-items:center;gap:4px}
+.donut-legend i{display:inline-block;width:10px;height:10px;border-radius:2px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📊 数据管理专区 · 部门维度</h1>
+  <div class="sub">Demo 预览 · 数据截至 2026年7月31日</div>
+</div>
+
+<div class="container">
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('data')"><span class="ico">📋</span>数据管理层面</div>
+  <div class="tab" onclick="switchTab('kb')"><span class="ico">⭐</span>口碑管理层面</div>
+  <div class="tab" onclick="switchTab('ch')"><span class="ico"></span>渠道供给层面</div>
+</div>
+
+<!-- ==================== Tab1: 数据管理层面 ==================== -->
+<div id="tab-data" class="tab-content active">
+
+  <!-- 7张指标卡片 -->
+  <div class="metric-cards">
+    <div class="m-card" onclick="toggleCard(this,'detail-data')">
+      <div class="label">📁 数据量</div><div class="val blue">835</div><div class="detail">存量+增量</div><div class="arrow-down">▼</div>
+    </div>
+    <div class="m-card" onclick="toggleCard(this,'detail-signed')">
+      <div class="label">🤝 签约量</div><div class="val">541</div><div class="detail">存量+增量</div><div class="arrow-down">▼</div>
+    </div>
+    <div class="m-card green" onclick="toggleCard(this,'detail-srate')">
+      <div class="label">📈 总签约率</div><div class="val">64.8%</div><div class="detail">541/835</div><div class="arrow-down">▼</div>
+    </div>
+    <div class="m-card" onclick="toggleCard(this,'detail-prod')">
+      <div class="label">🏭 出产量</div><div class="val orange">261</div><div class="detail">合作中541</div><div class="arrow-down">▼</div>
+    </div>
+    <div class="m-card orange" onclick="toggleCard(this,'detail-prate')">
+      <div class="label">⚙️ 出产率</div><div class="val">48.2%</div><div class="detail">261/541</div><div class="arrow-down">▼</div>
+    </div>
+    <div class="m-card" onclick="toggleCard(this,'detail-apply')">
+      <div class="label">📝 申请量</div><div class="val" style="color:#a0aec0">—</div><div class="detail">待补充</div><div class="arrow-down">▼</div>
+    </div>
+    <div class="m-card" onclick="toggleCard(this,'detail-enroll')">
+      <div class="label">🎓 入学量</div><div class="val" style="color:#a0aec0">—</div><div class="detail">待补充</div><div class="arrow-down">▼</div>
+    </div>
+  </div>
+
+  <!-- 各卡片展开详情 -->
+  <div id="detail-data" class="card-detail"><div class="detail-grid">
+    <div class="detail-item"><div class="dl">8月31日之前数据</div><div class="dv">360</div><div class="dd">存量数据</div></div>
+    <div class="detail-item"><div class="dl">9月1日及之后数据</div><div class="dv">475</div><div class="dd">当年度增量</div></div>
+  </div></div>
+
+  <div id="detail-signed" class="card-detail"><div class="detail-grid">
+    <div class="detail-item"><div class="dl">8月31日之前签约量</div><div class="dv">251</div><div class="dd">存量签约</div></div>
+    <div class="detail-item"><div class="dl">9月1日及之后签约量</div><div class="dv">290</div><div class="dd">当年度增量</div></div>
+  </div></div>
+
+  <div id="detail-srate" class="card-detail"><div class="detail-grid">
+    <div class="detail-item"><div class="dl">8月31日之前签约率</div><div class="dv" style="color:#38a169">69.7%</div><div class="dd">251/360</div></div>
+    <div class="detail-item"><div class="dl">当年度数据签约率</div><div class="dv" style="color:#dd6b20">61.1%</div><div class="dd">290/475</div></div>
+  </div></div>
+
+  <div id="detail-prod" class="card-detail"><div class="detail-grid">
+    <div class="detail-item"><div class="dl">以往月度出产量</div><div class="dv">259</div><div class="dd">2026年7月之前</div></div>
+    <div class="detail-item"><div class="dl">当月出产量</div><div class="dv">2</div><div class="dd">2026年7月</div></div>
+  </div></div>
+
+  <div id="detail-prate" class="card-detail"><div class="detail-grid">
+    <div class="detail-item"><div class="dl">总出产量</div><div class="dv">261</div><div class="dd">合作中541家</div></div>
+    <div class="detail-item"><div class="dl">出产率</div><div class="dv" style="color:#38a169">48.2%</div><div class="dd">高于行业平均</div></div>
+  </div></div>
+
+  <div id="detail-apply" class="card-detail"><div class="detail-grid">
+    <div class="detail-item missing"><div class="dl">申请量</div><div class="dv">暂无数据</div></div>
+    <div class="detail-item missing"><div class="dl">平均申请量</div><div class="dv">暂无数据</div></div>
+    <div class="detail-item missing"><div class="dl">入学量</div><div class="dv">暂无数据</div></div>
+    <div class="detail-item missing"><div class="dl">平均入学量</div><div class="dv">暂无数据</div></div>
+  </div></div>
+
+  <div id="detail-enroll" class="card-detail"><div class="detail-grid">
+    <div class="detail-item missing"><div class="dl">申请量</div><div class="dv">暂无数据</div></div>
+    <div class="detail-item missing"><div class="dl">平均申请量</div><div class="dv">暂无数据</div></div>
+    <div class="detail-item missing"><div class="dl">入学量</div><div class="dv">暂无数据</div></div>
+    <div class="detail-item missing"><div class="dl">平均入学量</div><div class="dv">暂无数据</div></div>
+  </div></div>
+
+  <!-- 销售个人三列卡片 -->
+  <div class="section">
+    <div class="section-title">👤 销售个人数据对比</div>
+    <div class="sales-grid">
+      <!-- 销售D -->
+      <div class="sales-card">
+        <div class="sc-header">
+          <span class="sc-name">销售D</span>
+          <span class="sc-badge d">D</span>
+          <span class="sc-count">232合作中</span>
+        </div>
+        <div class="sc-row">
+          <div class="sc-row-label">总签约率</div>
+          <div class="sc-bar-track"><div class="sc-bar-fill blue" style="width:70.5%">70.5%</div></div>
+          <div class="sc-bar-stats">248签 / 352总量</div>
+        </div>
+        <div class="sc-row">
+          <div class="sc-row-label">当年度签约率</div>
+          <div class="sc-bar-track"><div class="sc-bar-fill blue" style="width:48.3%">48.3%</div></div>
+          <div class="sc-bar-stats">97签 / 201增量</div>
+        </div>
+        <div class="sc-row">
+          <div class="sc-row-label">出产率</div>
+          <div class="sc-bar-track"><div class="sc-bar-fill green" style="width:51.3%">51.3%</div></div>
+          <div class="sc-bar-stats">119出产 / 232合作中</div>
+        </div>
+      </div>
+      <!-- 销售M -->
+      <div class="sales-card">
+        <div class="sc-header">
+          <span class="sc-name">销售M</span>
+          <span class="sc-badge m">M</span>
+          <span class="sc-count">209合作中</span>
+        </div>
+        <div class="sc-row">
+          <div class="sc-row-label">总签约率</div>
+          <div class="sc-bar-track"><div class="sc-bar-fill orange" style="width:69.3%">69.3%</div></div>
+          <div class="sc-bar-stats">257签 / 371总量</div>
+        </div>
+        <div class="sc-row">
+          <div class="sc-row-label">当年度签约率</div>
+          <div class="sc-bar-track"><div class="sc-bar-fill orange" style="width:44.9%">44.9%</div></div>
+          <div class="sc-bar-stats">93签 / 207增量</div>
+        </div>
+        <div class="sc-row">
+          <div class="sc-row-label">出产率</div>
+          <div class="sc-bar-track"><div class="sc-bar-fill orange" style="width:43.5%">43.5%</div></div>
+          <div class="sc-bar-stats">91出产 / 209合作中</div>
+        </div>
+      </div>
+      <!-- 销售F -->
+      <div class="sales-card">
+        <div class="sc-header">
+          <span class="sc-name">销售F</span>
+          <span class="sc-badge f">F</span>
+          <span class="sc-count">87合作中</span>
+        </div>
+        <div class="sc-row">
+          <div class="sc-row-label">总签约率</div>
+          <div class="sc-bar-track"><div class="sc-bar-fill green" style="width:87.3%">87.3%</div></div>
+          <div class="sc-bar-stats">96签 / 110总量</div>
+        </div>
+        <div class="sc-row">
+          <div class="sc-row-label">当年度签约率</div>
+          <div class="sc-bar-track"><div class="sc-bar-fill green" style="width:78.5%">78.5%</div></div>
+          <div class="sc-bar-stats">51签 / 65增量</div>
+        </div>
+        <div class="sc-row">
+          <div class="sc-row-label">出产率</div>
+          <div class="sc-bar-track"><div class="sc-bar-fill green" style="width:57.5%">57.5%</div></div>
+          <div class="sc-bar-stats">50出产 / 87合作中</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 机构级别分布 -->
+  <div class="section">
+    <div class="section-title">📊 机构级别分布（合作中）</div>
+    <table class="data-table">
+      <thead><tr><th style="text-align:left">级别</th><th>合作中</th><th>占比</th><th>已出产</th><th>出产率</th></tr></thead>
+      <tbody>
+        <tr><td class="grade-cell">A+</td><td>1</td><td>0.2%</td><td>1</td><td>100%</td></tr>
+        <tr><td class="grade-cell">B</td><td>5</td><td>0.9%</td><td>3</td><td>60.0%</td></tr>
+        <tr><td class="grade-cell">C</td><td>18</td><td>3.3%</td><td>10</td><td>55.6%</td></tr>
+        <tr><td class="grade-cell">D</td><td>389</td><td>71.9%</td><td>181</td><td>46.5%</td></tr>
+        <tr><td class="grade-cell">E</td><td>91</td><td>16.8%</td><td>45</td><td>49.5%</td></tr>
+        <tr><td class="grade-cell">F</td><td>37</td><td>6.8%</td><td>21</td><td>56.8%</td></tr>
+        <tr class="total-row"><td class="grade-cell">合计</td><td>541</td><td>100%</td><td>261</td><td>48.2%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 城市分布可视化 -->
+  <div class="section">
+    <div class="section-title">🌍 城市分布可视化（按省份/直辖市）</div>
+    <div class="triple-chart">
+      <div class="chart-box"><div class="chart-label"> 数据城市分布 Top 10</div><canvas id="cityDataChart"></canvas></div>
+      <div class="chart-box"><div class="chart-label">🤝 签约机构城市分布 Top 10</div><canvas id="citySignedChart"></canvas></div>
+      <div class="chart-box"><div class="chart-label">🏭 出产机构城市分布 Top 10</div><canvas id="cityProducedChart"></canvas></div>
+    </div>
+    <div style="margin-top:8px">
+      <div style="font-size:13px;font-weight:600;color:#4a5568;margin-bottom:10px">📋 省份/地区综合数据明细（Top 15）</div>
+      <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead>
+          <tr><th style="text-align:left">省份/地区</th><th>数据量</th><th>签约量</th><th>签约率</th><th>出产量</th><th>出产率</th><th>数据量占比</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="city-cell">北京</td><td>66</td><td>66</td><td style="color:#38a169;font-weight:600">100%</td><td>35</td><td>53.0%</td><td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="width:80px;height:10px;background:#edf2f7;border-radius:5px;overflow:hidden"><div style="width:100%;height:100%;background:linear-gradient(90deg,#3182ce,#63b3ed);border-radius:5px"></div></div><span style="font-size:11px;color:#718096">7.9%</span></div></td></tr>
+          <tr><td class="city-cell">广东</td><td>63</td><td>63</td><td style="color:#38a169;font-weight:600">100%</td><td>29</td><td>46.0%</td><td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="width:80px;height:10px;background:#edf2f7;border-radius:5px;overflow:hidden"><div style="width:95.5%;height:100%;background:linear-gradient(90deg,#3182ce,#63b3ed);border-radius:5px"></div></div><span style="font-size:11px;color:#718096">7.5%</span></div></td></tr>
+          <tr><td class="city-cell">上海</td><td>58</td><td>58</td><td style="color:#38a169;font-weight:600">100%</td><td>38</td><td style="color:#38a169;font-weight:600">65.5%</td><td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="width:80px;height:10px;background:#edf2f7;border-radius:5px;overflow:hidden"><div style="width:87.9%;height:100%;background:linear-gradient(90deg,#3182ce,#63b3ed);border-radius:5px"></div></div><span style="font-size:11px;color:#718096">6.9%</span></div></td></tr>
+          <tr><td class="city-cell">江苏</td><td>39</td><td>39</td><td style="color:#38a169;font-weight:600">100%</td><td>21</td><td>53.8%</td><td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="width:80px;height:10px;background:#edf2f7;border-radius:5px;overflow:hidden"><div style="width:59.1%;height:100%;background:linear-gradient(90deg,#3182ce,#63b3ed);border-radius:5px"></div></div><span style="font-size:11px;color:#718096">4.7%</span></div></td></tr>
+          <tr><td class="city-cell">浙江</td><td>34</td><td>34</td><td style="color:#38a169;font-weight:600">100%</td><td>16</td><td>47.1%</td><td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="width:80px;height:10px;background:#edf2f7;border-radius:5px;overflow:hidden"><div style="width:51.5%;height:100%;background:linear-gradient(90deg,#3182ce,#63b3ed);border-radius:5px"></div></div><span style="font-size:11px;color:#718096">4.1%</span></div></td></tr>
+          <tr><td class="city-cell">四川</td><td>33</td><td>33</td><td style="color:#38a169;font-weight:600">100%</td><td>25</td><td style="color:#38a169;font-weight:600">75.8%</td><td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="width:80px;height:10px;background:#edf2f7;border-radius:5px;overflow:hidden"><div style="width:50%;height:100%;background:linear-gradient(90deg,#3182ce,#63b3ed);border-radius:5px"></div></div><span style="font-size:11px;color:#718096">3.9%</span></div></td></tr>
+          <tr><td class="city-cell">陕西</td><td>19</td><td>19</td><td style="color:#38a169;font-weight:600">100%</td><td>6</td><td style="color:#dd6b20;font-weight:600">31.6%</td><td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="width:80px;height:10px;background:#edf2f7;border-radius:5px;overflow:hidden"><div style="width:28.8%;height:100%;background:linear-gradient(90deg,#3182ce,#63b3ed);border-radius:5px"></div></div><span style="font-size:11px;color:#718096">2.3%</span></div></td></tr>
+          <tr><td class="city-cell">重庆</td><td>18</td><td>18</td><td style="color:#38a169;font-weight:600">100%</td><td>11</td><td>61.1%</td><td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="width:80px;height:10px;background:#edf2f7;border-radius:5px;overflow:hidden"><div style="width:27.3%;height:100%;background:linear-gradient(90deg,#3182ce,#63b3ed);border-radius:5px"></div></div><span style="font-size:11px;color:#718096">2.2%</span></div></td></tr>
+          <tr><td class="city-cell">英格兰</td><td>15</td><td>15</td><td style="color:#38a169;font-weight:600">100%</td><td>14</td><td style="color:#38a169;font-weight:600">93.3%</td><td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="width:80px;height:10px;background:#edf2f7;border-radius:5px;overflow:hidden"><div style="width:22.7%;height:100%;background:linear-gradient(90deg,#3182ce,#63b3ed);border-radius:5px"></div></div><span style="font-size:11px;color:#718096">1.8%</span></div></td></tr>
+          <tr><td class="city-cell">湖北</td><td>15</td><td>15</td><td style="color:#38a169;font-weight:600">100%</td><td>10</td><td>66.7%</td><td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="width:80px;height:10px;background:#edf2f7;border-radius:5px;overflow:hidden"><div style="width:22.7%;height:100%;background:linear-gradient(90deg,#3182ce,#63b3ed);border-radius:5px"></div></div><span style="font-size:11px;color:#718096">1.8%</span></div></td></tr>
+          <tr><td class="city-cell">辽宁</td><td>14</td><td>14</td><td style="color:#38a169;font-weight:600">100%</td><td>7</td><td>50.0%</td><td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="width:80px;height:10px;background:#edf2f7;border-radius:5px;overflow:hidden"><div style="width:21.2%;height:100%;background:linear-gradient(90deg,#3182ce,#63b3ed);border-radius:5px"></div></div><span style="font-size:11px;color:#718096">1.7%</span></div></td></tr>
+          <tr><td class="city-cell">香港</td><td>13</td><td>13</td><td style="color:#38a169;font-weight:600">100%</td><td>6</td><td>46.2%</td><td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="width:80px;height:10px;background:#edf2f7;border-radius:5px;overflow:hidden"><div style="width:19.7%;height:100%;background:linear-gradient(90deg,#3182ce,#63b3ed);border-radius:5px"></div></div><span style="font-size:11px;color:#718096">1.6%</span></div></td></tr>
+          <tr><td class="city-cell">河南</td><td>12</td><td>12</td><td style="color:#38a169;font-weight:600">100%</td><td>4</td><td style="color:#dd6b20;font-weight:600">33.3%</td><td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="width:80px;height:10px;background:#edf2f7;border-radius:5px;overflow:hidden"><div style="width:18.2%;height:100%;background:linear-gradient(90deg,#3182ce,#63b3ed);border-radius:5px"></div></div><span style="font-size:11px;color:#718096">1.4%</span></div></td></tr>
+          <tr><td class="city-cell">山东</td><td>10</td><td>10</td><td style="color:#38a169;font-weight:600">100%</td><td>4</td><td style="color:#dd6b20;font-weight:600">40.0%</td><td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="width:80px;height:10px;background:#edf2f7;border-radius:5px;overflow:hidden"><div style="width:15.2%;height:100%;background:linear-gradient(90deg,#3182ce,#63b3ed);border-radius:5px"></div></div><span style="font-size:11px;color:#718096">1.2%</span></div></td></tr>
+          <tr><td class="city-cell">湖南</td><td>10</td><td>10</td><td style="color:#38a169;font-weight:600">100%</td><td>4</td><td style="color:#dd6b20;font-weight:600">40.0%</td><td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="width:80px;height:10px;background:#edf2f7;border-radius:5px;overflow:hidden"><div style="width:15.2%;height:100%;background:linear-gradient(90deg,#3182ce,#63b3ed);border-radius:5px"></div></div><span style="font-size:11px;color:#718096">1.2%</span></div></td></tr>
+          <tr class="total-row"><td class="city-cell">其他</td><td>456</td><td>248</td><td>54.4%</td><td>96</td><td>38.7%</td><td><span style="font-size:11px;color:#718096">54.6%</span></td></tr>
+          <tr style="background:#1a365d;color:#fff;font-weight:600"><td class="city-cell" style="color:#fff">合计</td><td>835</td><td>541</td><td>64.8%</td><td>261</td><td>48.2%</td><td>100%</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="it">💡 城市分布洞察</div>
+    <ul>
+      <li><strong>地域集中度高：</strong>Top 5省份（北京66、广东63、上海58、江苏39、浙江34）占总数据量的31.1%，签约量占47.5%，呈现明显的东部沿海集中态势</li>
+      <li><strong>上海出产效率最高：</strong>上海出产率65.5%，远超部门均值48.2%，长三角区域整体表现优异（上海65.5% > 江苏53.8% > 浙江47.1%）</li>
+      <li><strong>四川是中西部标杆：</strong>四川出产率75.8%居全国第一，成都作为西南核心城市贡献24家出产机构，辐射带动效果显著</li>
+      <li><strong>英格兰出产率93.3%：</strong>海外市场中英国15家签约、14家出产，出产率极高，但体量较小，可考虑拓展其他海外市场</li>
+      <li><strong>陕西、河南、山东出产率偏低：</strong>分别仅31.6%、33.3%、40.0%，低于部门均值，需重点关注这些地区的机构激活和赋能</li>
+      <li><strong>数据分布长尾效应明显：</strong>共涉及15个省份+海外，但前5省份贡献超30%数据，建议核心区域深耕、长尾区域精准拓展</li>
+    </ul>
+  </div>
+
+  <!-- ====== 深度分析板块 ====== -->
+
+  <!-- 三图并排：签约率对比 / 出产率对比 / 级别分布 -->
+  <div class="section">
+    <div class="section-title">📊 深度分析</div>
+    <div class="deep-grid">
+      <div class="chart-box">
+        <div class="chart-label">各销售签约率对比</div>
+        <canvas id="signRateChart"></canvas>
+      </div>
+      <div class="chart-box">
+        <div class="chart-label">合作中机构出产率对比</div>
+        <canvas id="outputRateChart"></canvas>
+      </div>
+      <div class="chart-box">
+        <div class="chart-label">部门级别分布（合作中 541 家）</div>
+        <canvas id="gradeDistribChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- 口碑 vs 非口碑签约率 -->
+  <div class="section">
+    <div class="section-title">📊 口碑签约率 vs 非口碑签约率（当年度）</div>
+    <div style="max-width:500px;margin:0 auto">
+      <canvas id="koubeiSignChart"></canvas>
+    </div>
+  </div>
+
+  <!-- 数据洞察 -->
+  <div class="section">
+    <div class="section-title">💡 数据洞察</div>
+    <ul class="insight-list">
+      <li class="pro"><span class="insight-tag pro">优势</span><span>销售F综合表现最强，当年度签约率78.5%、出产率57.5%，均远高于部门均值，建议总结其方法论推广</span></li>
+      <li class="pro"><span class="insight-tag pro">优势</span><span>口碑渠道签约率（93.4%）远高于非口碑（44.7%），口碑机构质量显著更高，应加大口碑渠道拓展力度</span></li>
+      <li class="con"><span class="insight-tag con">关注</span><span>销售M的D级出产率仅39.9%，低于部门平均47.6%，需关注其D级客户激活情况</span></li>
+      <li class="con"><span class="insight-tag con">关注</span><span>销售M非口碑签约率39.5%为三人最低，建议加强非口碑渠道的客户转化能力培训</span></li>
+      <li class="con"><span class="insight-tag con">关注</span><span>D级机构占比71.9%（389/541），是绝对主力但出产率仅47.6%，提升D级出产率是整体增产的关键杠杆</span></li>
+    </ul>
+  </div>
+
+  <!-- 当年度数据签约率 × 级别 -->
+  <div class="section">
+    <div class="section-title">📋 当年度数据签约率 × 级别</div>
+    <div style="overflow-x:auto">
+      <table class="cross-table">
+        <thead>
+          <tr>
+            <th></th><th>A+</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>合计</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="row-header">销售D</td>
+            <td class="ct-na">-</td><td class="ct-na">-</td>
+            <td class="ct-green">71.4%</td><td class="ct-red">45.2%</td>
+            <td class="ct-yellow">54.5%</td><td class="ct-green">66.7%</td>
+            <td style="font-weight:600">48.3%</td>
+          </tr>
+          <tr>
+            <td class="row-header">销售M</td>
+            <td class="ct-na">-</td><td class="ct-na">-</td>
+            <td class="ct-yellow">50.0%</td><td class="ct-red">39.7%</td>
+            <td class="ct-yellow">51.6%</td><td class="ct-green">81.2%</td>
+            <td style="font-weight:600">44.9%</td>
+          </tr>
+          <tr>
+            <td class="row-header">销售F</td>
+            <td class="ct-green">100%</td><td class="ct-green">100%</td>
+            <td class="ct-green">85.7%</td><td class="ct-green">81.2%</td>
+            <td class="ct-green">71.4%</td><td class="ct-green">64.3%</td>
+            <td style="font-weight:600">78.5%</td>
+          </tr>
+          <tr class="total-row">
+            <td class="row-header">部门合计</td>
+            <td class="ct-green">100%</td><td class="ct-green">100%</td>
+            <td class="ct-green">72.2%</td><td class="ct-red">46.1%</td>
+            <td class="ct-yellow">54.9%</td><td class="ct-green">72.2%</td>
+            <td>51.0%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 出产率 × 级别 -->
+  <div class="section">
+    <div class="section-title">📋 出产率 × 级别（合作中机构）</div>
+    <div style="overflow-x:auto">
+      <table class="cross-table">
+        <thead>
+          <tr>
+            <th></th><th>A+</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>合计</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="row-header">销售D</td>
+            <td class="ct-na">-</td><td class="ct-na">-</td>
+            <td class="ct-green">57.1%</td><td class="ct-yellow">52.8%</td>
+            <td class="ct-yellow">44.2%</td><td class="ct-yellow">50.0%</td>
+            <td style="font-weight:600">51.3%</td>
+          </tr>
+          <tr>
+            <td class="row-header">销售M</td>
+            <td class="ct-na">-</td><td class="ct-na">-</td>
+            <td class="ct-yellow">50.0%</td><td class="ct-red">39.9%</td>
+            <td class="ct-yellow">54.5%</td><td class="ct-yellow">52.6%</td>
+            <td style="font-weight:600">43.5%</td>
+          </tr>
+          <tr>
+            <td class="row-header">销售F</td>
+            <td class="ct-green">100%</td><td class="ct-yellow">50.0%</td>
+            <td class="ct-green">66.7%</td><td class="ct-yellow">52.9%</td>
+            <td class="ct-green">57.1%</td><td class="ct-green">72.7%</td>
+            <td style="font-weight:600">57.5%</td>
+          </tr>
+          <tr class="total-row">
+            <td class="row-header">部门合计</td>
+            <td class="ct-green">100%</td><td class="ct-yellow">50.0%</td>
+            <td class="ct-green">58.8%</td><td class="ct-yellow">47.6%</td>
+            <td class="ct-yellow">50.0%</td><td class="ct-green">58.3%</td>
+            <td>49.2%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 口碑 vs 非口碑 交叉表 -->
+  <div class="section">
+    <div class="section-title">📋 口碑 vs 非口碑 · 签约率 & 出产率</div>
+    <div style="overflow-x:auto">
+      <table class="cross-table">
+        <thead>
+          <tr>
+            <th rowspan="2" style="vertical-align:middle">维度</th>
+            <th colspan="2" class="sub-header">当年度签约率</th>
+            <th colspan="2" class="sub-header">出产率</th>
+          </tr>
+          <tr>
+            <th class="sub-header">口碑</th><th class="sub-header">非口碑</th>
+            <th class="sub-header">口碑</th><th class="sub-header">非口碑</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="total-row">
+            <td class="row-header">部门整体</td>
+            <td class="ct-green">93.4%</td><td class="ct-red">44.7%</td>
+            <td class="ct-green">53.7%</td><td class="ct-yellow">48.4%</td>
+          </tr>
+          <tr>
+            <td class="row-header">销售D</td>
+            <td class="ct-green">90.0%</td><td class="ct-red">43.6%</td>
+            <td class="ct-yellow">51.9%</td><td class="ct-yellow">51.2%</td>
+          </tr>
+          <tr>
+            <td class="row-header">销售M</td>
+            <td class="ct-green">90.9%</td><td class="ct-red">39.5%</td>
+            <td class="ct-green">59.3%</td><td class="ct-red">41.2%</td>
+          </tr>
+          <tr>
+            <td class="row-header">销售F</td>
+            <td class="ct-green">100%</td><td class="ct-green">69.6%</td>
+            <td class="ct-yellow">50.0%</td><td class="ct-green">61.0%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ==================== Tab2: 口碑管理层面 ==================== -->
+<div id="tab-kb" class="tab-content">
+
+  <div class="metric-cards">
+    <div class="m-card" onclick="toggleCard(this,'kb-detail-volume')">
+      <div class="label">⭐ 口碑数据量</div><div class="val blue">86</div><div class="detail">增量61+存量25</div><div class="arrow-down">▼</div>
+    </div>
+    <div class="m-card" onclick="toggleCard(this,'kb-detail-signed')">
+      <div class="label">🤝 口碑签约量</div><div class="val">86</div><div class="detail">增量61+存量25</div><div class="arrow-down">▼</div>
+    </div>
+    <div class="m-card green" onclick="toggleCard(this,'kb-detail-srate')">
+      <div class="label">📈 口碑签约率</div><div class="val">100.0%</div><div class="detail">远超整体64.8%</div><div class="arrow-down">▼</div>
+    </div>
+    <div class="m-card" onclick="toggleCard(this,'kb-detail-prod')">
+      <div class="label"> 口碑出产量</div><div class="val orange">44</div><div class="detail">合作中86家</div><div class="arrow-down">▼</div>
+    </div>
+    <div class="m-card orange" onclick="toggleCard(this,'kb-detail-prate')">
+      <div class="label">⚙️ 口碑出产率</div><div class="val">51.2%</div><div class="detail">高于整体48.2%</div><div class="arrow-down">▼</div>
+    </div>
+    <div class="m-card" onclick="toggleCard(this,'kb-detail-apply')">
+      <div class="label">📝 口碑申请量</div><div class="val" style="color:#a0aec0">—</div><div class="detail">待补充</div><div class="arrow-down">▼</div>
+    </div>
+    <div class="m-card" onclick="toggleCard(this,'kb-detail-enroll')">
+      <div class="label">🎓 口碑入学量</div><div class="val" style="color:#a0aec0">—</div><div class="detail">待补充</div><div class="arrow-down">▼</div>
+    </div>
+  </div>
+
+  <div id="kb-detail-volume" class="card-detail"><div class="detail-grid">
+    <div class="detail-item"><div class="dl">口碑数据增量</div><div class="dv">61</div><div class="dd">9月1日及之后</div></div>
+    <div class="detail-item"><div class="dl">口碑数据存量</div><div class="dv">25</div><div class="dd">8月31日之前</div></div>
+    <div class="detail-item"><div class="dl">占总数据比</div><div class="dv">10.3%</div><div class="dd">86/835</div></div>
+  </div></div>
+
+  <div id="kb-detail-signed" class="card-detail"><div class="detail-grid">
+    <div class="detail-item"><div class="dl">口碑签约增量</div><div class="dv">61</div><div class="dd">9月1日及之后</div></div>
+    <div class="detail-item"><div class="dl">口碑签约存量</div><div class="dv">25</div><div class="dd">8月31日之前</div></div>
+    <div class="detail-item"><div class="dl">占总签约比</div><div class="dv">15.9%</div><div class="dd">86/541</div></div>
+  </div></div>
+
+  <div id="kb-detail-srate" class="card-detail"><div class="detail-grid">
+    <div class="detail-item"><div class="dl">口碑签约率</div><div class="dv" style="color:#38a169">100.0%</div><div class="dd">远超整体64.8%</div></div>
+    <div class="detail-item"><div class="dl">是整体倍数</div><div class="dv" style="color:#38a169">1.54x</div><div class="dd">最优质获客渠道</div></div>
+  </div></div>
+
+  <div id="kb-detail-prod" class="card-detail"><div class="detail-grid">
+    <div class="detail-item"><div class="dl">口碑出产量</div><div class="dv">44</div><div class="dd">合作中86家</div></div>
+    <div class="detail-item"><div class="dl">存量出产</div><div class="dv" style="color:#38a169">5</div><div class="dd">存量25家中5家出产(20.0%)</div></div>
+    <div class="detail-item"><div class="dl">增量出产</div><div class="dv">39</div><div class="dd">增量61家中(63.9%)</div></div>
+    <div class="detail-item"><div class="dl">口碑出产率</div><div class="dv" style="color:#38a169">51.2%</div><div class="dd">高于整体48.2%</div></div>
+  </div></div>
+
+  <div id="kb-detail-prate" class="card-detail"><div class="detail-grid">
+    <div class="detail-item"><div class="dl">口碑出产率</div><div class="dv" style="color:#38a169">51.2%</div><div class="dd">高于整体48.2%</div></div>
+    <div class="detail-item"><div class="dl">口碑合作中机构</div><div class="dv">86</div><div class="dd">合作中541家中</div></div>
+  </div></div>
+
+  <div id="kb-detail-apply" class="card-detail"><div class="detail-grid">
+    <div class="detail-item missing"><div class="dl">口碑申请量</div><div class="dv">暂无数据</div></div>
+    <div class="detail-item missing"><div class="dl">口碑平均申请量</div><div class="dv">暂无数据</div></div>
+    <div class="detail-item missing"><div class="dl">口碑入学量</div><div class="dv">暂无数据</div></div>
+    <div class="detail-item missing"><div class="dl">口碑平均入学量</div><div class="dv">暂无数据</div></div>
+  </div></div>
+
+  <div id="kb-detail-enroll" class="card-detail"><div class="detail-grid">
+    <div class="detail-item missing"><div class="dl">口碑申请量</div><div class="dv">暂无数据</div></div>
+    <div class="detail-item missing"><div class="dl">口碑平均申请量</div><div class="dv">暂无数据</div></div>
+    <div class="detail-item missing"><div class="dl">口碑入学量</div><div class="dv">暂无数据</div></div>
+    <div class="detail-item missing"><div class="dl">口碑平均入学量</div><div class="dv">暂无数据</div></div>
+  </div></div>
+
+  <!-- 口碑 x 销售个人 -->
+  <div class="section">
+    <div class="section-title">⭐ 口碑 x 销售个人（存量25家 | 5家已出产）</div>
+    <div class="sales-grid" style="grid-template-columns:repeat(4,1fr)">
+      <div class="sales-card">
+        <div class="sc-header">
+          <span class="sc-name">销售D</span>
+          <span class="sc-badge d">D</span>
+          <span class="sc-count">存量9家</span>
+        </div>
+        <div class="sc-row">
+          <div class="sc-row-label">存量出产</div>
+          <div class="sc-bar-track"><div class="sc-bar-fill blue" style="width:22.2%">2/9</div></div>
+          <div class="sc-bar-stats">出产2 / 存量9</div>
+        </div>
+      </div>
+      <div class="sales-card">
+        <div class="sc-header">
+          <span class="sc-name">销售M</span>
+          <span class="sc-badge m">M</span>
+          <span class="sc-count">存量6家</span>
+        </div>
+        <div class="sc-row">
+          <div class="sc-row-label">存量出产</div>
+          <div class="sc-bar-track"><div class="sc-bar-fill orange" style="width:0%">0/6</div></div>
+          <div class="sc-bar-stats">出产0 / 存量6</div>
+        </div>
+      </div>
+      <div class="sales-card">
+        <div class="sc-header">
+          <span class="sc-name">销售F</span>
+          <span class="sc-badge f">F</span>
+          <span class="sc-count">存量8家</span>
+        </div>
+        <div class="sc-row">
+          <div class="sc-row-label">存量出产</div>
+          <div class="sc-bar-track"><div class="sc-bar-fill green" style="width:37.5%">3/8</div></div>
+          <div class="sc-bar-stats">出产3 / 存量8</div>
+        </div>
+      </div>
+      <div class="sales-card">
+        <div class="sc-header">
+          <span class="sc-name">其他销售</span>
+          <span class="sc-count">存量3家</span>
+        </div>
+        <div class="sc-row">
+          <div class="sc-row-label">存量出产</div>
+          <div class="sc-bar-track"><div class="sc-bar-fill" style="width:0%;background:#a0aec0">0/3</div></div>
+          <div class="sc-bar-stats">出产0 / 存量3</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 口碑 x 级别 -->
+  <div class="section">
+    <div class="section-title">📊 口碑 x 机构级别（合作中）</div>
+    <table class="data-table">
+      <thead><tr><th style="text-align:left">级别</th><th>合作中</th><th>占比</th><th>已出产</th><th>出产率</th></tr></thead>
+      <tbody>
+        <tr><td class="grade-cell">B</td><td>2</td><td>2.3%</td><td>0</td><td>0.0%</td></tr>
+        <tr><td class="grade-cell">C</td><td>3</td><td>3.5%</td><td>1</td><td>33.3%</td></tr>
+        <tr><td class="grade-cell">D</td><td>45</td><td>52.3%</td><td>23</td><td>51.1%</td></tr>
+        <tr><td class="grade-cell">E</td><td>21</td><td>24.4%</td><td>13</td><td style="color:#38a169;font-weight:600">61.9%</td></tr>
+        <tr><td class="grade-cell">F</td><td>15</td><td>17.4%</td><td>7</td><td>46.7%</td></tr>
+        <tr class="total-row"><td class="grade-cell">合计</td><td>86</td><td>100%</td><td>44</td><td>51.2%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="insight">
+    <div class="it">💡 口碑洞察</div>
+    <ul>
+      <li>口碑签约率(100%)远超整体(64.8%)，口碑推荐是最优质获客渠道</li>
+      <li>口碑出产率(51.2%)高于整体(48.2%)，口碑机构出产表现良好</li>
+      <li>口碑数据占总数据10.3%，签约占总签约15.9%——口碑占比仍有很大提升空间</li>
+      <li>口碑E级机构出产率最高(61.9%)，说明口碑推荐的小型机构质量反而更好</li>
+      <li>存量口碑25家中仅5家出产(20%)，其中销售D 2家、销售F 3家，存量产出仍有提升空间</li>
+      <li>增量口碑签约61家，出产39家(63.9%)，增量机构整体表现优于存量</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ==================== Tab3: 渠道供给层面 ==================== -->
+<div id="tab-ch" class="tab-content">
+
+  <div class="anon-box">
+     脱敏说明：渠道供给人员姓名已做脱敏处理，以编号A~E代替
+    <div class="desc">对应关系仅管理员可见</div>
+  </div>
+
+  <div class="metric-cards">
+    <div class="m-card" onclick="toggleCard(this,'ch-detail-volume')">
+      <div class="label">🔗 渠道数据量</div><div class="val blue">734</div><div class="detail">8.31前360 | 9.1后374</div><div class="arrow-down">▼</div>
+    </div>
+    <div class="m-card" onclick="toggleCard(this,'ch-detail-signed')">
+      <div class="label">🤝 渠道签约量</div><div class="val">434</div><div class="detail">待补充分期明细</div><div class="arrow-down">▼</div>
+    </div>
+    <div class="m-card green" onclick="toggleCard(this,'ch-detail-srate')">
+      <div class="label">📈 渠道签约率</div><div class="val">59.1%</div><div class="detail">434/734</div><div class="arrow-down">▼</div>
+    </div>
+    <div class="m-card" onclick="toggleCard(this,'ch-detail-prod')">
+      <div class="label"> 渠道出产量</div><div class="val orange">196</div><div class="detail">合作中434</div><div class="arrow-down">▼</div>
+    </div>
+    <div class="m-card orange" onclick="toggleCard(this,'ch-detail-prate')">
+      <div class="label">⚙️ 渠道出产率</div><div class="val">45.2%</div><div class="detail">196/434</div><div class="arrow-down">▼</div>
+    </div>
+    <div class="m-card" onclick="toggleCard(this,'ch-detail-apply')">
+      <div class="label">📝 渠道申请量</div><div class="val" style="color:#a0aec0">—</div><div class="detail">待补充</div><div class="arrow-down">▼</div>
+    </div>
+    <div class="m-card" onclick="toggleCard(this,'ch-detail-enroll')">
+      <div class="label">🎓 渠道入学量</div><div class="val" style="color:#a0aec0">—</div><div class="detail">待补充</div><div class="arrow-down">▼</div>
+    </div>
+  </div>
+
+  <div id="ch-detail-volume" class="card-detail"><div class="detail-grid">
+    <div class="detail-item"><div class="dl">渠道数据总量</div><div class="dv">734</div><div class="dd">8.31前360 | 9.1后374</div></div>
+    <div class="detail-item"><div class="dl">占总数据比</div><div class="dv">87.9%</div><div class="dd">734/835</div></div>
+    <div class="detail-item"><div class="dl">8月31日前数据</div><div class="dv">360</div><div class="dd">存量渠道数据</div></div>
+    <div class="detail-item"><div class="dl">9月1日后数据</div><div class="dv">374</div><div class="dd">当年度增量数据</div></div>
+  </div></div>
+
+  <div id="ch-detail-signed" class="card-detail"><div class="detail-grid">
+    <div class="detail-item"><div class="dl">渠道签约量</div><div class="dv">434</div><div class="dd">待补充分期明细</div></div>
+    <div class="detail-item"><div class="dl">渠道签约率</div><div class="dv" style="color:#38a169">59.1%</div><div class="dd">434/734</div></div>
+  </div></div>
+
+  <div id="ch-detail-srate" class="card-detail"><div class="detail-grid">
+    <div class="detail-item"><div class="dl">渠道签约率</div><div class="dv" style="color:#38a169">59.1%</div><div class="dd">低于整体64.8%</div></div>
+    <div class="detail-item"><div class="dl">待补充</div><div class="dv">签约量分期明细</div><div class="dd">8.31前/9.1后签约量</div></div>
+  </div></div>
+
+  <div id="ch-detail-prod" class="card-detail"><div class="detail-grid">
+    <div class="detail-item"><div class="dl">渠道出产量</div><div class="dv">196</div><div class="dd">合作中434家</div></div>
+    <div class="detail-item"><div class="dl">渠道出产率</div><div class="dv">45.2%</div><div class="dd">略低于整体48.2%</div></div>
+  </div></div>
+
+  <div id="ch-detail-prate" class="card-detail"><div class="detail-grid">
+    <div class="detail-item"><div class="dl">渠道出产率</div><div class="dv">45.2%</div><div class="dd">略低于整体48.2%</div></div>
+    <div class="detail-item"><div class="dl">需关注产出激活</div><div class="dv" style="color:#dd6b20">提升空间</div><div class="dd">尤其渠道A/B</div></div>
+  </div></div>
+
+  <div id="ch-detail-apply" class="card-detail"><div class="detail-grid">
+    <div class="detail-item missing"><div class="dl">渠道申请量</div><div class="dv">暂无数据</div></div>
+    <div class="detail-item missing"><div class="dl">渠道平均申请量</div><div class="dv">暂无数据</div></div>
+    <div class="detail-item missing"><div class="dl">渠道入学量</div><div class="dv">暂无数据</div></div>
+    <div class="detail-item missing"><div class="dl">渠道平均入学量</div><div class="dv">暂无数据</div></div>
+  </div></div>
+
+  <div id="ch-detail-enroll" class="card-detail"><div class="detail-grid">
+    <div class="detail-item missing"><div class="dl">渠道申请量</div><div class="dv">暂无数据</div></div>
+    <div class="detail-item missing"><div class="dl">渠道平均申请量</div><div class="dv">暂无数据</div></div>
+    <div class="detail-item missing"><div class="dl">渠道入学量</div><div class="dv">暂无数据</div></div>
+    <div class="detail-item missing"><div class="dl">渠道平均入学量</div><div class="dv">暂无数据</div></div>
+  </div></div>
+
+  <!-- 渠道人员明细表 -->
+  <div class="section">
+    <div class="section-title">👤 各渠道人员明细</div>
+    <table class="data-table">
+      <thead><tr><th>渠道</th><th>数据量</th><th>合作中</th><th>出产量</th><th>出产率</th></tr></thead>
+      <tbody>
+        <tr><td><strong>渠道A</strong></td><td>266</td><td>160</td><td>71</td><td>44.4%</td></tr>
+        <tr><td><strong>渠道B</strong></td><td>255</td><td>178</td><td>84</td><td>47.2%</td></tr>
+        <tr><td><strong>渠道C</strong></td><td>33</td><td>43</td><td>15</td><td>34.9%</td></tr>
+        <tr><td><strong>渠道D</strong></td><td>26</td><td>32</td><td>14</td><td>43.8%</td></tr>
+        <tr><td><strong>渠道E</strong></td><td>10</td><td>8</td><td>5</td><td style="color:#38a169;font-weight:600">62.5%</td></tr>
+        <tr><td><strong>渠道F</strong></td><td>5</td><td>1</td><td>1</td><td style="color:#38a169;font-weight:600">100%</td></tr>
+        <tr><td><strong>渠道G</strong></td><td>3</td><td>5</td><td>3</td><td style="color:#38a169;font-weight:600">60.0%</td></tr>
+        <tr><td><strong>渠道H</strong></td><td>1</td><td>1</td><td>0</td><td>0%</td></tr>
+        <tr><td><strong>渠道I</strong></td><td>1</td><td>5</td><td>3</td><td style="color:#38a169;font-weight:600">60.0%</td></tr>
+        <tr class="total-row"><td>合计</td><td>734</td><td>434</td><td>196</td><td>45.2%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 渠道 x 销售个人 -->
+  <div class="section">
+    <div class="section-title">🔗 渠道 x 销售个人（合作中）</div>
+    <div class="sales-grid">
+      <div class="sales-card">
+        <div class="sc-header">
+          <span class="sc-name">销售D</span>
+          <span class="sc-badge d">D</span>
+          <span class="sc-count">199家渠道合作中</span>
+        </div>
+        <div class="sc-row">
+          <div class="sc-row-label">渠道出产率</div>
+          <div class="sc-bar-track"><div class="sc-bar-fill blue" style="width:51.3%">51.3%</div></div>
+          <div class="sc-bar-stats">出产102 / 合作中199</div>
+        </div>
+      </div>
+      <div class="sales-card">
+        <div class="sc-header">
+          <span class="sc-name">销售M</span>
+          <span class="sc-badge m">M</span>
+          <span class="sc-count">180家渠道合作中</span>
+        </div>
+        <div class="sc-row">
+          <div class="sc-row-label">渠道出产率</div>
+          <div class="sc-bar-track"><div class="sc-bar-fill orange" style="width:40.0%">40.0%</div></div>
+          <div class="sc-bar-stats">出产72 / 合作中180</div>
+        </div>
+      </div>
+      <div class="sales-card">
+        <div class="sc-header">
+          <span class="sc-name">销售F</span>
+          <span class="sc-badge f">F</span>
+          <span class="sc-count">37家渠道合作中</span>
+        </div>
+        <div class="sc-row">
+          <div class="sc-row-label">渠道出产率</div>
+          <div class="sc-bar-track"><div class="sc-bar-fill green" style="width:40.5%">40.5%</div></div>
+          <div class="sc-bar-stats">出产15 / 合作中37</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 渠道 x 级别 -->
+  <div class="section">
+    <div class="section-title">📊 渠道 x 机构级别（合作中）</div>
+    <table class="data-table">
+      <thead><tr><th style="text-align:left">级别</th><th>合作中</th><th>占比</th><th>已出产</th><th>出产率</th></tr></thead>
+      <tbody>
+        <tr><td class="grade-cell">A+</td><td>1</td><td>0.2%</td><td>1</td><td style="color:#38a169;font-weight:600">100%</td></tr>
+        <tr><td class="grade-cell">C</td><td>8</td><td>1.9%</td><td>6</td><td style="color:#38a169;font-weight:600">75.0%</td></tr>
+        <tr><td class="grade-cell">D</td><td>326</td><td>77.4%</td><td>145</td><td>44.5%</td></tr>
+        <tr><td class="grade-cell">E</td><td>72</td><td>17.1%</td><td>30</td><td>41.7%</td></tr>
+        <tr><td class="grade-cell">F</td><td>14</td><td>3.3%</td><td>7</td><td>50.0%</td></tr>
+        <tr class="total-row"><td class="grade-cell">合计</td><td>421</td><td>100%</td><td>189</td><td>44.9%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="insight">
+    <div class="it">💡 渠道洞察</div>
+    <ul>
+      <li>渠道供给共734条（8.31前360 + 9.1后374），占部门总量87.9%，是最核心的数据来源</li>
+      <li>当年度渠道数据374条，略低于存量360条，增量渠道供给需持续加强</li>
+      <li>渠道签约量434家，签约率59.1%（434/734），略低于部门整体64.8%</li>
+      <li>销售D的渠道机构出产率(51.3%)远高于销售M(40.0%)和销售F(40.5%)，渠道机构转化能力突出</li>
+      <li>渠道出产率(45.2%)略低于整体(48.2%)，需关注渠道机构的出产激活</li>
+    </ul>
+  </div>
+</div>
+
+</div>
+
+<script>
+function switchTab(id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  const map={data:0,kb:1,ch:2};
+  document.querySelectorAll('.tab')[map[id]].classList.add('active');
+  document.getElementById('tab-'+id).classList.add('active');
+  if(id==='data' && !window._cityChartsRendered) setTimeout(renderCityCharts, 100);
+  if(id==='data' && !window._deepChartsRendered) setTimeout(renderDeepCharts, 200);
+}
+
+// 卡片点击展开/收起
+function toggleCard(cardEl, detailId){
+  const detail = document.getElementById(detailId);
+  if(!detail) return;
+  const isOpen = detail.classList.contains('open');
+  // 先关闭所有
+  document.querySelectorAll('.card-detail').forEach(d=>d.classList.remove('open'));
+  document.querySelectorAll('.m-card').forEach(c=>c.classList.remove('expanded'));
+  // 如果之前没打开，就打开当前
+  if(!isOpen){
+    detail.classList.add('open');
+    cardEl.classList.add('expanded');
+  }
+}
+
+// 城市图表渲染
+function renderCityCharts(){
+  window._cityChartsRendered = true;
+  const labels = ['北京','广东','上海','江苏','浙江','四川','陕西','重庆','英格兰','湖北'];
+  const dataCounts = [66,63,58,39,34,33,19,18,15,15];
+  const signedCounts = [66,63,58,39,34,33,19,18,15,15];
+  const prodCounts = [35,29,38,21,16,25,6,11,14,10];
+
+  const commonOpts = {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { font: { size: 11 } } },
+      y: { beginAtZero: true, ticks: { font: { size: 10 } } }
+    }
+  };
+
+  new Chart(document.getElementById('cityDataChart'), {
+    type: 'bar',
+    data: { labels, datasets: [{ data: dataCounts, backgroundColor: 'rgba(49,130,206,0.7)', borderRadius: 6 }] },
+    options: { ...commonOpts, scales: { ...commonOpts.scales, y: { ...commonOpts.scales.y, title: { display: true, text: '机构数', font: { size: 10 } } } } }
+  });
+  new Chart(document.getElementById('citySignedChart'), {
+    type: 'bar',
+    data: { labels, datasets: [{ data: signedCounts, backgroundColor: 'rgba(56,161,105,0.7)', borderRadius: 6 }] },
+    options: { ...commonOpts, scales: { ...commonOpts.scales, y: { ...commonOpts.scales.y, title: { display: true, text: '机构数', font: { size: 10 } } } } }
+  });
+  new Chart(document.getElementById('cityProducedChart'), {
+    type: 'bar',
+    data: { labels, datasets: [{ data: prodCounts, backgroundColor: 'rgba(221,107,32,0.7)', borderRadius: 6 }] },
+    options: { ...commonOpts, scales: { ...commonOpts.scales, y: { ...commonOpts.scales.y, title: { display: true, text: '机构数', font: { size: 10 } } } } }
+  });
+}
+
+// 深度分析图表渲染
+function renderDeepCharts(){
+  if(window._deepChartsRendered) return;
+  window._deepChartsRendered = true;
+
+  // 1. 各销售签约率对比 - 分组柱状图
+  new Chart(document.getElementById('signRateChart'), {
+    type: 'bar',
+    data: {
+      labels: ['销售D', '销售M', '销售F'],
+      datasets: [
+        { label: '总签约率', data: [70.5, 69.3, 87.3], backgroundColor: 'rgba(49,130,206,0.8)', borderRadius: 4 },
+        { label: '当年度签约率', data: [48.3, 44.9, 78.5], backgroundColor: 'rgba(99,179,237,0.6)', borderRadius: 4 }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 11 }, boxWidth: 12 } },
+        tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.raw + '%' } }
+      },
+      scales: {
+        x: { ticks: { font: { size: 11 } } },
+        y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%', font: { size: 10 } } }
+      }
+    }
+  });
+
+  // 2. 合作中机构出产率对比 - 横向柱状图
+  new Chart(document.getElementById('outputRateChart'), {
+    type: 'bar',
+    data: {
+      labels: ['销售D', '销售M', '销售F', '部门平均'],
+      datasets: [{
+        label: '出产率',
+        data: [51.3, 43.5, 57.5, 48.2],
+        backgroundColor: ['rgba(49,130,206,0.7)', 'rgba(229,62,62,0.6)', 'rgba(56,161,105,0.7)', 'rgba(160,174,192,0.7)'],
+        borderRadius: 4
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ctx.raw + '%' } }
+      },
+      scales: {
+        x: { beginAtZero: true, max: 70, ticks: { callback: v => v + '%', font: { size: 10 } } },
+        y: { ticks: { font: { size: 11 } } }
+      }
+    }
+  });
+
+  // 3. 部门级别分布 - 环形图
+  new Chart(document.getElementById('gradeDistribChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['A+级', 'B级', 'C级', 'D级', 'E级', 'F级'],
+      datasets: [{
+        data: [1, 5, 18, 389, 91, 37],
+        backgroundColor: ['#48bb78', '#4299e1', '#ed8936', '#e53e3e', '#9f7aea', '#a0aec0'],
+        borderWidth: 2,
+        borderColor: '#fff'
+      }]
+    },
+    options: {
+      responsive: true,
+      cutout: '55%',
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 11 }, boxWidth: 10, padding: 8 } },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const pct = (ctx.raw / 541 * 100).toFixed(1);
+              return ctx.label + ': ' + ctx.raw + '家 (' + pct + '%)';
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // 4. 口碑 vs 非口碑签约率对比
+  new Chart(document.getElementById('koubeiSignChart'), {
+    type: 'bar',
+    data: {
+      labels: ['销售D', '销售M', '销售F'],
+      datasets: [
+        { label: '口碑签约率', data: [90.0, 90.9, 100.0], backgroundColor: 'rgba(56,161,105,0.8)', borderRadius: 4 },
+        { label: '非口碑签约率', data: [43.6, 39.5, 69.6], backgroundColor: 'rgba(229,62,62,0.6)', borderRadius: 4 }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 11 }, boxWidth: 12 } },
+        tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.raw + '%' } }
+      },
+      scales: {
+        x: { ticks: { font: { size: 11 } } },
+        y: { beginAtZero: true, max: 110, ticks: { callback: v => v + '%', font: { size: 10 } } }
+      }
+    }
+  });
+}
+
+window.addEventListener('load', () => {
+  setTimeout(renderCityCharts, 200);
+  setTimeout(renderDeepCharts, 300);
+});
+</script>
+
+</body>
+</html>

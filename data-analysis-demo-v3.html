@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据管理专区 - 部门维度 Demo</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f0f2f5;color:#1a1a2e}
+.header{background:linear-gradient(135deg,#1a365d 0%,#2b6cb0 100%);color:#fff;padding:24px 32px}
+.header h1{font-size:22px;font-weight:600}
+.header .sub{font-size:13px;opacity:.8;margin-top:4px}
+.container{max-width:1100px;margin:0 auto;padding:20px}
+
+.tabs{display:flex;gap:0;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.1);margin-bottom:20px}
+.tab{flex:1;padding:14px 16px;text-align:center;cursor:pointer;font-size:13px;font-weight:500;color:#666;border-bottom:3px solid transparent;transition:.2s}
+.tab:hover{background:#f7fafc;color:#2b6cb0}
+.tab.active{color:#2b6cb0;border-bottom-color:#2b6cb0;background:#ebf4ff}
+.tab .ico{font-size:18px;display:block;margin-bottom:4px}
+.tab-content{display:none}.tab-content.active{display:block}
+
+.cards{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:20px}
+@media(max-width:1200px){.cards{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:768px){.cards{grid-template-columns:repeat(2,1fr)}}
+.card{background:#fff;border-radius:12px;padding:16px 12px;box-shadow:0 1px 3px rgba(0,0,0,.08);cursor:pointer;transition:box-shadow .2s,border-color .2s;border:2px solid transparent;user-select:none}
+.card:hover{box-shadow:0 4px 12px rgba(0,0,0,.12);border-color:#bee3f8}
+.card.expanded{border-color:#3182ce;box-shadow:0 4px 14px rgba(49,130,206,.18)}
+.card .label{font-size:11px;color:#718096;margin-bottom:4px}
+.card .val{font-size:26px;font-weight:700;color:#1a365d}
+.card .detail{font-size:10px;color:#a0aec0;margin-top:3px}
+.card .expand-icon{font-size:10px;color:#a0aec0;margin-top:4px;transition:transform .2s}
+.card.expanded .expand-icon{transform:rotate(180deg)}
+.card.green .val{color:#38a169}
+.card.orange .val{color:#dd6b20}
+
+.card-sub{display:none;background:#f7fafc;border-radius:0 0 12px 12px;padding:14px 16px;margin-top:-8px;margin-bottom:20px;box-shadow:0 2px 6px rgba(0,0,0,.05);border:1px solid #e2e8f0;border-top:none}
+.card-sub.open{display:block}
+.card-sub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
+.card-sub .sub-item{background:#fff;border-radius:8px;padding:10px 12px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.card-sub .sub-item .sl{font-size:11px;color:#718096}
+.card-sub .sub-item .sv{font-size:18px;font-weight:600;color:#2d3748;margin-top:2px}
+.card-sub .sub-item .sd{font-size:10px;color:#a0aec0;margin-top:2px}
+
+.expand-bar{background:#fff;border-radius:10px;padding:14px 18px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.expand-header{display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+.expand-header .title{font-size:13px;font-weight:600;color:#1a365d}
+.expand-header .arrow{font-size:12px;color:#a0aec0;transition:.2s}
+.expand-header.open .arrow{transform:rotate(180deg)}
+.expand-body{display:none;margin-top:12px}.expand-body.open{display:block}
+.sub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.sub-item{background:#f7fafc;border-radius:8px;padding:12px}
+.sub-item .sl{font-size:11px;color:#718096}
+.sub-item .sv{font-size:20px;font-weight:600;color:#2d3748;margin-top:2px}
+.sub-item .sd{font-size:10px;color:#a0aec0;margin-top:2px}
+
+.section{background:#fff;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.section-title{font-size:15px;font-weight:600;color:#1a365d;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:8px}
+.progress-row{display:flex;align-items:center;margin-bottom:14px}
+.progress-row:last-child{margin-bottom:0}
+.progress-name{width:70px;font-size:13px;font-weight:600;color:#2d3748;flex-shrink:0}
+.progress-track{flex:1;height:24px;background:#edf2f7;border-radius:12px;position:relative;overflow:hidden;margin:0 12px}
+.progress-fill{height:100%;border-radius:12px;display:flex;align-items:center;justify-content:flex-end;padding-right:10px;font-size:11px;font-weight:600;color:#fff;transition:width .6s ease}
+.fill-blue{background:linear-gradient(90deg,#3182ce,#63b3ed)}
+.fill-green{background:linear-gradient(90deg,#38a169,#68d391)}
+.fill-orange{background:linear-gradient(90deg,#dd6b20,#f6ad55)}
+.fill-purple{background:linear-gradient(90deg,#805ad5,#b794f4)}
+.progress-stats{width:180px;font-size:11px;color:#718096;text-align:right;flex-shrink:0}
+
+.data-table{width:100%;border-collapse:collapse;font-size:13px}
+.data-table th{background:#1a365d;color:#fff;padding:10px 12px;text-align:center;font-weight:500}
+.data-table td{padding:9px 12px;text-align:center;border-bottom:1px solid #e2e8f0}
+.data-table tr:nth-child(even){background:#f7fafc}
+.data-table tr:hover{background:#edf2f7}
+.data-table tr.total-row{background:#ebf4ff!important;font-weight:600}
+.data-table .grade-cell,.data-table .city-cell{text-align:left;font-weight:600}
+.data-table .bar-cell{position:relative}
+.data-table .mini-bar{position:absolute;left:0;top:50%;transform:translateY(-50%);height:18px;border-radius:4px;opacity:.2}
+.data-table .bar-text{position:relative;z-index:1}
+
+.anon-box{background:#ebf4ff;border:1px solid #90cdf4;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:#2b6cb0}
+.anon-box .desc{font-size:11px;color:#4a5568;margin-top:4px}
+
+.ph{display:inline-block;background:#fef3c7;color:#92400e;font-size:10px;padding:2px 8px;border-radius:10px;margin-left:6px}
+
+.insight{background:linear-gradient(135deg,#f0fff4,#ebf8ff);border:1px solid #9ae6b4;border-radius:10px;padding:16px;margin-top:16px}
+.insight .it{font-size:13px;font-weight:600;color:#276749;margin-bottom:10px}
+.insight ul{list-style:none}
+.insight li{font-size:12px;color:#4a5568;padding:3px 0 3px 16px;position:relative}
+.insight li::before{content:"•";position:absolute;left:0;color:#38a169;font-weight:bold}
+
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:768px){.chart-row{grid-template-columns:1fr}}
+.chart-box{background:#fff;border-radius:12px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.chart-box .chart-label{font-size:13px;font-weight:600;color:#1a365d;margin-bottom:12px;text-align:center}
+.chart-box canvas{max-height:320px}
+
+/* 三图并排 */
+.triple-chart{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px}
+@media(max-width:900px){.triple-chart{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📊 数据管理专区 · 部门维度</h1>
+  <div class="sub">Demo 预览 · 数据截至 2026年7月31日</div>
+</div>
+
+<div class="container">
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('data')"><span class="ico">📋</span>数据管理层面</div>
+  <div class="tab" onclick="switchTab('kb')"><span class="ico">⭐</span>口碑管理层面</div>
+  <div class="tab" onclick="switchTab('ch')"><span class="ico">🔗</span>渠道供给层面</div>
+</div>
+
+<!-- ==================== Tab1: 数据管理层面 ==================== -->
+<div id="tab-data" class="tab-content active">
+
+  <div class="cards">
+    <div class="card"><div class="label">总数据量</div><div class="val">835</div><div class="detail">存量360 + 增量475</div></div>
+    <div class="card"><div class="label">总签约量</div><div class="val">541</div><div class="detail">存量300 + 增量241</div></div>
+    <div class="card green"><div class="label">总签约率</div><div class="val">64.8%</div><div class="detail">541 / 835</div></div>
+    <div class="card orange"><div class="label">出产率</div><div class="val">48.2%</div><div class="detail">261 / 541 合作中</div></div>
+  </div>
+
+  <!-- 二级展开区 -->
+  <div class="expand-bar"><div class="expand-header" onclick="toggleExp(this)"><span class="title">📁 数据量 · 二级明细</span><span class="arrow">▼</span></div>
+    <div class="expand-body"><div class="sub-grid">
+      <div class="sub-item"><div class="sl">8月31日之前数据</div><div class="sv">360</div><div class="sd">存量数据</div></div>
+      <div class="sub-item"><div class="sl">9月1日及之后的数据</div><div class="sv">475</div><div class="sd">当年度增量数据</div></div>
+    </div></div></div>
+
+  <div class="expand-bar"><div class="expand-header" onclick="toggleExp(this)"><span class="title">🤝 签约量 · 二级明细</span><span class="arrow">▼</span></div>
+    <div class="expand-body"><div class="sub-grid">
+      <div class="sub-item"><div class="sl">8月31日之前签约量</div><div class="sv">300</div><div class="sd">存量签约</div></div>
+      <div class="sub-item"><div class="sl">9月1日及之后签约量</div><div class="sv">241</div><div class="sd">当年度增量签约</div></div>
+    </div></div></div>
+
+  <div class="expand-bar"><div class="expand-header" onclick="toggleExp(this)"><span class="title">📈 总签约率 · 二级明细</span><span class="arrow">▼</span></div>
+    <div class="expand-body"><div class="sub-grid">
+      <div class="sub-item"><div class="sl">8月31日之前数据签约率</div><div class="sv" style="color:#38a169">83.3%</div><div class="sd">300 / 360</div></div>
+      <div class="sub-item"><div class="sl">当年度数据签约率</div><div class="sv" style="color:#dd6b20">50.7%</div><div class="sd">241 / 475</div></div>
+    </div></div></div>
+
+  <div class="expand-bar"><div class="expand-header" onclick="toggleExp(this)"><span class="title">🏭 总出产量 · 二级明细</span><span class="arrow">▼</span></div>
+    <div class="expand-body"><div class="sub-grid">
+      <div class="sub-item"><div class="sl">以往月度出产量</div><div class="sv">259</div><div class="sd">2026年7月之前</div></div>
+      <div class="sub-item"><div class="sl">当月出产量</div><div class="sv">2</div><div class="sd">2026年7月</div></div>
+    </div></div></div>
+
+  <div class="expand-bar"><div class="expand-header" onclick="toggleExp(this)"><span class="title">📝 申请量 & 入学量 <span class="ph">数据待补充</span></span><span class="arrow">▼</span></div>
+    <div class="expand-body"><div class="sub-grid">
+      <div class="sub-item" style="background:#fffbeb"><div class="sl">申请量</div><div class="sv" style="color:#a0aec0;font-size:14px">暂无数据</div></div>
+      <div class="sub-item" style="background:#fffbeb"><div class="sl">平均申请量</div><div class="sv" style="color:#a0aec0;font-size:14px">暂无数据</div></div>
+      <div class="sub-item" style="background:#fffbeb"><div class="sl">入学量</div><div class="sv" style="color:#a0aec0;font-size:14px">暂无数据</div></div>
+      <div class="sub-item" style="background:#fffbeb"><div class="sl">平均入学量</div><div class="sv" style="color:#a0aec0;font-size:14px">暂无数据</div></div>
+    </div></div></div>
+
+  <!-- 销售个人对比 -->
+  <div class="section">
+    <div class="section-title">👤 销售个人数据对比</div>
+    <div style="margin-bottom:12px;font-size:12px;color:#718096;font-weight:500">总签约率</div>
+    <div class="progress-row"><div class="progress-name">刘济超</div><div class="progress-track"><div class="progress-fill fill-blue" style="width:70.5%">70.5%</div></div><div class="progress-stats">248签 / 352总量</div></div>
+    <div class="progress-row"><div class="progress-name">李心雨</div><div class="progress-track"><div class="progress-fill fill-blue" style="width:69.3%">69.3%</div></div><div class="progress-stats">257签 / 371总量</div></div>
+    <div class="progress-row"><div class="progress-name">彭凡珊</div><div class="progress-track"><div class="progress-fill fill-green" style="width:87.3%">87.3%</div></div><div class="progress-stats">96签 / 110总量</div></div>
+
+    <div style="margin:20px 0 12px;font-size:12px;color:#718096;font-weight:500">当年度数据签约率</div>
+    <div class="progress-row"><div class="progress-name">刘济超</div><div class="progress-track"><div class="progress-fill fill-orange" style="width:48.3%">48.3%</div></div><div class="progress-stats">97签 / 201增量</div></div>
+    <div class="progress-row"><div class="progress-name">李心雨</div><div class="progress-track"><div class="progress-fill fill-orange" style="width:44.9%">44.9%</div></div><div class="progress-stats">93签 / 207增量</div></div>
+    <div class="progress-row"><div class="progress-name">彭凡珊</div><div class="progress-track"><div class="progress-fill fill-green" style="width:78.5%">78.5%</div></div><div class="progress-stats">51签 / 65增量</div></div>
+
+    <div style="margin:20px 0 12px;font-size:12px;color:#718096;font-weight:500">出产率</div>
+    <div class="progress-row"><div class="progress-name">刘济超</div><div class="progress-track"><div class="progress-fill fill-green" style="width:51.3%">51.3%</div></div><div class="progress-stats">119出产 / 232合作中</div></div>
+    <div class="progress-row"><div class="progress-name">李心雨</div><div class="progress-track"><div class="progress-fill fill-orange" style="width:43.5%">43.5%</div></div><div class="progress-stats">91出产 / 209合作中</div></div>
+    <div class="progress-row"><div class="progress-name">彭凡珊</div><div class="progress-track"><div class="progress-fill fill-green" style="width:57.5%">57.5%</div></div><div class="progress-stats">50出产 / 87合作中</div></div>
+  </div>
+
+  <!-- 机构级别 -->
+  <div class="section">
+    <div class="section-title">📊 机构级别分布（合作中）</div>
+    <table class="data-table">
+      <thead><tr><th style="text-align:left">级别</th><th>合作中</th><th>占比</th><th>已出产</th><th>出产率</th></tr></thead>
+      <tbody>
+        <tr><td class="grade-cell">A+</td><td>1</td><td>0.2%</td><td>1</td><td>100%</td></tr>
+        <tr><td class="grade-cell">B</td><td>5</td><td>0.9%</td><td>3</td><td>60.0%</td></tr>
+        <tr><td class="grade-cell">C</td><td>18</td><td>3.3%</td><td>10</td><td>55.6%</td></tr>
+        <tr><td class="grade-cell">D</td><td>389</td><td>71.9%</td><td>181</td><td>46.5%</td></tr>
+        <tr><td class="grade-cell">E</td><td>91</td><td>16.8%</td><td>45</td><td>49.5%</td></tr>
+        <tr><td class="grade-cell">F</td><td>37</td><td>6.8%</td><td>21</td><td>56.8%</td></tr>
+        <tr class="total-row"><td class="grade-cell">合计</td><td>541</td><td>100%</td><td>261</td><td>48.2%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 城市分布可视化 -->
+  <div class="section">
+    <div class="section-title">🌍 城市分布可视化（按省份/直辖市）</div>
+
+    <!-- 三图并排 -->
+    <div class="triple-chart">
+      <div class="chart-box">
+        <div class="chart-label">📁 数据城市分布 Top 10</div>
+        <canvas id="cityDataChart"></canvas>
+      </div>
+      <div class="chart-box">
+        <div class="chart-label">🤝 签约机构城市分布 Top 10</div>
+        <canvas id="citySignedChart"></canvas>
+      </div>
+      <div class="chart-box">
+        <div class="chart-label">🏭 出产机构城市分布 Top 10</div>
+        <canvas id="cityProducedChart"></canvas>
+      </div>
+    </div>
+
+    <!-- 城市综合数据表 -->
+    <div style="margin-top:8px">
+      <div style="font-size:13px;font-weight:600;color:#4a5568;margin-bottom:10px">📋 省份/地区综合数据明细（Top 15）</div>
+      <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead>
+          <tr><th style="text-align:left">省份/地区</th><th>数据量</th><th>签约量</th><th>签约率</th><th>出产量</th><th>出产率</th><th>数据量占比</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="city-cell">北京</td><td>66</td><td>66</td><td style="color:#38a169;font-weight:600">100%</td><td>35</td><td>53.0%</td><td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="width:80px;height:10px;background:#edf2f7;border-radius:5px;overflow:hidden"><div style="width:100%;height:100%;background:linear-gradient(90deg,#3182ce,#63b3ed);border-radius:5px"></div></div><span style="font-size:11px;color:#718096">7.9%</span></div></td></tr>
+          <tr><td class="city-cell">广东</td><td>63</td><td>63</td><td style="color:#38a169;font-weight:600">100%</td><td>29</td><td>46.0%</td><td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="width:80px;height:10px;background:#edf2f7;border-radius:5px;overflow:hidden"><div style="width:95.5%;height:100%;background:linear-gradient(90deg,#3182ce,#63b3ed);border-radius:5px"></div></div><span style="font-size:11px;color:#718096">7.5%</span></div></td></tr>
+          <tr><td class="city-cell">上海</td><td>58</td><td>58</td><td style="color:#38a169;font-weight:600">100%</td><td>38</td><td style="color:#38a169;font-weight:600">65.5%</td><td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="width:80px;height:10px;background:#edf2f7;border-radius:5px;overflow:hidden"><div style="width:87.9%;height:100%;background:linear-gradient(90deg,#3182ce,#63b3ed);border-radius:5px"></div></div><span style="font-size:11px;color:#718096">6.9%</span></div></td></tr>
+          <tr><td class="city-cell">江苏</td><td>39</td><td>39</td><td style="color:#38a169;font-weight:600">100%</td><td>21</td><td>53.8%</td><td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="width:80px;height:10px;background:#edf2f7;border-radius:5px;overflow:hidden"><div style="width:59.1%;height:100%;background:linear-gradient(90deg,#3182ce,#63b3ed);border-radius:5px"></div></div><span style="font-size:11px;color:#718096">4.7%</span></div></td></tr>
+          <tr><td class="city-cell">浙江</td><td>34</td><td>34</td><td style="color:#38a169;font-weight:600">100%</td><td>16</td><td>47.1%</td><td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="width:80px;height:10px;background:#edf2f7;border-radius:5px;overflow:hidden"><div style="width:51.5%;height:100%;background:linear-gradient(90deg,#3182ce,#63b3ed);border-radius:5px"></div></div><span style="font-size:11px;color:#718096">4.1%</span></div></td></tr>
+          <tr><td class="city-cell">四川</td><td>33</td><td>33</td><td style="color:#38a169;font-weight:600">100%</td><td>25</td><td style="color:#38a169;font-weight:600">75.8%</td><td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="width:80px;height:10px;background:#edf2f7;border-radius:5px;overflow:hidden"><div style="width:50%;height:100%;background:linear-gradient(90deg,#3182ce,#63b3ed);border-radius:5px"></div></div><span style="font-size:11px;color:#718096">3.9%</span></div></td></tr>
+          <tr><td class="city-cell">陕西</td><td>19</td><td>19</td><td style="color:#38a169;font-weight:600">100%</td><td>6</td><td style="color:#dd6b20;font-weight:600">31.6%</td><td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="width:80px;height:10px;background:#edf2f7;border-radius:5px;overflow:hidden"><div style="width:28.8%;height:100%;background:linear-gradient(90deg,#3182ce,#63b3ed);border-radius:5px"></div></div><span style="font-size:11px;color:#718096">2.3%</span></div></td></tr>
+          <tr><td class="city-cell">重庆</td><td>18</td><td>18</td><td style="color:#38a169;font-weight:600">100%</td><td>11</td><td>61.1%</td><td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="width:80px;height:10px;background:#edf2f7;border-radius:5px;overflow:hidden"><div style="width:27.3%;height:100%;background:linear-gradient(90deg,#3182ce,#63b3ed);border-radius:5px"></div></div><span style="font-size:11px;color:#718096">2.2%</span></div></td></tr>
+          <tr><td class="city-cell">英格兰</td><td>15</td><td>15</td><td style="color:#38a169;font-weight:600">100%</td><td>14</td><td style="color:#38a169;font-weight:600">93.3%</td><td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="width:80px;height:10px;background:#edf2f7;border-radius:5px;overflow:hidden"><div style="width:22.7%;height:100%;background:linear-gradient(90deg,#3182ce,#63b3ed);border-radius:5px"></div></div><span style="font-size:11px;color:#718096">1.8%</span></div></td></tr>
+          <tr><td class="city-cell">湖北</td><td>15</td><td>15</td><td style="color:#38a169;font-weight:600">100%</td><td>10</td><td>66.7%</td><td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="width:80px;height:10px;background:#edf2f7;border-radius:5px;overflow:hidden"><div style="width:22.7%;height:100%;background:linear-gradient(90deg,#3182ce,#63b3ed);border-radius:5px"></div></div><span style="font-size:11px;color:#718096">1.8%</span></div></td></tr>
+          <tr><td class="city-cell">辽宁</td><td>14</td><td>14</td><td style="color:#38a169;font-weight:600">100%</td><td>7</td><td>50.0%</td><td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="width:80px;height:10px;background:#edf2f7;border-radius:5px;overflow:hidden"><div style="width:21.2%;height:100%;background:linear-gradient(90deg,#3182ce,#63b3ed);border-radius:5px"></div></div><span style="font-size:11px;color:#718096">1.7%</span></div></td></tr>
+          <tr><td class="city-cell">香港</td><td>13</td><td>13</td><td style="color:#38a169;font-weight:600">100%</td><td>6</td><td>46.2%</td><td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="width:80px;height:10px;background:#edf2f7;border-radius:5px;overflow:hidden"><div style="width:19.7%;height:100%;background:linear-gradient(90deg,#3182ce,#63b3ed);border-radius:5px"></div></div><span style="font-size:11px;color:#718096">1.6%</span></div></td></tr>
+          <tr><td class="city-cell">河南</td><td>12</td><td>12</td><td style="color:#38a169;font-weight:600">100%</td><td>4</td><td style="color:#dd6b20;font-weight:600">33.3%</td><td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="width:80px;height:10px;background:#edf2f7;border-radius:5px;overflow:hidden"><div style="width:18.2%;height:100%;background:linear-gradient(90deg,#3182ce,#63b3ed);border-radius:5px"></div></div><span style="font-size:11px;color:#718096">1.4%</span></div></td></tr>
+          <tr><td class="city-cell">山东</td><td>10</td><td>10</td><td style="color:#38a169;font-weight:600">100%</td><td>4</td><td style="color:#dd6b20;font-weight:600">40.0%</td><td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="width:80px;height:10px;background:#edf2f7;border-radius:5px;overflow:hidden"><div style="width:15.2%;height:100%;background:linear-gradient(90deg,#3182ce,#63b3ed);border-radius:5px"></div></div><span style="font-size:11px;color:#718096">1.2%</span></div></td></tr>
+          <tr><td class="city-cell">湖南</td><td>10</td><td>10</td><td style="color:#38a169;font-weight:600">100%</td><td>4</td><td style="color:#dd6b20;font-weight:600">40.0%</td><td><div style="display:flex;align-items:center;gap:6px;justify-content:center"><div style="width:80px;height:10px;background:#edf2f7;border-radius:5px;overflow:hidden"><div style="width:15.2%;height:100%;background:linear-gradient(90deg,#3182ce,#63b3ed);border-radius:5px"></div></div><span style="font-size:11px;color:#718096">1.2%</span></div></td></tr>
+          <tr class="total-row"><td class="city-cell">其他</td><td>456</td><td>248</td><td>54.4%</td><td>96</td><td>38.7%</td><td><span style="font-size:11px;color:#718096">54.6%</span></td></tr>
+          <tr style="background:#1a365d;color:#fff;font-weight:600"><td class="city-cell" style="color:#fff">合计</td><td>835</td><td>541</td><td>64.8%</td><td>261</td><td>48.2%</td><td>100%</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 城市数据洞察 -->
+  <div class="insight">
+    <div class="it">💡 城市分布洞察</div>
+    <ul>
+      <li><strong>地域集中度高：</strong>Top 5省份（北京66、广东63、上海58、江苏39、浙江34）占总数据量的31.1%，签约量占47.5%，呈现明显的东部沿海集中态势</li>
+      <li><strong>上海出产效率最高：</strong>上海出产率65.5%，远超部门均值48.2%，长三角区域整体表现优异（上海65.5% > 江苏53.8% > 浙江47.1%）</li>
+      <li><strong>四川是中西部标杆：</strong>四川出产率75.8%居全国第一，成都作为西南核心城市贡献24家出产机构，辐射带动效果显著</li>
+      <li><strong>英格兰出产率93.3%：</strong>海外市场中英国15家签约、14家出产，出产率极高，但体量较小，可考虑拓展其他海外市场</li>
+      <li><strong>陕西、河南、山东出产率偏低：</strong>分别仅31.6%、33.3%、40.0%，低于部门均值，需重点关注这些地区的机构激活和赋能</li>
+      <li><strong>数据分布长尾效应明显：</strong>共涉及15个省份+海外，但前5省份贡献超30%数据，建议核心区域深耕、长尾区域精准拓展</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ==================== Tab2: 口碑管理层面 ==================== -->
+<div id="tab-kb" class="tab-content">
+
+  <div class="cards">
+    <div class="card"><div class="label">口碑数据量</div><div class="val">84</div><div class="detail">增量61 + 存量23</div></div>
+    <div class="card"><div class="label">口碑签约量</div><div class="val">80</div><div class="detail">增量57 + 存量23</div></div>
+    <div class="card green"><div class="label">口碑签约率</div><div class="val">95.2%</div><div class="detail">远超整体64.8%</div></div>
+    <div class="card orange"><div class="label">口碑出产率</div><div class="val">51.2%</div><div class="detail">44 / 86 合作中</div></div>
+  </div>
+
+  <div class="expand-bar"><div class="expand-header" onclick="toggleExp(this)"><span class="title">🏭 口碑出产明细</span><span class="arrow">▼</span></div>
+    <div class="expand-body"><div class="sub-grid">
+      <div class="sub-item"><div class="sl">口碑出产量</div><div class="sv">44</div><div class="sd">合作中86家口碑机构</div></div>
+      <div class="sub-item"><div class="sl">口碑出产率</div><div class="sv" style="color:#38a169">51.2%</div><div class="sd">高于整体48.2%</div></div>
+      <div class="sub-item"><div class="sl">口碑数据占总量比</div><div class="sv">10.1%</div><div class="sd">84 / 835</div></div>
+      <div class="sub-item"><div class="sl">口碑签约占总签约比</div><div class="sv">14.8%</div><div class="sd">80 / 541</div></div>
+    </div></div></div>
+
+  <div class="expand-bar"><div class="expand-header" onclick="toggleExp(this)"><span class="title">📝 口碑申请量 & 入学量 <span class="ph">数据待补充</span></span><span class="arrow">▼</span></div>
+    <div class="expand-body"><div class="sub-grid">
+      <div class="sub-item" style="background:#fffbeb"><div class="sl">口碑申请量</div><div class="sv" style="color:#a0aec0;font-size:14px">暂无数据</div></div>
+      <div class="sub-item" style="background:#fffbeb"><div class="sl">口碑平均申请量</div><div class="sv" style="color:#a0aec0;font-size:14px">暂无数据</div></div>
+      <div class="sub-item" style="background:#fffbeb"><div class="sl">口碑入学量</div><div class="sv" style="color:#a0aec0;font-size:14px">暂无数据</div></div>
+      <div class="sub-item" style="background:#fffbeb"><div class="sl">口碑平均入学量</div><div class="sv" style="color:#a0aec0;font-size:14px">暂无数据</div></div>
+    </div></div></div>
+
+  <!-- 口碑 x 销售 -->
+  <div class="section">
+    <div class="section-title">⭐ 口碑 x 销售个人（合作中）</div>
+    <div style="margin-bottom:12px;font-size:12px;color:#718096;font-weight:500">口碑合作中机构数</div>
+    <div class="progress-row"><div class="progress-name">刘济超</div><div class="progress-track"><div class="progress-fill fill-blue" style="width:31.4%">27家</div></div><div class="progress-stats">出产14 / 出产率51.9%</div></div>
+    <div class="progress-row"><div class="progress-name">李心雨</div><div class="progress-track"><div class="progress-fill fill-blue" style="width:31.4%">27家</div></div><div class="progress-stats">出产16 / 出产率59.3%</div></div>
+    <div class="progress-row"><div class="progress-name">彭凡珊</div><div class="progress-track"><div class="progress-fill fill-blue" style="width:32.6%">28家</div></div><div class="progress-stats">出产14 / 出产率50.0%</div></div>
+  </div>
+
+  <!-- 口碑 x 级别 -->
+  <div class="section">
+    <div class="section-title">📊 口碑 x 机构级别（合作中）</div>
+    <table class="data-table">
+      <thead><tr><th style="text-align:left">级别</th><th>合作中</th><th>占比</th><th>已出产</th><th>出产率</th></tr></thead>
+      <tbody>
+        <tr><td class="grade-cell">B</td><td>2</td><td>2.3%</td><td>0</td><td>0.0%</td></tr>
+        <tr><td class="grade-cell">C</td><td>3</td><td>3.5%</td><td>1</td><td>33.3%</td></tr>
+        <tr><td class="grade-cell">D</td><td>45</td><td>52.3%</td><td>23</td><td>51.1%</td></tr>
+        <tr><td class="grade-cell">E</td><td>21</td><td>24.4%</td><td>13</td><td style="color:#38a169;font-weight:600">61.9%</td></tr>
+        <tr><td class="grade-cell">F</td><td>15</td><td>17.4%</td><td>7</td><td>46.7%</td></tr>
+        <tr class="total-row"><td class="grade-cell">合计</td><td>86</td><td>100%</td><td>44</td><td>51.2%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="insight">
+    <div class="it">💡 口碑洞察</div>
+    <ul>
+      <li>口碑签约率(95.2%)是整体(64.8%)的1.47倍，口碑推荐是最优质获客渠道</li>
+      <li>口碑出产率(51.2%)高于整体(48.2%)，口碑机构签约意愿强、出产也更好</li>
+      <li>口碑数据仅占总数据10.1%，签约占总签约14.8%——口碑占比仍有很大提升空间</li>
+      <li>口碑E级机构出产率最高(61.9%)，说明口碑推荐的小型机构质量反而更好</li>
+      <li>三位销售口碑合作中数量接近(27/27/28)，但李心雨口碑出产率最高(59.3%)</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ==================== Tab3: 渠道供给层面 ==================== -->
+<div id="tab-ch" class="tab-content">
+
+  <div class="anon-box">
+    🔒 脱敏说明：渠道供给人员姓名已做脱敏处理，以编号A~E代替
+    <div class="desc">对应关系仅管理员可见</div>
+  </div>
+
+  <div class="cards">
+    <div class="card"><div class="label">渠道数据量</div><div class="val">590</div><div class="detail">占总数据量70.7%</div></div>
+    <div class="card"><div class="label">渠道签约量</div><div class="val">376</div><div class="detail">占总签约量69.5%</div></div>
+    <div class="card green"><div class="label">渠道签约率</div><div class="val">63.7%</div><div class="detail">376 / 590</div></div>
+    <div class="card orange"><div class="label">渠道出产率</div><div class="val">44.9%</div><div class="detail">189 / 421 合作中</div></div>
+  </div>
+
+  <div class="expand-bar"><div class="expand-header open" onclick="toggleExp(this)"><span class="title">👤 各渠道人员明细</span><span class="arrow">▼</span></div>
+    <div class="expand-body open">
+      <table class="data-table" style="margin-top:0">
+        <thead><tr><th>渠道</th><th>数据量</th><th>签约量</th><th>签约率</th><th>合作中</th><th>出产量</th><th>出产率</th></tr></thead>
+        <tbody>
+          <tr><td><strong>渠道A</strong></td><td>266</td><td>147</td><td>55.3%</td><td>160</td><td>71</td><td>44.4%</td></tr>
+          <tr><td><strong>渠道B</strong></td><td>255</td><td>163</td><td>63.9%</td><td>178</td><td>84</td><td>47.2%</td></tr>
+          <tr><td><strong>渠道C</strong></td><td>33</td><td>33</td><td style="color:#38a169;font-weight:600">100%</td><td>43</td><td>15</td><td>34.9%</td></tr>
+          <tr><td><strong>渠道D</strong></td><td>26</td><td>26</td><td style="color:#38a169;font-weight:600">100%</td><td>32</td><td>14</td><td>43.8%</td></tr>
+          <tr><td><strong>渠道E</strong></td><td>10</td><td>7</td><td>70.0%</td><td>8</td><td>5</td><td style="color:#38a169;font-weight:600">62.5%</td></tr>
+          <tr class="total-row"><td>合计</td><td>590</td><td>376</td><td>63.7%</td><td>421</td><td>189</td><td>44.9%</td></tr>
+        </tbody>
+      </table>
+    </div></div>
+
+  <div class="expand-bar"><div class="expand-header" onclick="toggleExp(this)"><span class="title">📝 渠道申请量 & 入学量 <span class="ph">数据待补充</span></span><span class="arrow">▼</span></div>
+    <div class="expand-body"><div class="sub-grid">
+      <div class="sub-item" style="background:#fffbeb"><div class="sl">渠道申请量</div><div class="sv" style="color:#a0aec0;font-size:14px">暂无数据</div></div>
+      <div class="sub-item" style="background:#fffbeb"><div class="sl">渠道平均申请量</div><div class="sv" style="color:#a0aec0;font-size:14px">暂无数据</div></div>
+      <div class="sub-item" style="background:#fffbeb"><div class="sl">渠道入学量</div><div class="sv" style="color:#a0aec0;font-size:14px">暂无数据</div></div>
+      <div class="sub-item" style="background:#fffbeb"><div class="sl">渠道平均入学量</div><div class="sv" style="color:#a0aec0;font-size:14px">暂无数据</div></div>
+    </div></div></div>
+
+  <!-- 渠道 x 销售 -->
+  <div class="section">
+    <div class="section-title">🔗 渠道 x 销售个人（合作中）</div>
+    <div style="margin-bottom:12px;font-size:12px;color:#718096;font-weight:500">渠道合作中机构数</div>
+    <div class="progress-row"><div class="progress-name">刘济超</div><div class="progress-track"><div class="progress-fill fill-blue" style="width:47.3%">199家</div></div><div class="progress-stats">出产102 / 出产率51.3%</div></div>
+    <div class="progress-row"><div class="progress-name">李心雨</div><div class="progress-track"><div class="progress-fill fill-purple" style="width:42.8%">180家</div></div><div class="progress-stats">出产72 / 出产率40.0%</div></div>
+    <div class="progress-row"><div class="progress-name">彭凡珊</div><div class="progress-track"><div class="progress-fill fill-green" style="width:8.8%">37家</div></div><div class="progress-stats">出产15 / 出产率40.5%</div></div>
+  </div>
+
+  <!-- 渠道 x 级别 -->
+  <div class="section">
+    <div class="section-title">📊 渠道 x 机构级别（合作中）</div>
+    <table class="data-table">
+      <thead><tr><th style="text-align:left">级别</th><th>合作中</th><th>占比</th><th>已出产</th><th>出产率</th></tr></thead>
+      <tbody>
+        <tr><td class="grade-cell">A+</td><td>1</td><td>0.2%</td><td>1</td><td style="color:#38a169;font-weight:600">100%</td></tr>
+        <tr><td class="grade-cell">C</td><td>8</td><td>1.9%</td><td>6</td><td style="color:#38a169;font-weight:600">75.0%</td></tr>
+        <tr><td class="grade-cell">D</td><td>326</td><td>77.4%</td><td>145</td><td>44.5%</td></tr>
+        <tr><td class="grade-cell">E</td><td>72</td><td>17.1%</td><td>30</td><td>41.7%</td></tr>
+        <tr><td class="grade-cell">F</td><td>14</td><td>3.3%</td><td>7</td><td>50.0%</td></tr>
+        <tr class="total-row"><td class="grade-cell">合计</td><td>421</td><td>100%</td><td>189</td><td>44.9%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="insight">
+    <div class="it">💡 渠道洞察</div>
+    <ul>
+      <li>渠道供给占总数据70.7%，是部门最核心的数据来源</li>
+      <li>渠道C、D签约率100%但均为存量数据(8月31日前)，说明早期渠道数据精准度极高</li>
+      <li>渠道A(266条)和B(255条)贡献了88%的渠道数据，但签约率(55.3%/63.9%)低于渠道均值</li>
+      <li>刘济超的渠道机构出产率(51.3%)远高于李心雨(40.0%)和彭凡珊(40.5%)，渠道机构转化能力突出</li>
+      <li>渠道出产率(44.9%)略低于整体(48.2%)，需关注渠道机构的出产激活</li>
+    </ul>
+  </div>
+</div>
+
+</div>
+
+<script>
+function switchTab(id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  const map={data:0,kb:1,ch:2};
+  document.querySelectorAll('.tab')[map[id]].classList.add('active');
+  document.getElementById('tab-'+id).classList.add('active');
+  // 延迟渲染图表
+  if(id==='data' && !window._cityChartsRendered) setTimeout(renderCityCharts, 100);
+}
+function toggleExp(el){
+  el.classList.toggle('open');
+  el.nextElementSibling.classList.toggle('open');
+}
+
+// 城市图表渲染
+function renderCityCharts(){
+  window._cityChartsRendered = true;
+
+  const labels = ['北京','广东','上海','江苏','浙江','四川','陕西','重庆','英格兰','湖北'];
+  const dataCounts = [66,63,58,39,34,33,19,18,15,15];
+  const signedCounts = [66,63,58,39,34,33,19,18,15,15];
+  const prodCounts = [35,29,38,21,16,25,6,11,14,10];
+
+  const commonOpts = {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { font: { size: 11 } } },
+      y: { beginAtZero: true, ticks: { font: { size: 10 } } }
+    }
+  };
+
+  // 数据分布 - 蓝色
+  new Chart(document.getElementById('cityDataChart'), {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: dataCounts,
+        backgroundColor: 'rgba(49,130,206,0.7)',
+        borderRadius: 6
+      }]
+    },
+    options: { ...commonOpts, scales: { ...commonOpts.scales, y: { ...commonOpts.scales.y, title: { display: true, text: '机构数', font: { size: 10 } } } } }
+  });
+
+  // 签约分布 - 绿色
+  new Chart(document.getElementById('citySignedChart'), {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: signedCounts,
+        backgroundColor: 'rgba(56,161,105,0.7)',
+        borderRadius: 6
+      }]
+    },
+    options: { ...commonOpts, scales: { ...commonOpts.scales, y: { ...commonOpts.scales.y, title: { display: true, text: '机构数', font: { size: 10 } } } } }
+  });
+
+  // 出产分布 - 橙色
+  new Chart(document.getElementById('cityProducedChart'), {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: prodCounts,
+        backgroundColor: 'rgba(221,107,32,0.7)',
+        borderRadius: 6
+      }]
+    },
+    options: { ...commonOpts, scales: { ...commonOpts.scales, y: { ...commonOpts.scales.y, title: { display: true, text: '机构数', font: { size: 10 } } } } }
+  });
+}
+
+// 初始化时渲染城市图表（因为data tab默认active）
+window.addEventListener('load', () => setTimeout(renderCityCharts, 200));
+</script>
+
+</body>
+</html>

@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据管理专区 - 部门维度分析 Demo</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; color: #1a1a2e; }
+.header { background: linear-gradient(135deg, #1a365d 0%, #2b6cb0 100%); color: white; padding: 24px 32px; }
+.header h1 { font-size: 22px; font-weight: 600; }
+.header .subtitle { font-size: 13px; opacity: 0.8; margin-top: 4px; }
+.container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+/* 三大层面Tab */
+.layer-tabs { display: flex; gap: 0; margin-bottom: 20px; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.layer-tab { flex: 1; padding: 14px 20px; text-align: center; cursor: pointer; font-size: 14px; font-weight: 500; color: #666; border-bottom: 3px solid transparent; transition: all 0.2s; }
+.layer-tab:hover { background: #f7fafc; color: #2b6cb0; }
+.layer-tab.active { color: #2b6cb0; border-bottom-color: #2b6cb0; background: #ebf4ff; }
+.layer-tab .tab-icon { font-size: 18px; display: block; margin-bottom: 4px; }
+
+/* 层面内容 */
+.layer-content { display: none; }
+.layer-content.active { display: block; }
+
+/* 数据项卡片 */
+.metric-group { background: white; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.metric-group-title { font-size: 15px; font-weight: 600; color: #1a365d; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; gap: 8px; }
+.metric-group-title .icon { font-size: 18px; }
+
+/* 指标卡片 */
+.metrics-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.metric-card { background: #f7fafc; border-radius: 10px; padding: 16px; border: 1px solid #e2e8f0; }
+.metric-card .label { font-size: 12px; color: #718096; margin-bottom: 6px; }
+.metric-card .value { font-size: 24px; font-weight: 700; color: #1a365d; }
+.metric-card .sub { font-size: 11px; color: #a0aec0; margin-top: 4px; }
+.metric-card.highlight { background: linear-gradient(135deg, #ebf4ff, #e6fffa); border-color: #90cdf4; }
+.metric-card.warn { background: linear-gradient(135deg, #fffbeb, #fef3c7); border-color: #f6e05e; }
+
+/* 二级展开菜单 */
+.expand-section { margin-top: 12px; }
+.expand-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #f7fafc; border-radius: 8px; cursor: pointer; border: 1px solid #e2e8f0; transition: all 0.2s; }
+.expand-header:hover { background: #edf2f7; }
+.expand-header .title { font-size: 13px; font-weight: 500; color: #4a5568; }
+.expand-header .arrow { font-size: 12px; color: #a0aec0; transition: transform 0.2s; }
+.expand-header.open .arrow { transform: rotate(180deg); }
+.expand-body { display: none; padding: 12px; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 8px 8px; background: white; }
+.expand-body.open { display: block; }
+.expand-body .sub-metrics { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.sub-metric { padding: 10px 12px; background: #f7fafc; border-radius: 6px; }
+.sub-metric .sub-label { font-size: 11px; color: #718096; }
+.sub-metric .sub-value { font-size: 18px; font-weight: 600; color: #2d3748; margin-top: 2px; }
+.sub-metric .sub-detail { font-size: 10px; color: #a0aec0; margin-top: 2px; }
+
+/* 渠道人员表格 */
+.channel-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
+.channel-table th { background: #1a365d; color: white; padding: 10px 12px; text-align: center; font-weight: 500; }
+.channel-table td { padding: 9px 12px; text-align: center; border-bottom: 1px solid #e2e8f0; }
+.channel-table tr:nth-child(even) { background: #f7fafc; }
+.channel-table tr:hover { background: #edf2f7; }
+.channel-table .total-row { background: #ebf4ff !important; font-weight: 600; }
+
+/* 进度条 */
+.progress-bar { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-top: 6px; }
+.progress-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
+.fill-blue { background: linear-gradient(90deg, #3182ce, #63b3ed); }
+.fill-green { background: linear-gradient(90deg, #38a169, #68d391); }
+.fill-orange { background: linear-gradient(90deg, #dd6b20, #f6ad55); }
+.fill-purple { background: linear-gradient(90deg, #805ad5, #b794f4); }
+
+/* 待补充标记 */
+.placeholder-tag { display: inline-block; background: #fef3c7; color: #92400e; font-size: 10px; padding: 2px 8px; border-radius: 10px; margin-left: 8px; }
+
+/* 数据洞察 */
+.insight-box { background: linear-gradient(135deg, #f0fff4, #ebf8ff); border: 1px solid #9ae6b4; border-radius: 10px; padding: 16px; margin-top: 16px; }
+.insight-box .insight-title { font-size: 13px; font-weight: 600; color: #276749; margin-bottom: 10px; }
+.insight-box ul { list-style: none; }
+.insight-box li { font-size: 12px; color: #4a5568; padding: 4px 0; padding-left: 16px; position: relative; }
+.insight-box li::before { content: "•"; position: absolute; left: 0; color: #38a169; font-weight: bold; }
+
+/* 脱敏提示 */
+.anon-note { font-size: 11px; color: #a0aec0; font-style: italic; margin-top: 4px; }
+
+.chart-container { max-width: 500px; margin: 16px auto; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📊 数据管理专区 · 部门维度分析</h1>
+  <div class="subtitle">Demo 预览 · 数据截至 2026年7月31日</div>
+</div>
+
+<div class="container">
+
+<!-- 三大层面Tab -->
+<div class="layer-tabs">
+  <div class="layer-tab active" onclick="switchLayer('data')">
+    <span class="tab-icon">📋</span>
+    数据管理层面
+  </div>
+  <div class="layer-tab" onclick="switchLayer('koubei')">
+    <span class="tab-icon">⭐</span>
+    口碑管理层面
+  </div>
+  <div class="layer-tab" onclick="switchLayer('channel')">
+    <span class="tab-icon">🔗</span>
+    渠道供给层面
+  </div>
+</div>
+
+<!-- ==================== 一、数据管理层面 ==================== -->
+<div id="layer-data" class="layer-content active">
+
+  <!-- 数据量 -->
+  <div class="metric-group">
+    <div class="metric-group-title"><span class="icon">📁</span> 数据量</div>
+    <div class="metrics-row">
+      <div class="metric-card highlight">
+        <div class="label">总数据量</div>
+        <div class="value">835</div>
+      </div>
+    </div>
+    <div class="expand-section">
+      <div class="expand-header" onclick="toggleExpand(this)">
+        <span class="title">📂 查看二级明细</span>
+        <span class="arrow">▼</span>
+      </div>
+      <div class="expand-body">
+        <div class="sub-metrics">
+          <div class="sub-metric">
+            <div class="sub-label">8月31日之前数据</div>
+            <div class="sub-value">360</div>
+            <div class="sub-detail">存量数据</div>
+          </div>
+          <div class="sub-metric">
+            <div class="sub-label">9月1日及之后的数据</div>
+            <div class="sub-value">475</div>
+            <div class="sub-detail">当年度增量数据</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 签约量 -->
+  <div class="metric-group">
+    <div class="metric-group-title"><span class="icon">🤝</span> 签约量</div>
+    <div class="metrics-row">
+      <div class="metric-card highlight">
+        <div class="label">总签约量</div>
+        <div class="value">541</div>
+      </div>
+    </div>
+    <div class="expand-section">
+      <div class="expand-header" onclick="toggleExpand(this)">
+        <span class="title">📂 查看二级明细</span>
+        <span class="arrow">▼</span>
+      </div>
+      <div class="expand-body">
+        <div class="sub-metrics">
+          <div class="sub-metric">
+            <div class="sub-label">8月31日之前签约量</div>
+            <div class="sub-value">300</div>
+            <div class="sub-detail">存量签约</div>
+          </div>
+          <div class="sub-metric">
+            <div class="sub-label">9月1日及之后签约量</div>
+            <div class="sub-value">241</div>
+            <div class="sub-detail">当年度增量签约</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 总签约率 -->
+  <div class="metric-group">
+    <div class="metric-group-title"><span class="icon">📈</span> 总签约率</div>
+    <div class="metrics-row">
+      <div class="metric-card highlight">
+        <div class="label">总签约率</div>
+        <div class="value">64.8%</div>
+        <div class="sub">541 / 835</div>
+      </div>
+    </div>
+    <div class="expand-section">
+      <div class="expand-header" onclick="toggleExpand(this)">
+        <span class="title">📂 查看二级明细</span>
+        <span class="arrow">▼</span>
+      </div>
+      <div class="expand-body">
+        <div class="sub-metrics">
+          <div class="sub-metric">
+            <div class="sub-label">8月31日之前数据签约率</div>
+            <div class="sub-value" style="color:#38a169">83.3%</div>
+            <div class="sub-detail">300 / 360</div>
+            <div class="progress-bar"><div class="progress-fill fill-green" style="width:83.3%"></div></div>
+          </div>
+          <div class="sub-metric">
+            <div class="sub-label">当年度数据签约率</div>
+            <div class="sub-value" style="color:#dd6b20">50.7%</div>
+            <div class="sub-detail">241 / 475</div>
+            <div class="progress-bar"><div class="progress-fill fill-orange" style="width:50.7%"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 总出产量 -->
+  <div class="metric-group">
+    <div class="metric-group-title"><span class="icon">🏭</span> 总出产量</div>
+    <div class="metrics-row">
+      <div class="metric-card highlight">
+        <div class="label">总出产量（合作中已出产）</div>
+        <div class="value">261</div>
+        <div class="sub">合作中机构 541 家中</div>
+      </div>
+    </div>
+    <div class="expand-section">
+      <div class="expand-header" onclick="toggleExpand(this)">
+        <span class="title">📂 查看二级明细</span>
+        <span class="arrow">▼</span>
+      </div>
+      <div class="expand-body">
+        <div class="sub-metrics">
+          <div class="sub-metric">
+            <div class="sub-label">以往月度出产量</div>
+            <div class="sub-value">259</div>
+            <div class="sub-detail">2026年7月之前</div>
+          </div>
+          <div class="sub-metric">
+            <div class="sub-label">当月出产量</div>
+            <div class="sub-value">2</div>
+            <div class="sub-detail">2026年7月</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 出产率 -->
+  <div class="metric-group">
+    <div class="metric-group-title"><span class="icon">⚡</span> 出产率</div>
+    <div class="metrics-row">
+      <div class="metric-card">
+        <div class="label">出产率</div>
+        <div class="value" style="color:#dd6b20">48.2%</div>
+        <div class="sub">261 / 541 合作中机构</div>
+        <div class="progress-bar"><div class="progress-fill fill-orange" style="width:48.2%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 申请量 / 入学量 -->
+  <div class="metric-group">
+    <div class="metric-group-title"><span class="icon">📝</span> 申请量 & 入学量 <span class="placeholder-tag">数据待补充</span></div>
+    <div class="metrics-row">
+      <div class="metric-card warn">
+        <div class="label">申请量</div>
+        <div class="value" style="color:#a0aec0;font-size:16px">暂无数据</div>
+        <div class="sub">需补充各机构实际申请学生数</div>
+      </div>
+      <div class="metric-card warn">
+        <div class="label">平均申请量</div>
+        <div class="value" style="color:#a0aec0;font-size:16px">暂无数据</div>
+        <div class="sub">需补充后计算</div>
+      </div>
+      <div class="metric-card warn">
+        <div class="label">入学量</div>
+        <div class="value" style="color:#a0aec0;font-size:16px">暂无数据</div>
+        <div class="sub">需补充各机构实际入学学生数</div>
+      </div>
+      <div class="metric-card warn">
+        <div class="label">平均入学量</div>
+        <div class="value" style="color:#a0aec0;font-size:16px">暂无数据</div>
+        <div class="sub">需补充后计算</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 数据洞察 -->
+  <div class="insight-box">
+    <div class="insight-title">💡 数据洞察</div>
+    <ul>
+      <li>存量数据签约率(83.3%)显著高于当年度(50.7%)，说明增量数据中"尚未合作"比例较大，仍有提升空间</li>
+      <li>出产率48.2%偏低，合作中机构有一半尚未出产，需重点关注未出产机构的激活</li>
+      <li>2025年9-11月是出产高峰期（月产32-43家），符合业务年度1阶段的申请高峰特征</li>
+      <li>当月(7月)仅出产2家，处于业务淡季(3阶段)，属正常季节性波动</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ==================== 二、口碑管理层面 ==================== -->
+<div id="layer-koubei" class="layer-content">
+
+  <div class="metric-group">
+    <div class="metric-group-title"><span class="icon">⭐</span> 口碑数据总览</div>
+    <div class="metrics-row">
+      <div class="metric-card highlight">
+        <div class="label">口碑数据量</div>
+        <div class="value">84</div>
+        <div class="sub">增量61 + 存量23</div>
+      </div>
+      <div class="metric-card highlight">
+        <div class="label">口碑签约量</div>
+        <div class="value">80</div>
+        <div class="sub">增量57 + 存量23</div>
+      </div>
+      <div class="metric-card highlight">
+        <div class="label">口碑签约率</div>
+        <div class="value" style="color:#38a169">95.2%</div>
+        <div class="sub">远超整体签约率64.8%</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="metric-group">
+    <div class="metric-group-title"><span class="icon">🏭</span> 口碑出产</div>
+    <div class="metrics-row">
+      <div class="metric-card">
+        <div class="label">口碑出产量</div>
+        <div class="value">44</div>
+        <div class="sub">合作中口碑机构86家中</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">口碑出产率</div>
+        <div class="value" style="color:#38a169">51.2%</div>
+        <div class="sub">高于整体出产率48.2%</div>
+        <div class="progress-bar"><div class="progress-fill fill-green" style="width:51.2%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="metric-group">
+    <div class="metric-group-title"><span class="icon">📝</span> 口碑申请量 & 入学量 <span class="placeholder-tag">数据待补充</span></div>
+    <div class="metrics-row">
+      <div class="metric-card warn">
+        <div class="label">口碑申请量</div>
+        <div class="value" style="color:#a0aec0;font-size:16px">暂无数据</div>
+      </div>
+      <div class="metric-card warn">
+        <div class="label">口碑平均申请量</div>
+        <div class="value" style="color:#a0aec0;font-size:16px">暂无数据</div>
+      </div>
+      <div class="metric-card warn">
+        <div class="label">口碑入学量</div>
+        <div class="value" style="color:#a0aec0;font-size:16px">暂无数据</div>
+      </div>
+      <div class="metric-card warn">
+        <div class="label">口碑平均入学量</div>
+        <div class="value" style="color:#a0aec0;font-size:16px">暂无数据</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 口碑 vs 非口碑对比 -->
+  <div class="metric-group">
+    <div class="metric-group-title"><span class="icon">📊</span> 口碑 vs 非口碑对比</div>
+    <div class="chart-container">
+      <canvas id="koubeiCompareChart"></canvas>
+    </div>
+  </div>
+
+  <div class="insight-box">
+    <div class="insight-title">💡 口碑数据洞察</div>
+    <ul>
+      <li>口碑签约率(95.2%)是非口碑渠道(57.1%)的1.67倍，口碑推荐是最优质的获客渠道</li>
+      <li>口碑出产率(51.2%)也高于整体(48.2%)，口碑机构不仅签约意愿强，出产生意也更好</li>
+      <li>合作中口碑机构86家，占合作中总量(541)的15.9%，口碑占比仍有提升空间</li>
+      <li>建议加大口碑转介绍激励力度，提升口碑数据在总数据中的占比</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ==================== 三、渠道供给层面 ==================== -->
+<div id="layer-channel" class="layer-content">
+
+  <div style="background:#ebf4ff;border:1px solid #90cdf4;border-radius:8px;padding:12px 16px;margin-bottom:16px;">
+    <div style="font-size:12px;color:#2b6cb0;font-weight:500;">🔒 脱敏说明</div>
+    <div style="font-size:11px;color:#4a5568;margin-top:4px;">渠道供给人员姓名已做脱敏处理，以编号 A~E 代替。对应关系仅管理员可见。</div>
+  </div>
+
+  <!-- 渠道汇总 -->
+  <div class="metric-group">
+    <div class="metric-group-title"><span class="icon">🔗</span> 渠道供给汇总</div>
+    <div class="metrics-row">
+      <div class="metric-card highlight">
+        <div class="label">渠道总数据量</div>
+        <div class="value">590</div>
+        <div class="sub">占总数据量70.7%</div>
+      </div>
+      <div class="metric-card highlight">
+        <div class="label">渠道总签约量</div>
+        <div class="value">376</div>
+        <div class="sub">占总签约量69.5%</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">渠道总签约率</div>
+        <div class="value">63.7%</div>
+        <div class="sub">376 / 590</div>
+        <div class="progress-bar"><div class="progress-fill fill-blue" style="width:63.7%"></div></div>
+      </div>
+      <div class="metric-card">
+        <div class="label">渠道出产量</div>
+        <div class="value">189</div>
+        <div class="sub">合作中421家中</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">渠道出产率</div>
+        <div class="value" style="color:#dd6b20">44.9%</div>
+        <div class="sub">略低于整体48.2%</div>
+        <div class="progress-bar"><div class="progress-fill fill-orange" style="width:44.9%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 各渠道人员明细 -->
+  <div class="metric-group">
+    <div class="metric-group-title"><span class="icon">👤</span> 各渠道人员明细（脱敏）</div>
+    <table class="channel-table">
+      <thead>
+        <tr>
+          <th>渠道编号</th>
+          <th>数据量</th>
+          <th>签约量</th>
+          <th>签约率</th>
+          <th>出产量</th>
+          <th>出产率</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>渠道A</strong><br><span class="anon-note">数据量最大</span></td>
+          <td>266</td>
+          <td>147</td>
+          <td>55.3%</td>
+          <td>71</td>
+          <td>44.4%</td>
+        </tr>
+        <tr>
+          <td><strong>渠道B</strong><br><span class="anon-note">含主管期数据</span></td>
+          <td>255</td>
+          <td>163</td>
+          <td>63.9%</td>
+          <td>84</td>
+          <td>47.2%</td>
+        </tr>
+        <tr>
+          <td><strong>渠道C</strong><br><span class="anon-note">存量为主</span></td>
+          <td>33</td>
+          <td>33</td>
+          <td>100%</td>
+          <td>15</td>
+          <td>34.9%</td>
+        </tr>
+        <tr>
+          <td><strong>渠道D</strong><br><span class="anon-note">存量为主</span></td>
+          <td>26</td>
+          <td>26</td>
+          <td>100%</td>
+          <td>14</td>
+          <td>43.8%</td>
+        </tr>
+        <tr>
+          <td><strong>渠道E</strong><br><span class="anon-note">增量新增</span></td>
+          <td>10</td>
+          <td>7</td>
+          <td>70.0%</td>
+          <td>5</td>
+          <td>62.5%</td>
+        </tr>
+        <tr class="total-row">
+          <td>合计</td>
+          <td>590</td>
+          <td>376</td>
+          <td>63.7%</td>
+          <td>189</td>
+          <td>44.9%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 渠道签约率对比图 -->
+  <div class="metric-group">
+    <div class="metric-group-title"><span class="icon">📊</span> 渠道签约率 & 出产率对比</div>
+    <div class="chart-container">
+      <canvas id="channelCompareChart"></canvas>
+    </div>
+  </div>
+
+  <div class="metric-group">
+    <div class="metric-group-title"><span class="icon">📝</span> 渠道申请量 & 入学量 <span class="placeholder-tag">数据待补充</span></div>
+    <div class="metrics-row">
+      <div class="metric-card warn">
+        <div class="label">渠道申请量</div>
+        <div class="value" style="color:#a0aec0;font-size:16px">暂无数据</div>
+      </div>
+      <div class="metric-card warn">
+        <div class="label">渠道平均申请量</div>
+        <div class="value" style="color:#a0aec0;font-size:16px">暂无数据</div>
+      </div>
+      <div class="metric-card warn">
+        <div class="label">渠道入学量</div>
+        <div class="value" style="color:#a0aec0;font-size:16px">暂无数据</div>
+      </div>
+      <div class="metric-card warn">
+        <div class="label">渠道平均入学量</div>
+        <div class="value" style="color:#a0aec0;font-size:16px">暂无数据</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="insight-box">
+    <div class="insight-title">💡 渠道数据洞察</div>
+    <ul>
+      <li>渠道供给占总数据量70.7%(590/835)，是部门最重要的数据来源</li>
+      <li>渠道C和D签约率100%，但均为存量数据（8月31日前），说明早期渠道精准度高</li>
+      <li>渠道B(255条)和渠道A(266条)贡献了绝大部分数据，但签约率分别为63.9%和55.3%，低于存量渠道</li>
+      <li>渠道E虽然数据量少(10条)，但出产率最高(62.5%)，数据质量较好</li>
+      <li>渠道整体出产率(44.9%)略低于部门整体(48.2%)，需关注渠道机构的出产激活</li>
+    </ul>
+  </div>
+</div>
+
+</div>
+
+<script>
+function switchLayer(layer) {
+  document.querySelectorAll('.layer-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.layer-content').forEach(c => c.classList.remove('active'));
+  
+  const map = { data: 0, koubei: 1, channel: 2 };
+  document.querySelectorAll('.layer-tab')[map[layer]].classList.add('active');
+  document.getElementById('layer-' + layer).classList.add('active');
+  
+  // 触发图表渲染
+  if (layer === 'koubei' && !window._koubeiChartRendered) renderKoubeiChart();
+  if (layer === 'channel' && !window._channelChartRendered) renderChannelChart();
+}
+
+function toggleExpand(el) {
+  el.classList.toggle('open');
+  const body = el.nextElementSibling;
+  body.classList.toggle('open');
+}
+
+// 口碑对比图
+function renderKoubeiChart() {
+  window._koubeiChartRendered = true;
+  const ctx = document.getElementById('koubeiCompareChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['签约率', '出产率'],
+      datasets: [
+        {
+          label: '口碑渠道',
+          data: [95.2, 51.2],
+          backgroundColor: 'rgba(56, 161, 105, 0.7)',
+          borderRadius: 6
+        },
+        {
+          label: '非口碑渠道',
+          data: [57.1, 47.4],
+          backgroundColor: 'rgba(160, 174, 192, 0.7)',
+          borderRadius: 6
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom' }
+      },
+      scales: {
+        y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' } }
+      }
+    }
+  });
+}
+
+// 渠道对比图
+function renderChannelChart() {
+  window._channelChartRendered = true;
+  const ctx = document.getElementById('channelCompareChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['渠道A', '渠道B', '渠道C', '渠道D', '渠道E'],
+      datasets: [
+        {
+          label: '签约率',
+          data: [55.3, 63.9, 100, 100, 70.0],
+          backgroundColor: 'rgba(49, 130, 206, 0.7)',
+          borderRadius: 6
+        },
+        {
+          label: '出产率',
+          data: [44.4, 47.2, 34.9, 43.8, 62.5],
+          backgroundColor: 'rgba(221, 107, 32, 0.7)',
+          borderRadius: 6
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom' }
+      },
+      scales: {
+        y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' } }
+      }
+    }
+  });
+}
+</script>
+
+</body>
+</html>

@@ -7709,6 +7709,11 @@ function switchAdminSection(sectionName) {
     } else if (sectionName === 'share-mgmt') {
         document.getElementById('adminSectionShareMgmt').classList.add('active');
         loadShareLinks();
+    } else if (sectionName === 'data-mgmt') {
+        document.getElementById('adminSectionDataMgmt').classList.add('active');
+        if (typeof onDataMgmtTabActivated === 'function') {
+            onDataMgmtTabActivated();
+        }
     }
 }
 

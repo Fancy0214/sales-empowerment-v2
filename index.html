@@ -1490,6 +1490,9 @@
                     <button class="admin-section-tab" data-section="share-mgmt" onclick="switchAdminSection('share-mgmt')">
                         <i class="fas fa-share-alt"></i> 分享管理
                     </button>
+                    <button class="admin-section-tab" data-section="data-mgmt" onclick="switchAdminSection('data-mgmt')">
+                        <i class="fas fa-database"></i> 业务数据管理
+                    </button>
                 </div>
 
                 <!-- 竞品信息管理区 -->
@@ -1550,6 +1553,105 @@
                         </div>
                         <div id="shareLinksList">
                             <p class="hint" style="text-align:center;padding:40px 0;">加载中...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 业务数据管理区 -->
+                <div class="admin-section-content" id="adminSectionDataMgmt">
+                    <!-- 统计概览 -->
+                    <div class="admin-stats" id="dataMgmtStats">
+                        <div class="stat-card" style="border-left:4px solid #6366f1;">
+                            <div class="stat-num" id="dmStatTotal">0</div>
+                            <div class="stat-label">总记录数</div>
+                        </div>
+                        <div class="stat-card stat-approved">
+                            <div class="stat-num" id="dmStatContracted">0</div>
+                            <div class="stat-label">合作中</div>
+                        </div>
+                        <div class="stat-card" style="border-left:4px solid #f59e0b;">
+                            <div class="stat-num" id="dmStatProduced">0</div>
+                            <div class="stat-label">已出产</div>
+                        </div>
+                        <div class="stat-card" style="border-left:4px solid #10b981;">
+                            <div class="stat-num" id="dmStatCurrentYear">0</div>
+                            <div class="stat-label">当年度新增</div>
+                        </div>
+                    </div>
+
+                    <!-- 操作区 -->
+                    <div class="card">
+                        <div class="card-header-with-actions">
+                            <h3><i class="fas fa-database"></i> 业务数据管理</h3>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                                <button class="btn btn-primary btn-sm" onclick="openDataMgmtModal()"><i class="fas fa-plus"></i> 新增记录</button>
+                                <button class="btn btn-secondary btn-sm" onclick="openCsvImportModal()"><i class="fas fa-file-import"></i> 批量导入</button>
+                                <button class="btn btn-outline btn-sm" onclick="exportAllData()"><i class="fas fa-file-export"></i> 导出全部</button>
+                                <button class="btn btn-outline btn-sm" onclick="loadInstitutionData()"><i class="fas fa-sync-alt"></i> 刷新</button>
+                            </div>
+                        </div>
+
+                        <!-- 搜索筛选栏 -->
+                        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;padding:12px;background:#f8f9fa;border-radius:8px;">
+                            <div style="flex:1;min-width:150px;">
+                                <input type="text" id="dmSearchInput" placeholder="搜索机构名称..." style="width:100%;padding:8px 12px;border:1px solid #e2e8f0;border-radius:6px;font-size:14px;" oninput="filterDataMgmtTable()">
+                            </div>
+                            <div style="min-width:120px;">
+                                <select id="dmFilterSales" style="width:100%;padding:8px 12px;border:1px solid #e2e8f0;border-radius:6px;font-size:14px;" onchange="filterDataMgmtTable()">
+                                    <option value="">全部销售</option>
+                                    <option value="销售D">销售D</option>
+                                    <option value="销售M">销售M</option>
+                                    <option value="销售F">销售F</option>
+                                </select>
+                            </div>
+                            <div style="min-width:120px;">
+                                <select id="dmFilterLevel" style="width:100%;padding:8px 12px;border:1px solid #e2e8f0;border-radius:6px;font-size:14px;" onchange="filterDataMgmtTable()">
+                                    <option value="">全部级别</option>
+                                    <option value="A+">A+</option>
+                                    <option value="B">B</option>
+                                    <option value="C">C</option>
+                                    <option value="D">D</option>
+                                    <option value="E">E</option>
+                                    <option value="F">F</option>
+                                </select>
+                            </div>
+                            <div style="min-width:120px;">
+                                <select id="dmFilterStatus" style="width:100%;padding:8px 12px;border:1px solid #e2e8f0;border-radius:6px;font-size:14px;" onchange="filterDataMgmtTable()">
+                                    <option value="">全部状态</option>
+                                    <option value="合作中">合作中</option>
+                                    <option value="尚未合作">尚未合作</option>
+                                    <option value="已作废">已作废</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- 数据表格 -->
+                        <div style="overflow-x:auto;">
+                            <table class="admin-table" id="dataMgmtTable" style="width:100%;border-collapse:collapse;">
+                                <thead>
+                                    <tr style="background:#f1f5f9;text-align:left;">
+                                        <th style="padding:10px 12px;font-weight:600;font-size:13px;color:#475569;">机构名称</th>
+                                        <th style="padding:10px 12px;font-weight:600;font-size:13px;color:#475569;">级别</th>
+                                        <th style="padding:10px 12px;font-weight:600;font-size:13px;color:#475569;">销售</th>
+                                        <th style="padding:10px 12px;font-weight:600;font-size:13px;color:#475569;">合作状态</th>
+                                        <th style="padding:10px 12px;font-weight:600;font-size:13px;color:#475569;">出产状态</th>
+                                        <th style="padding:10px 12px;font-weight:600;font-size:13px;color:#475569;">来源</th>
+                                        <th style="padding:10px 12px;font-weight:600;font-size:13px;color:#475569;">城市</th>
+                                        <th style="padding:10px 12px;font-weight:600;font-size:13px;color:#475569;">更新时间</th>
+                                        <th style="padding:10px 12px;font-weight:600;font-size:13px;color:#475569;">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dataMgmtTableBody">
+                                    <tr><td colspan="9" style="text-align:center;padding:40px;color:#94a3b8;">点击刷新加载数据</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- 分页 -->
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;padding:8px 0;">
+                            <span id="dmPaginationInfo" style="font-size:13px;color:#64748b;">共 0 条</span>
+                            <div style="display:flex;gap:4px;" id="dmPaginationBtns">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2021,9 +2123,549 @@
         </div>
     </div>
 
+
+    <!-- 业务数据新增/编辑Modal -->
+    <div class="modal" id="dataMgmtModal">
+        <div class="modal-content modal-lg">
+            <span class="modal-close" onclick="closeModal('dataMgmtModal')">&times;</span>
+            <h2 id="dataMgmtModalTitle"><i class="fas fa-plus-circle"></i> 新增业务数据</h2>
+            <form id="dataMgmtForm" onsubmit="saveInstitutionData(event)">
+                <input type="hidden" id="dmEditId" value="">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>机构名称 <span class="required">*</span></label>
+                        <input type="text" id="dmInstName" placeholder="请输入机构名称" required>
+                    </div>
+                    <div class="form-group">
+                        <label>级别</label>
+                        <select id="dmGradeLevel">
+                            <option value="">请选择</option>
+                            <option value="A+">A+</option>
+                            <option value="B">B</option>
+                            <option value="C">C</option>
+                            <option value="D">D</option>
+                            <option value="E">E</option>
+                            <option value="F">F</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>销售负责人</label>
+                        <select id="dmSalesPerson">
+                            <option value="">请选择</option>
+                            <option value="销售D">销售D</option>
+                            <option value="销售M">销售M</option>
+                            <option value="销售F">销售F</option>
+                        </select>
+                    </div>
+                    <div class="form-group dm-real-name-group" style="display:none;">
+                        <label>销售真实姓名 <span style="font-size:12px;color:#f59e0b;">(管理员可见)</span></label>
+                        <input type="text" id="dmSalesPersonReal" placeholder="真实姓名">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>市场来源</label>
+                        <input type="text" id="dmMarketSource" placeholder="例如：展会、转介绍、线上推广">
+                    </div>
+                    <div class="form-group">
+                        <label>合作状态</label>
+                        <select id="dmContractStatus">
+                            <option value="">请选择</option>
+                            <option value="合作中">合作中</option>
+                            <option value="尚未合作">尚未合作</option>
+                            <option value="已作废">已作废</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>签约日期</label>
+                        <input type="date" id="dmContractDate">
+                    </div>
+                    <div class="form-group">
+                        <label>出产状态</label>
+                        <select id="dmProductionStatus">
+                            <option value="">请选择</option>
+                            <option value="已出产">已出产</option>
+                            <option value="未出产">未出产</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>出产日期</label>
+                        <input type="date" id="dmProductionDate">
+                    </div>
+                    <div class="form-group">
+                        <label>数据分类</label>
+                        <select id="dmDataCategory">
+                            <option value="">请选择</option>
+                            <option value="存量">存量</option>
+                            <option value="增量">增量</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>数据年度</label>
+                        <select id="dmDataYear">
+                            <option value="">请选择</option>
+                            <option value="8.31前存量">8.31前存量</option>
+                            <option value="当年度">当年度</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>城市</label>
+                        <input type="text" id="dmCity" placeholder="城市">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>省份</label>
+                        <input type="text" id="dmProvince" placeholder="省份">
+                    </div>
+                    <div class="form-group">
+                        <label>渠道供给人</label>
+                        <input type="text" id="dmChannelProvider" placeholder="脱敏代号">
+                    </div>
+                </div>
+                <div class="form-row dm-real-name-group" style="display:none;">
+                    <div class="form-group">
+                        <label>渠道供给人真实姓名 <span style="font-size:12px;color:#f59e0b;">(管理员可见)</span></label>
+                        <input type="text" id="dmChannelProviderReal" placeholder="真实姓名">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>备注</label>
+                    <textarea id="dmNotes" rows="3" placeholder="备注信息..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('dataMgmtModal')">取消</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> 保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- CSV批量导入Modal -->
+    <div class="modal" id="csvImportModal">
+        <div class="modal-content modal-lg">
+            <span class="modal-close" onclick="closeModal('csvImportModal')">&times;</span>
+            <h2><i class="fas fa-file-import"></i> 批量导入数据</h2>
+            <div style="margin-bottom:16px;">
+                <p style="color:#64748b;font-size:13px;margin-bottom:8px;">
+                    <i class="fas fa-info-circle"></i> 支持从Excel复制粘贴（Tab分隔）或CSV格式。首行为表头，系统将自动匹配字段。
+                </p>
+                <p style="color:#64748b;font-size:13px;margin-bottom:12px;">
+                    <strong>支持的列名：</strong>机构名称、级别、销售、销售真实姓名、市场来源、合作状态、签约日期、出产状态、出产日期、数据分类、数据年度、城市、省份、渠道供给人、渠道供给人真实姓名、备注
+                </p>
+            </div>
+            <div class="form-group">
+                <label>粘贴数据</label>
+                <textarea id="csvImportData" rows="10" placeholder="在此粘贴从Excel复制的数据或CSV内容..." style="font-family:monospace;font-size:13px;"></textarea>
+            </div>
+            <div id="csvImportPreview" style="display:none;margin-bottom:16px;">
+                <h4 style="margin-bottom:8px;"><i class="fas fa-eye"></i> 数据预览 (<span id="csvPreviewCount">0</span> 条)</h4>
+                <div style="max-height:200px;overflow:auto;border:1px solid #e2e8f0;border-radius:6px;">
+                    <table style="width:100%;font-size:12px;" id="csvPreviewTable"></table>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-outline" onclick="closeModal('csvImportModal')">取消</button>
+                <button type="button" class="btn btn-secondary" onclick="previewCsvImport()"><i class="fas fa-eye"></i> 预览</button>
+                <button type="button" class="btn btn-primary" onclick="confirmCsvImport()"><i class="fas fa-check"></i> 确认导入</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast提示 -->
+    <div id="dmToast" style="display:none;position:fixed;top:20px;right:20px;z-index:10000;padding:12px 20px;border-radius:8px;color:#fff;font-size:14px;box-shadow:0 4px 12px rgba(0,0,0,0.15);transition:all 0.3s ease;"></div>
+
     <script src="libs/mammoth.browser.min.js"></script>
     <script src="libs/jszip.min.js"></script>
     <script src="libs/pdf.min.js"></script>
+    <script>
+    // ==================== 业务数据管理中心 ====================
+    const SUPABASE_URL_DM = 'https://hgtxozgpvccgsvslokud.supabase.co';
+    const SUPABASE_KEY_DM = 'sb_publishable_9Sc9FFYAqKl2eJUdyP0HmA_w8RdAcKH';
+    const TABLE_NAME = 'institution_data';
+    
+    let dmAllData = [];
+    let dmCurrentPage = 1;
+    const dmPageSize = 20;
+    let dmIsAdmin = false;
+    
+    // 初始化数据管理
+    function initDataManagement() {
+        dmIsAdmin = sessionStorage.getItem('adminLoggedIn') === 'true';
+        // 显示/隐藏真实姓名列
+        document.querySelectorAll('.dm-real-name-group').forEach(el => {
+            el.style.display = dmIsAdmin ? '' : 'none';
+        });
+    }
+    
+    // Toast提示
+    function showDmToast(msg, type) {
+        const toast = document.getElementById('dmToast');
+        toast.textContent = msg;
+        toast.style.display = 'block';
+        toast.style.background = type === 'error' ? '#ef4444' : type === 'success' ? '#10b981' : '#6366f1';
+        setTimeout(() => { toast.style.display = 'none'; }, 3000);
+    }
+    
+    // 获取Supabase客户端
+    function getDmClient() {
+        if (typeof supabaseClient !== 'undefined' && supabaseClient) return supabaseClient;
+        if (window.supabase) {
+            return window.supabase.createClient(SUPABASE_URL_DM, SUPABASE_KEY_DM);
+        }
+        return null;
+    }
+    
+    // 加载数据
+    async function loadInstitutionData() {
+        const client = getDmClient();
+        if (!client) { showDmToast('Supabase客户端未就绪', 'error'); return; }
+        
+        try {
+            const { data, error } = await client.from(TABLE_NAME).select('*').order('updated_at', { ascending: false });
+            if (error) throw error;
+            dmAllData = data || [];
+            updateDataMgmtStats();
+            filterDataMgmtTable();
+            showDmToast('数据加载成功', 'success');
+        } catch(e) {
+            console.error('Load data error:', e);
+            showDmToast('加载失败: ' + e.message, 'error');
+        }
+    }
+    
+    // 更新统计
+    function updateDataMgmtStats() {
+        const total = dmAllData.length;
+        const contracted = dmAllData.filter(d => d.contract_status === '合作中').length;
+        const produced = dmAllData.filter(d => d.production_status === '已出产').length;
+        const currentYear = dmAllData.filter(d => d.data_year === '当年度').length;
+        
+        document.getElementById('dmStatTotal').textContent = total;
+        document.getElementById('dmStatContracted').textContent = contracted;
+        document.getElementById('dmStatProduced').textContent = produced;
+        document.getElementById('dmStatCurrentYear').textContent = currentYear;
+    }
+    
+    // 筛选并渲染表格
+    function filterDataMgmtTable() {
+        const search = (document.getElementById('dmSearchInput')?.value || '').toLowerCase();
+        const sales = document.getElementById('dmFilterSales')?.value || '';
+        const level = document.getElementById('dmFilterLevel')?.value || '';
+        const status = document.getElementById('dmFilterStatus')?.value || '';
+        
+        let filtered = dmAllData.filter(d => {
+            if (search && !(d.institution_name || '').toLowerCase().includes(search)) return false;
+            if (sales && d.sales_person !== sales) return false;
+            if (level && d.grade_level !== level) return false;
+            if (status && d.contract_status !== status) return false;
+            return true;
+        });
+        
+        renderDataMgmtTable(filtered);
+    }
+    
+    // 渲染表格
+    function renderDataMgmtTable(data) {
+        const tbody = document.getElementById('dataMgmtTableBody');
+        const totalItems = data.length;
+        const totalPages = Math.max(1, Math.ceil(totalItems / dmPageSize));
+        if (dmCurrentPage > totalPages) dmCurrentPage = totalPages;
+        
+        const start = (dmCurrentPage - 1) * dmPageSize;
+        const pageData = data.slice(start, start + dmPageSize);
+        
+        if (pageData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:#94a3b8;">暂无数据</td></tr>';
+        } else {
+            tbody.innerHTML = pageData.map(row => {
+                const statusClass = row.contract_status === '合作中' ? 'color:#10b981;font-weight:600;' : 
+                                    row.contract_status === '已作废' ? 'color:#ef4444;' : 'color:#f59e0b;';
+                const prodClass = row.production_status === '已出产' ? 'color:#10b981;' : 'color:#94a3b8;';
+                const updatedAt = row.updated_at ? new Date(row.updated_at).toLocaleDateString('zh-CN') : '';
+                return `<tr style="border-bottom:1px solid #f1f5f9;">
+                    <td style="padding:10px 12px;font-size:14px;font-weight:500;">${escHtml(row.institution_name||'')}</td>
+                    <td style="padding:10px 12px;font-size:13px;"><span style="background:#eef2ff;color:#6366f1;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">${escHtml(row.grade_level||'')}</span></td>
+                    <td style="padding:10px 12px;font-size:13px;">${escHtml(row.sales_person||'')}</td>
+                    <td style="padding:10px 12px;font-size:13px;${statusClass}">${escHtml(row.contract_status||'')}</td>
+                    <td style="padding:10px 12px;font-size:13px;${prodClass}">${escHtml(row.production_status||'')}</td>
+                    <td style="padding:10px 12px;font-size:13px;">${escHtml(row.market_source_primary||'')}</td>
+                    <td style="padding:10px 12px;font-size:13px;">${escHtml(row.city||'')}</td>
+                    <td style="padding:10px 12px;font-size:12px;color:#94a3b8;">${updatedAt}</td>
+                    <td style="padding:10px 12px;white-space:nowrap;">
+                        <button class="btn btn-outline btn-sm" style="padding:4px 8px;font-size:12px;" onclick="editInstitutionData('${row.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-outline btn-sm" style="padding:4px 8px;font-size:12px;color:#ef4444;border-color:#fecaca;" onclick="deleteInstitutionData('${row.id}')"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+        
+        // 分页信息
+        document.getElementById('dmPaginationInfo').textContent = `共 ${totalItems} 条，第 ${dmCurrentPage}/${totalPages} 页`;
+        
+        // 分页按钮
+        const paginationDiv = document.getElementById('dmPaginationBtns');
+        let btns = '';
+        if (dmCurrentPage > 1) btns += `<button class="btn btn-outline btn-sm" style="padding:4px 10px;" onclick="dmGoPage(${dmCurrentPage-1})"><i class="fas fa-chevron-left"></i></button>`;
+        for (let i = Math.max(1, dmCurrentPage-2); i <= Math.min(totalPages, dmCurrentPage+2); i++) {
+            btns += `<button class="btn ${i===dmCurrentPage?'btn-primary':'btn-outline'} btn-sm" style="padding:4px 10px;" onclick="dmGoPage(${i})">${i}</button>`;
+        }
+        if (dmCurrentPage < totalPages) btns += `<button class="btn btn-outline btn-sm" style="padding:4px 10px;" onclick="dmGoPage(${dmCurrentPage+1})"><i class="fas fa-chevron-right"></i></button>`;
+        paginationDiv.innerHTML = btns;
+    }
+    
+    function dmGoPage(p) { dmCurrentPage = p; filterDataMgmtTable(); }
+    
+    function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+    
+    // 打开新增Modal
+    function openDataMgmtModal() {
+        document.getElementById('dataMgmtModalTitle').innerHTML = '<i class="fas fa-plus-circle"></i> 新增业务数据';
+        document.getElementById('dmEditId').value = '';
+        document.getElementById('dataMgmtForm').reset();
+        initDataManagement();
+        openModal('dataMgmtModal');
+    }
+    
+    // 编辑
+    async function editInstitutionData(id) {
+        const client = getDmClient();
+        if (!client) return;
+        const { data, error } = await client.from(TABLE_NAME).select('*').eq('id', id).single();
+        if (error || !data) { showDmToast('获取数据失败', 'error'); return; }
+        
+        document.getElementById('dataMgmtModalTitle').innerHTML = '<i class="fas fa-edit"></i> 编辑业务数据';
+        document.getElementById('dmEditId').value = id;
+        document.getElementById('dmInstName').value = data.institution_name || '';
+        document.getElementById('dmGradeLevel').value = data.grade_level || '';
+        document.getElementById('dmSalesPerson').value = data.sales_person || '';
+        document.getElementById('dmSalesPersonReal').value = data.sales_person_real || '';
+        document.getElementById('dmMarketSource').value = data.market_source_primary || '';
+        document.getElementById('dmContractStatus').value = data.contract_status || '';
+        document.getElementById('dmContractDate').value = data.contract_date || '';
+        document.getElementById('dmProductionStatus').value = data.production_status || '';
+        document.getElementById('dmProductionDate').value = data.production_date || '';
+        document.getElementById('dmDataCategory').value = data.data_category || '';
+        document.getElementById('dmDataYear').value = data.data_year || '';
+        document.getElementById('dmCity').value = data.city || '';
+        document.getElementById('dmProvince').value = data.province || '';
+        document.getElementById('dmChannelProvider').value = data.channel_provider || '';
+        document.getElementById('dmChannelProviderReal').value = data.channel_provider_real || '';
+        document.getElementById('dmNotes').value = data.notes || '';
+        
+        initDataManagement();
+        openModal('dataMgmtModal');
+    }
+    
+    // 保存
+    async function saveInstitutionData(event) {
+        event.preventDefault();
+        const client = getDmClient();
+        if (!client) { showDmToast('Supabase客户端未就绪', 'error'); return; }
+        
+        const editId = document.getElementById('dmEditId').value;
+        const record = {
+            institution_name: document.getElementById('dmInstName').value.trim(),
+            grade_level: document.getElementById('dmGradeLevel').value,
+            sales_person: document.getElementById('dmSalesPerson').value,
+            sales_person_real: document.getElementById('dmSalesPersonReal').value.trim(),
+            market_source_primary: document.getElementById('dmMarketSource').value.trim(),
+            contract_status: document.getElementById('dmContractStatus').value,
+            contract_date: document.getElementById('dmContractDate').value || null,
+            production_status: document.getElementById('dmProductionStatus').value,
+            production_date: document.getElementById('dmProductionDate').value || null,
+            data_category: document.getElementById('dmDataCategory').value,
+            data_year: document.getElementById('dmDataYear').value,
+            city: document.getElementById('dmCity').value.trim(),
+            province: document.getElementById('dmProvince').value.trim(),
+            channel_provider: document.getElementById('dmChannelProvider').value.trim(),
+            channel_provider_real: document.getElementById('dmChannelProviderReal').value.trim(),
+            notes: document.getElementById('dmNotes').value.trim(),
+            updated_at: new Date().toISOString()
+        };
+        
+        try {
+            let result;
+            if (editId) {
+                result = await client.from(TABLE_NAME).update(record).eq('id', editId);
+            } else {
+                result = await client.from(TABLE_NAME).insert([record]);
+            }
+            if (result.error) throw result.error;
+            showDmToast(editId ? '更新成功' : '新增成功', 'success');
+            closeModal('dataMgmtModal');
+            loadInstitutionData();
+        } catch(e) {
+            console.error('Save error:', e);
+            showDmToast('保存失败: ' + e.message, 'error');
+        }
+    }
+    
+    // 删除
+    async function deleteInstitutionData(id) {
+        if (!confirm('确定要删除这条记录吗？')) return;
+        const client = getDmClient();
+        if (!client) return;
+        
+        try {
+            const { error } = await client.from(TABLE_NAME).delete().eq('id', id);
+            if (error) throw error;
+            showDmToast('删除成功', 'success');
+            loadInstitutionData();
+        } catch(e) {
+            showDmToast('删除失败: ' + e.message, 'error');
+        }
+    }
+    
+    // 导出全部数据为CSV
+    function exportAllData() {
+        if (dmAllData.length === 0) { showDmToast('暂无数据可导出', 'error'); return; }
+        const headers = ['机构名称','级别','销售','市场来源','合作状态','签约日期','出产状态','出产日期','数据分类','数据年度','城市','省份','渠道供给人','备注'];
+        const fields = ['institution_name','grade_level','sales_person','market_source_primary','contract_status','contract_date','production_status','production_date','data_category','data_year','city','province','channel_provider','notes'];
+        
+        let csv = '\uFEFF' + headers.join(',') + '\n';
+        dmAllData.forEach(row => {
+            csv += fields.map(f => {
+                let val = row[f] || '';
+                if (typeof val === 'string' && (val.includes(',') || val.includes('"') || val.includes('\n'))) {
+                    val = '"' + val.replace(/"/g, '""') + '"';
+                }
+                return val;
+            }).join(',') + '\n';
+        });
+        
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = '业务数据_' + new Date().toISOString().slice(0,10) + '.csv';
+        link.click();
+        showDmToast('导出成功', 'success');
+    }
+    
+    // CSV导入
+    function openCsvImportModal() {
+        document.getElementById('csvImportData').value = '';
+        document.getElementById('csvImportPreview').style.display = 'none';
+        openModal('csvImportModal');
+    }
+    
+    // 列名映射
+    const COLUMN_MAP = {
+        '机构名称': 'institution_name', '机构': 'institution_name', 'institution_name': 'institution_name',
+        '级别': 'grade_level', '等级': 'grade_level', 'grade_level': 'grade_level', 'grade': 'grade_level',
+        '销售': 'sales_person', '销售负责人': 'sales_person', 'sales_person': 'sales_person',
+        '销售真实姓名': 'sales_person_real', 'sales_person_real': 'sales_person_real',
+        '市场来源': 'market_source_primary', '来源': 'market_source_primary', 'market_source_primary': 'market_source_primary',
+        '合作状态': 'contract_status', '合同状态': 'contract_status', 'contract_status': 'contract_status',
+        '签约日期': 'contract_date', 'contract_date': 'contract_date',
+        '出产状态': 'production_status', 'production_status': 'production_status',
+        '出产日期': 'production_date', 'production_date': 'production_date',
+        '数据分类': 'data_category', '分类': 'data_category', 'data_category': 'data_category',
+        '数据年度': 'data_year', '年度': 'data_year', 'data_year': 'data_year',
+        '城市': 'city', 'city': 'city',
+        '省份': 'province', 'province': 'province',
+        '渠道供给人': 'channel_provider', '渠道': 'channel_provider', 'channel_provider': 'channel_provider',
+        '渠道供给人真实姓名': 'channel_provider_real', 'channel_provider_real': 'channel_provider_real',
+        '备注': 'notes', 'notes': 'notes'
+    };
+    
+    let parsedImportData = [];
+    
+    function previewCsvImport() {
+        const raw = document.getElementById('csvImportData').value.trim();
+        if (!raw) { showDmToast('请先粘贴数据', 'error'); return; }
+        
+        const lines = raw.split('\n').filter(l => l.trim());
+        if (lines.length < 2) { showDmToast('数据不足，至少需要表头行和一行数据', 'error'); return; }
+        
+        // 解析表头
+        const headerLine = lines[0];
+        const headers = headerLine.includes('\t') ? headerLine.split('\t') : headerLine.split(',');
+        const fieldMap = headers.map(h => COLUMN_MAP[h.trim()] || null);
+        
+        // 解析数据行
+        parsedImportData = [];
+        for (let i = 1; i < lines.length; i++) {
+            const cols = lines[i].includes('\t') ? lines[i].split('\t') : lines[i].split(',');
+            const record = {};
+            fieldMap.forEach((field, idx) => {
+                if (field && cols[idx] !== undefined) {
+                    record[field] = cols[idx].trim();
+                }
+            });
+            if (record.institution_name) parsedImportData.push(record);
+        }
+        
+        // 显示预览
+        const previewDiv = document.getElementById('csvImportPreview');
+        const previewTable = document.getElementById('csvPreviewTable');
+        document.getElementById('csvPreviewCount').textContent = parsedImportData.length;
+        
+        const displayFields = ['institution_name','grade_level','sales_person','contract_status','city'];
+        const displayHeaders = ['机构名称','级别','销售','合作状态','城市'];
+        
+        let html = '<thead><tr>' + displayHeaders.map(h => `<th style="padding:6px 10px;background:#f8faf9;font-size:12px;text-align:left;">${h}</th>`).join('') + '</tr></thead><tbody>';
+        parsedImportData.slice(0, 10).forEach(row => {
+            html += '<tr>' + displayFields.map(f => `<td style="padding:6px 10px;border-top:1px solid #f1f5f9;font-size:12px;">${escHtml(row[f]||'')}</td>`).join('') + '</tr>';
+        });
+        if (parsedImportData.length > 10) {
+            html += `<tr><td colspan="${displayFields.length}" style="padding:6px 10px;text-align:center;color:#94a3b8;font-size:12px;">... 还有 ${parsedImportData.length - 10} 条</td></tr>`;
+        }
+        html += '</tbody>';
+        previewTable.innerHTML = html;
+        previewDiv.style.display = 'block';
+        showDmToast(`解析完成：${parsedImportData.length} 条数据`, 'info');
+    }
+    
+    async function confirmCsvImport() {
+        if (parsedImportData.length === 0) { showDmToast('请先预览数据', 'error'); return; }
+        const client = getDmClient();
+        if (!client) { showDmToast('Supabase客户端未就绪', 'error'); return; }
+        
+        try {
+            // 分批插入（每批50条）
+            const batchSize = 50;
+            let totalInserted = 0;
+            for (let i = 0; i < parsedImportData.length; i += batchSize) {
+                const batch = parsedImportData.slice(i, i + batchSize);
+                const { error } = await client.from(TABLE_NAME).insert(batch);
+                if (error) throw error;
+                totalInserted += batch.length;
+            }
+            showDmToast(`成功导入 ${totalInserted} 条数据`, 'success');
+            closeModal('csvImportModal');
+            loadInstitutionData();
+        } catch(e) {
+            showDmToast('导入失败: ' + e.message, 'error');
+        }
+    }
+    
+    // ==================== Dashboard数据源函数框架（预留） ====================
+    async function loadDashboardData() {
+        // TODO: 后续从Supabase查询数据并更新仪表盘
+        // 当前阶段仪表盘仍使用硬编码数据
+        console.log('[DataMgmt] loadDashboardData: 当前使用硬编码数据，待数据导入后切换');
+        // const client = getDmClient();
+        // if (!client) return;
+        // const { data } = await client.from(TABLE_NAME).select('*');
+        // 更新仪表盘卡片...
+    }
+    
+    // 当切换到data-mgmt tab时自动加载
+    function onDataMgmtTabActivated() {
+        initDataManagement();
+        loadInstitutionData();
+    }
+    </script>
+
     <script src="app.js"></script>
 </body>
 </html>
