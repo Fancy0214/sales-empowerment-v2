@@ -48,3 +48,30 @@ CREATE TRIGGER trigger_institution_data_updated_at
     BEFORE UPDATE ON institution_data
     FOR EACH ROW
     EXECUTE FUNCTION update_institution_data_updated_at();
+
+-- ================================================
+-- 月度快照表 - 月度扎帐机制
+-- ================================================
+CREATE TABLE IF NOT EXISTS monthly_snapshots (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  snapshot_month TEXT NOT NULL,
+  dimension_type TEXT NOT NULL,
+  dimension_value TEXT NOT NULL,
+  cumulative_data INT DEFAULT 0,
+  cumulative_signed INT DEFAULT 0,
+  cumulative_produced INT DEFAULT 0,
+  month_new_data INT DEFAULT 0,
+  month_new_signed INT DEFAULT 0,
+  month_new_produced INT DEFAULT 0,
+  sign_rate DECIMAL(5,2),
+  production_rate DECIMAL(5,2),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(snapshot_month, dimension_type, dimension_value)
+);
+
+-- 启用 RLS
+ALTER TABLE monthly_snapshots ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow all access to monthly_snapshots" ON monthly_snapshots;
+CREATE POLICY "Allow all access to monthly_snapshots" ON monthly_snapshots
+    FOR ALL USING (true) WITH CHECK (true);

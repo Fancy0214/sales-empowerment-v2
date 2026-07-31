@@ -1658,7 +1658,95 @@
             </div>
         </div>
 
-        <!-- 管理员编辑弹窗 -->
+        
+                    <!-- ====== 月度扎帐 ====== -->
+                    <div class="card" style="margin-top:20px;">
+                        <div class="card-header-with-actions">
+                            <h3><i class="fas fa-calendar-check"></i> 月度扎帐</h3>
+                            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                                <label style="font-size:13px;color:#64748b;">扎帐月份：</label>
+                                <input type="month" id="snapshotMonth" style="padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;">
+                                <button class="btn btn-primary btn-sm" onclick="executeMonthlySnapshot()"><i class="fas fa-check-circle"></i> 执行月度扎帐</button>
+                                <button class="btn btn-outline btn-sm" onclick="loadSnapshots()"><i class="fas fa-sync-alt"></i> 刷新</button>
+                                <button class="btn btn-outline btn-sm" onclick="exportSnapshotCsv()"><i class="fas fa-file-csv"></i> 导出CSV</button>
+                            </div>
+                        </div>
+                        <p style="font-size:12px;color:#94a3b8;margin:8px 0 12px;">
+                            <i class="fas fa-info-circle"></i> 扎帐将根据当前institution_data数据，按截止月份计算各维度快照并存入monthly_snapshots表。已存在的同月同维度数据将被覆盖(UPSERT)。
+                        </p>
+
+                        <!-- 快照筛选 -->
+                        <div style="display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
+                            <div style="min-width:120px;">
+                                <select id="snapshotDimFilter" style="width:100%;padding:8px 12px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;" onchange="renderSnapshotTable()">
+                                    <option value="">全部维度</option>
+                                    <option value="department">部门整体</option>
+                                    <option value="sales">按销售</option>
+                                    <option value="channel">按渠道</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- 快照历史表格 -->
+                        <div style="overflow-x:auto;">
+                            <table class="admin-table" style="width:100%;border-collapse:collapse;" id="snapshotTable">
+                                <thead>
+                                    <tr style="background:#f1f5f9;text-align:left;">
+                                        <th style="padding:8px 10px;font-weight:600;font-size:12px;color:#475569;">月份</th>
+                                        <th style="padding:8px 10px;font-weight:600;font-size:12px;color:#475569;">维度</th>
+                                        <th style="padding:8px 10px;font-weight:600;font-size:12px;color:#475569;">维度值</th>
+                                        <th style="padding:8px 10px;font-weight:600;font-size:12px;color:#475569;">累计数据</th>
+                                        <th style="padding:8px 10px;font-weight:600;font-size:12px;color:#475569;">累计签约</th>
+                                        <th style="padding:8px 10px;font-weight:600;font-size:12px;color:#475569;">签约率</th>
+                                        <th style="padding:8px 10px;font-weight:600;font-size:12px;color:#475569;">出产量</th>
+                                        <th style="padding:8px 10px;font-weight:600;font-size:12px;color:#475569;">出产率</th>
+                                        <th style="padding:8px 10px;font-weight:600;font-size:12px;color:#475569;">当月新增签约</th>
+                                        <th style="padding:8px 10px;font-weight:600;font-size:12px;color:#475569;">当月新增出产</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="snapshotTableBody">
+                                    <tr><td colspan="10" style="text-align:center;padding:30px;color:#94a3b8;">点击刷新加载快照数据</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ====== 趋势分析图表 ====== -->
+                    <div class="card" style="margin-top:20px;">
+                        <div class="card-header-with-actions">
+                            <h3><i class="fas fa-chart-area"></i> 📈 趋势分析</h3>
+                            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                                <label style="font-size:13px;color:#64748b;">时间范围：</label>
+                                <select id="trendRange" style="padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;" onchange="renderTrendCharts()">
+                                    <option value="6">最近6个月</option>
+                                    <option value="12" selected>最近12个月</option>
+                                    <option value="all">全部</option>
+                                </select>
+                                <label style="font-size:13px;color:#64748b;margin-left:8px;">维度：</label>
+                                <select id="trendDim" style="padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;" onchange="renderTrendCharts()">
+                                    <option value="department">部门整体</option>
+                                    <option value="sales">按销售</option>
+                                    <option value="channel">按渠道</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+                            <div style="background:#f8fafc;border-radius:8px;padding:12px;">
+                                <div style="font-size:13px;font-weight:600;color:#475569;margin-bottom:8px;">签约率趋势</div>
+                                <canvas id="trendSignRateChart" style="max-height:280px;"></canvas>
+                            </div>
+                            <div style="background:#f8fafc;border-radius:8px;padding:12px;">
+                                <div style="font-size:13px;font-weight:600;color:#475569;margin-bottom:8px;">出产率趋势</div>
+                                <canvas id="trendProdRateChart" style="max-height:280px;"></canvas>
+                            </div>
+                        </div>
+                        <div style="margin-top:16px;background:#f8fafc;border-radius:8px;padding:12px;">
+                            <div style="font-size:13px;font-weight:600;color:#475569;margin-bottom:8px;">月度新增签约 & 出产</div>
+                            <canvas id="trendMonthlyNewChart" style="max-height:250px;"></canvas>
+                        </div>
+                    </div>
+
+                <!-- 管理员编辑弹窗 -->
         <div class="modal" id="adminEditModal">
             <div class="modal-content modal-lg">
                 <span class="modal-close" onclick="closeModal('adminEditModal')">&times;</span>
@@ -2659,10 +2747,346 @@
         // 更新仪表盘卡片...
     }
     
+
+    // ==================== 月度扎帐功能 ====================
+    const SNAPSHOT_TABLE = 'monthly_snapshots';
+    let allSnapshots = [];
+    let trendCharts = { signRate: null, prodRate: null, monthlyNew: null };
+
+    // 初始化月份选择器默认值
+    (function initSnapshotMonth() {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const el = document.getElementById('snapshotMonth');
+        if (el) el.value = y + '-' + m;
+    })();
+
+    // 执行月度扎帐
+    async function executeMonthlySnapshot() {
+        const monthVal = document.getElementById('snapshotMonth').value;
+        if (!monthVal) { showDmToast('请选择扎帐月份', 'error'); return; }
+        if (!confirm('确认执行 ' + monthVal + ' 月度扎帐？\n将根据当前institution_data数据计算快照，已存在的同月数据将被覆盖。')) return;
+
+        const client = getDmClient();
+        if (!client) { showDmToast('Supabase客户端未就绪', 'error'); return; }
+        if (dmAllData.length === 0) { showDmToast('请先在上方加载业务数据', 'error'); return; }
+
+        showDmToast('正在计算扎帐数据...', 'info');
+
+        try {
+            const [y, m] = monthVal.split('-').map(Number);
+            const monthStart = new Date(y, m - 1, 1);
+            const monthEnd = new Date(y, m, 0, 23, 59, 59);
+
+            // 按截止月份筛选数据：contract_date <= monthEnd
+            const cutoffData = dmAllData.filter(d => {
+                const cd = d.contract_date ? new Date(d.contract_date) : new Date(d.created_at);
+                return cd <= monthEnd;
+            });
+
+            // 当月新增：contract_date 或 created_at 在当月范围内
+            const monthNewSigned = dmAllData.filter(d => {
+                const cd = d.contract_date ? new Date(d.contract_date) : null;
+                if (!cd) return false;
+                return cd >= monthStart && cd <= monthEnd && d.contract_status === '合作中';
+            });
+            const monthNewProduced = dmAllData.filter(d => {
+                const pd = d.production_date ? new Date(d.production_date) : null;
+                if (!pd) return false;
+                return pd >= monthStart && pd <= monthEnd && d.production_status === '已出产';
+            });
+
+            // 维度定义
+            const salesPersons = ['销售D', '销售M', '销售F'];
+            // 从数据中动态获取渠道
+            const channelSet = new Set();
+            dmAllData.forEach(d => { if (d.channel_provider) channelSet.add(d.channel_provider); });
+            const channels = Array.from(channelSet).sort();
+
+            const snapshots = [];
+
+            // 部门整体
+            const totalData = cutoffData.length;
+            const totalSigned = cutoffData.filter(d => d.contract_status === '合作中').length;
+            const totalProduced = cutoffData.filter(d => d.production_status === '已出产').length;
+            snapshots.push({
+                snapshot_month: monthVal, dimension_type: 'department', dimension_value: '部门整体',
+                cumulative_data: totalData, cumulative_signed: totalSigned, cumulative_produced: totalProduced,
+                month_new_data: cutoffData.filter(d => { const cd = d.contract_date ? new Date(d.contract_date) : new Date(d.created_at); return cd >= monthStart && cd <= monthEnd; }).length,
+                month_new_signed: monthNewSigned.length,
+                month_new_produced: monthNewProduced.length,
+                sign_rate: totalData > 0 ? (totalSigned / totalData * 100).toFixed(2) : 0,
+                production_rate: totalSigned > 0 ? (totalProduced / totalSigned * 100).toFixed(2) : 0
+            });
+
+            // 按销售
+            salesPersons.forEach(sp => {
+                const spData = cutoffData.filter(d => d.sales_person === sp);
+                const spSigned = spData.filter(d => d.contract_status === '合作中').length;
+                const spProduced = spData.filter(d => d.production_status === '已出产').length;
+                const spMonthNewSigned = monthNewSigned.filter(d => d.sales_person === sp).length;
+                const spMonthNewProduced = monthNewProduced.filter(d => d.sales_person === sp).length;
+                snapshots.push({
+                    snapshot_month: monthVal, dimension_type: 'sales', dimension_value: sp,
+                    cumulative_data: spData.length, cumulative_signed: spSigned, cumulative_produced: spProduced,
+                    month_new_data: spData.filter(d => { const cd = d.contract_date ? new Date(d.contract_date) : new Date(d.created_at); return cd >= monthStart && cd <= monthEnd; }).length,
+                    month_new_signed: spMonthNewSigned, month_new_produced: spMonthNewProduced,
+                    sign_rate: spData.length > 0 ? (spSigned / spData.length * 100).toFixed(2) : 0,
+                    production_rate: spSigned > 0 ? (spProduced / spSigned * 100).toFixed(2) : 0
+                });
+            });
+
+            // 按渠道
+            channels.forEach(ch => {
+                const chData = cutoffData.filter(d => d.channel_provider === ch);
+                const chSigned = chData.filter(d => d.contract_status === '合作中').length;
+                const chProduced = chData.filter(d => d.production_status === '已出产').length;
+                snapshots.push({
+                    snapshot_month: monthVal, dimension_type: 'channel', dimension_value: ch,
+                    cumulative_data: chData.length, cumulative_signed: chSigned, cumulative_produced: chProduced,
+                    month_new_data: chData.filter(d => { const cd = d.contract_date ? new Date(d.contract_date) : new Date(d.created_at); return cd >= monthStart && cd <= monthEnd; }).length,
+                    month_new_signed: monthNewSigned.filter(d => d.channel_provider === ch).length,
+                    month_new_produced: monthNewProduced.filter(d => d.channel_provider === ch).length,
+                    sign_rate: chData.length > 0 ? (chSigned / chData.length * 100).toFixed(2) : 0,
+                    production_rate: chSigned > 0 ? (chProduced / chSigned * 100).toFixed(2) : 0
+                });
+            });
+
+            // UPSERT 到 Supabase
+            for (const snap of snapshots) {
+                const { error } = await client.from(SNAPSHOT_TABLE).upsert(snap, {
+                    onConflict: 'snapshot_month,dimension_type,dimension_value'
+                });
+                if (error) throw error;
+            }
+
+            showDmToast(monthVal + ' 扎帐完成！共写入 ' + snapshots.length + ' 条快照', 'success');
+            loadSnapshots();
+        } catch(e) {
+            console.error('Snapshot error:', e);
+            showDmToast('扎帐失败: ' + e.message, 'error');
+        }
+    }
+
+    // 加载快照数据
+    async function loadSnapshots() {
+        const client = getDmClient();
+        if (!client) { showDmToast('Supabase客户端未就绪', 'error'); return; }
+        try {
+            const { data, error } = await client.from(SNAPSHOT_TABLE).select('*').order('snapshot_month', { ascending: false });
+            if (error) throw error;
+            allSnapshots = data || [];
+            renderSnapshotTable();
+            renderTrendCharts();
+            showDmToast('快照数据已加载 (' + allSnapshots.length + ' 条)', 'success');
+        } catch(e) {
+            console.error('Load snapshots error:', e);
+            showDmToast('加载快照失败: ' + e.message, 'error');
+        }
+    }
+
+    // 渲染快照表格
+    function renderSnapshotTable() {
+        const tbody = document.getElementById('snapshotTableBody');
+        const dimFilter = document.getElementById('snapshotDimFilter')?.value || '';
+        let filtered = allSnapshots;
+        if (dimFilter) filtered = filtered.filter(s => s.dimension_type === dimFilter);
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:30px;color:#94a3b8;">暂无快照数据</td></tr>';
+            return;
+        }
+
+        const dimLabel = { department: '部门', sales: '销售', channel: '渠道' };
+        tbody.innerHTML = filtered.map(s => {
+            const sr = parseFloat(s.sign_rate || 0);
+            const pr = parseFloat(s.production_rate || 0);
+            const srColor = sr >= 70 ? '#10b981' : sr >= 50 ? '#f59e0b' : '#ef4444';
+            const prColor = pr >= 60 ? '#10b981' : pr >= 40 ? '#f59e0b' : '#ef4444';
+            return `<tr style="border-bottom:1px solid #f1f5f9;">
+                <td style="padding:8px 10px;font-size:13px;font-weight:500;">${escHtml(s.snapshot_month||'')}</td>
+                <td style="padding:8px 10px;font-size:12px;"><span style="background:#eef2ff;color:#6366f1;padding:2px 6px;border-radius:4px;">${dimLabel[s.dimension_type]||s.dimension_type}</span></td>
+                <td style="padding:8px 10px;font-size:13px;">${escHtml(s.dimension_value||'')}</td>
+                <td style="padding:8px 10px;font-size:13px;text-align:center;">${s.cumulative_data||0}</td>
+                <td style="padding:8px 10px;font-size:13px;text-align:center;">${s.cumulative_signed||0}</td>
+                <td style="padding:8px 10px;font-size:13px;text-align:center;font-weight:600;color:${srColor};">${sr.toFixed(1)}%</td>
+                <td style="padding:8px 10px;font-size:13px;text-align:center;">${s.cumulative_produced||0}</td>
+                <td style="padding:8px 10px;font-size:13px;text-align:center;font-weight:600;color:${prColor};">${pr.toFixed(1)}%</td>
+                <td style="padding:8px 10px;font-size:13px;text-align:center;color:#6366f1;">${s.month_new_signed||0}</td>
+                <td style="padding:8px 10px;font-size:13px;text-align:center;color:#10b981;">${s.month_new_produced||0}</td>
+            </tr>`;
+        }).join('');
+    }
+
+    // 导出快照CSV
+    function exportSnapshotCsv() {
+        if (allSnapshots.length === 0) { showDmToast('暂无快照数据可导出', 'error'); return; }
+        const dimFilter = document.getElementById('snapshotDimFilter')?.value || '';
+        let filtered = allSnapshots;
+        if (dimFilter) filtered = filtered.filter(s => s.dimension_type === dimFilter);
+
+        const headers = ['月份','维度类型','维度值','累计数据量','累计签约量','签约率','出产量','出产率','当月新增签约','当月新增出产'];
+        const rows = filtered.map(s => [
+            s.snapshot_month, s.dimension_type, s.dimension_value,
+            s.cumulative_data, s.cumulative_signed, s.sign_rate,
+            s.cumulative_produced, s.production_rate,
+            s.month_new_signed, s.month_new_produced
+        ]);
+
+        let csv = '\uFEFF' + headers.join(',') + '\n';
+        rows.forEach(r => { csv += r.join(',') + '\n'; });
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = '月度扎帐数据_' + new Date().toISOString().slice(0,10) + '.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+        showDmToast('CSV导出成功', 'success');
+    }
+
+    // 渲染趋势图表
+    async function renderTrendCharts() {
+        if (allSnapshots.length === 0) return;
+        if (typeof Chart === 'undefined') return;
+
+        const rangeVal = document.getElementById('trendRange')?.value || '12';
+        const dimVal = document.getElementById('trendDim')?.value || 'department';
+
+        // 获取所有月份并排序
+        let months = [...new Set(allSnapshots.map(s => s.snapshot_month))].sort();
+
+        // 时间范围过滤
+        if (rangeVal !== 'all') {
+            const n = parseInt(rangeVal);
+            months = months.slice(-n);
+        }
+
+        // 获取对应维度的数据
+        let dimensionValues;
+        if (dimVal === 'department') {
+            dimensionValues = ['部门整体'];
+        } else if (dimVal === 'sales') {
+            dimensionValues = allSnapshots
+                .filter(s => s.dimension_type === 'sales')
+                .map(s => s.dimension_value);
+            dimensionValues = [...new Set(dimensionValues)];
+        } else {
+            dimensionValues = allSnapshots
+                .filter(s => s.dimension_type === 'channel')
+                .map(s => s.dimension_value);
+            dimensionValues = [...new Set(dimensionValues)];
+        }
+
+        // 颜色
+        const colors = ['#6366f1','#f59e0b','#10b981','#ef4444','#8b5cf6','#06b6d4','#ec4899','#84cc16','#f97316'];
+
+        // 1. 签约率趋势折线图
+        const signRateDatasets = dimensionValues.map((dv, i) => {
+            const data = months.map(m => {
+                const snap = allSnapshots.find(s => s.snapshot_month === m && s.dimension_value === dv);
+                return snap ? parseFloat(snap.sign_rate || 0) : null;
+            });
+            return {
+                label: dv,
+                data: data,
+                borderColor: colors[i % colors.length],
+                backgroundColor: colors[i % colors.length] + '20',
+                tension: 0.3,
+                pointRadius: 4,
+                borderWidth: 2,
+                fill: false
+            };
+        });
+
+        if (trendCharts.signRate) trendCharts.signRate.destroy();
+        trendCharts.signRate = new Chart(document.getElementById('trendSignRateChart'), {
+            type: 'line',
+            data: { labels: months, datasets: signRateDatasets },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { size: 11 }, boxWidth: 12 } },
+                    tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + (ctx.raw !== null ? ctx.raw.toFixed(1) + '%' : 'N/A') } }
+                },
+                scales: {
+                    y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%', font: { size: 10 } } },
+                    x: { ticks: { font: { size: 10 } } }
+                }
+            }
+        });
+
+        // 2. 出产率趋势折线图
+        const prodRateDatasets = dimensionValues.map((dv, i) => {
+            const data = months.map(m => {
+                const snap = allSnapshots.find(s => s.snapshot_month === m && s.dimension_value === dv);
+                return snap ? parseFloat(snap.production_rate || 0) : null;
+            });
+            return {
+                label: dv,
+                data: data,
+                borderColor: colors[i % colors.length],
+                backgroundColor: colors[i % colors.length] + '20',
+                tension: 0.3,
+                pointRadius: 4,
+                borderWidth: 2,
+                fill: false
+            };
+        });
+
+        if (trendCharts.prodRate) trendCharts.prodRate.destroy();
+        trendCharts.prodRate = new Chart(document.getElementById('trendProdRateChart'), {
+            type: 'line',
+            data: { labels: months, datasets: prodRateDatasets },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { size: 11 }, boxWidth: 12 } },
+                    tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + (ctx.raw !== null ? ctx.raw.toFixed(1) + '%' : 'N/A') } }
+                },
+                scales: {
+                    y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%', font: { size: 10 } } },
+                    x: { ticks: { font: { size: 10 } } }
+                }
+            }
+        });
+
+        // 3. 月度新增柱状图（仅部门整体维度）
+        const deptSnaps = months.map(m => allSnapshots.find(s => s.snapshot_month === m && s.dimension_type === 'department'));
+        const newSignedData = deptSnaps.map(s => s ? (s.month_new_signed || 0) : 0);
+        const newProducedData = deptSnaps.map(s => s ? (s.month_new_produced || 0) : 0);
+
+        if (trendCharts.monthlyNew) trendCharts.monthlyNew.destroy();
+        trendCharts.monthlyNew = new Chart(document.getElementById('trendMonthlyNewChart'), {
+            type: 'bar',
+            data: {
+                labels: months,
+                datasets: [
+                    { label: '当月新增签约', data: newSignedData, backgroundColor: 'rgba(99,102,241,0.7)', borderRadius: 4 },
+                    { label: '当月新增出产', data: newProducedData, backgroundColor: 'rgba(16,185,129,0.7)', borderRadius: 4 }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { size: 11 }, boxWidth: 12 } }
+                },
+                scales: {
+                    y: { beginAtZero: true, ticks: { font: { size: 10 } } },
+                    x: { ticks: { font: { size: 10 } } }
+                }
+            }
+        });
+    }
+
+
     // 当切换到data-mgmt tab时自动加载
     function onDataMgmtTabActivated() {
         initDataManagement();
         loadInstitutionData();
+        setTimeout(() => { loadSnapshots(); }, 1000);
     }
     </script>
 
