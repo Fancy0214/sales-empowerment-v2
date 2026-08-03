@@ -12779,6 +12779,14 @@ async function initDmModule() {
     dmPopulateSalesDropdowns();
     loadDmParams();
     switchDmDataTab('members');
+    // 同时加载 institution_data 并更新团队全局/销售个人面板
+    if (typeof loadInstitutionData === 'function') {
+        await loadInstitutionData();
+    }
+    // 加载快照数据
+    if (typeof loadSnapshots === 'function') {
+        try { await loadSnapshots(); } catch(e) { console.error('[DM] loadSnapshots error:', e); }
+    }
 }
 
 async function dmLoadAllData() {

@@ -2424,7 +2424,18 @@
             updateDataMgmtStats();
             updateGlobalAndPersonalStats();
             filterDataMgmtTable();
-            showDmToast('数据加载成功', 'success');
+            showDmToast('数据加载成功（' + dmAllData.length + ' 条）', 'success');
+            // 确保当前可见的子Tab也用最新数据刷新（修复首次进入时旧数据源覆盖的问题）
+            setTimeout(function() {
+                var dmPage = document.getElementById('page-data-management');
+                var activeTab = dmPage ? dmPage.querySelector('.dm-subtab-btn.active') : null;
+                if (activeTab) {
+                    var tabId = activeTab.getAttribute('data-dmtab');
+                    if (tabId && typeof window.switchDmTab === 'function') {
+                        window.switchDmTab(tabId);
+                    }
+                }
+            }, 150);
         } catch(e) {
             console.error('Load data error:', e);
             showDmToast('加载失败: ' + e.message, 'error');
@@ -3425,11 +3436,10 @@
         }
     }
 
-    // 覆盖 switchDmTab：确保切换Tab时数据已加载
+    // ==================== 覆盖 switchDmTab：确保切换Tab时用 Supabase 数据渲染 ====================
     (function() {
-        var _origSwitchDmTab = window.switchDmTab;
         window.switchDmTab = function(tabId) {
-            // 先执行原逻辑（切换UI）
+            // UI 切换
             document.querySelectorAll('.dm-subtab-btn').forEach(function(b) { b.classList.remove('active'); });
             document.querySelectorAll('.dm-tab-content').forEach(function(c) { c.classList.remove('active'); });
             var btn = document.querySelector('.dm-subtab-btn[data-dmtab="' + tabId + '"]');
@@ -3442,12 +3452,15 @@
                     loadInstitutionData();
                 } else {
                     updateGlobalAndPersonalStats();
+                    // 图表在隐藏 canvas 上可能渲染失败，延迟重试一次
+                    setTimeout(function() { updateGlobalAndPersonalStats(); }, 200);
                 }
             }
             if (tabId === 'dm-anchor') {
                 if (!dmAllData || dmAllData.length === 0) {
                     loadInstitutionData();
                 }
+                if (typeof dmPopulateSalesDropdowns === 'function') dmPopulateSalesDropdowns();
             }
         };
     })();
