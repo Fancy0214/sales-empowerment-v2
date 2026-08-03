@@ -2422,6 +2422,7 @@
             if (error) throw error;
             dmAllData = data || [];
             updateDataMgmtStats();
+            updateGlobalAndPersonalStats();
             filterDataMgmtTable();
             showDmToast('数据加载成功', 'success');
         } catch(e) {
@@ -2442,7 +2443,272 @@
         document.getElementById('dmStatProduced').textContent = produced;
         document.getElementById('dmStatCurrentYear').textContent = currentYear;
     }
-    
+
+    // ==================== 团队全局 & 销售个人 数据更新（基于 institution_data） ====================
+    let _dmInstCharts = {};
+    const DM_INST_COLORS = ['#1B2B4B','#2D4A7A','#6B8DAD','#C4963C','#5A9E6F','#8B3A4A','#7B6B8D','#e879f9','#06b6d4','#84cc16','#f97316','#ec4899'];
+
+    function dmInstDestroyChart(canvasId) {
+        if (_dmInstCharts[canvasId]) { _dmInstCharts[canvasId].destroy(); delete _dmInstCharts[canvasId]; }
+    }
+
+    // 归一化级别显示
+    function normalizeGradeLevel(g) {
+        if (!g) return '未知';
+        g = String(g).trim();
+        if (g.startsWith('A')) return 'A+';
+        if (g === 'B') return 'B';
+        if (g === 'C') return 'C';
+        if (g === 'D') return 'D';
+        if (g.startsWith('E')) return 'E';
+        if (g.startsWith('F')) return 'F';
+        return g;
+    }
+
+    // 判断是否为口碑
+    function isReferral(d) { return d.market_source_primary === '口碑推荐'; }
+
+    // 按filter筛选数据
+    function applyDmFilter(data, filter) {
+        if (filter === 'referral') return data.filter(d => isReferral(d));
+        if (filter === 'direct') return data.filter(d => !isReferral(d));
+        return data;
+    }
+
+    function updateGlobalAndPersonalStats() {
+        if (!dmAllData || dmAllData.length === 0) return;
+
+        // ---- 团队全局指标卡 ----
+        const globalSigned = dmAllData.filter(d => d.contract_status === '合作中').length;
+        const globalOutput = dmAllData.filter(d => d.production_status === '已出产').length;
+        const globalAgencies = dmAllData.length;
+
+        var elSigned = document.getElementById('dmGlobalSigned');
+        var elOutput = document.getElementById('dmGlobalOutput');
+        var elApp = document.getElementById('dmGlobalApp');
+        var elAgencies = document.getElementById('dmGlobalAgencies');
+        if (elSigned) elSigned.textContent = globalSigned;
+        if (elOutput) elOutput.textContent = globalOutput;
+        if (elApp) elApp.textContent = '数据待补充';
+        if (elAgencies) elAgencies.textContent = globalAgencies;
+
+        // ---- 动态填充销售个人下拉框 ----
+        var salesSelect = document.getElementById('dmPersonalSales');
+        if (salesSelect) {
+            var currentVal = salesSelect.value;
+            var salesPersons = [...new Set(dmAllData.map(function(d) { return d.sales_person; }).filter(Boolean))].sort();
+            salesSelect.innerHTML = '<option value="">-- 请选择 --</option>';
+            salesPersons.forEach(function(sp) {
+                var opt = document.createElement('option');
+                opt.value = sp;
+                opt.textContent = sp;
+                salesSelect.appendChild(opt);
+            });
+            if (currentVal && salesPersons.indexOf(currentVal) >= 0) salesSelect.value = currentVal;
+        }
+
+        // ---- 销售个人指标卡 ----
+        var selectedSales = salesSelect ? salesSelect.value : '';
+        if (selectedSales) {
+            var pData = dmAllData.filter(function(d) { return d.sales_person === selectedSales; });
+            var pEl = document.getElementById('dmPersonalAgencies');
+            if (pEl) pEl.textContent = pData.length;
+            var pSigned = document.getElementById('dmPersonalSigned');
+            if (pSigned) pSigned.textContent = pData.filter(function(d) { return d.contract_status === '合作中'; }).length;
+            var pOutput = document.getElementById('dmPersonalOutput');
+            if (pOutput) pOutput.textContent = pData.filter(function(d) { return d.production_status === '已出产'; }).length;
+            var pApp = document.getElementById('dmPersonalApp');
+            if (pApp) pApp.textContent = '数据待补充';
+        }
+
+        // ---- 渲染图表 ----
+        var globalFilter = (typeof _dm !== 'undefined' && _dm.globalFilter) ? _dm.globalFilter : 'all';
+        var personalFilter = (typeof _dm !== 'undefined' && _dm.personalFilter) ? _dm.personalFilter : 'all';
+        var globalData = applyDmFilter(dmAllData, globalFilter);
+        renderInstGlobalCharts(globalData);
+
+        if (selectedSales) {
+            var personalData = dmAllData.filter(function(d) { return d.sales_person === selectedSales; });
+            personalData = applyDmFilter(personalData, personalFilter);
+            renderInstPersonalCharts(selectedSales, personalData);
+        }
+    }
+
+    // ---- 团队全局图表渲染 ----
+    function renderInstGlobalCharts(data) {
+        if (!data || typeof Chart === 'undefined') return;
+
+        // 1. 级别分布（饼图）
+        var levelCounts = {};
+        ['A+','B','C','D','E','F'].forEach(function(l) { levelCounts[l] = 0; });
+        data.forEach(function(d) {
+            var gl = normalizeGradeLevel(d.grade_level);
+            if (levelCounts.hasOwnProperty(gl)) levelCounts[gl]++;
+            else levelCounts[gl] = (levelCounts[gl] || 0) + 1;
+        });
+        var levelLabels = Object.keys(levelCounts).filter(function(l) { return levelCounts[l] > 0; });
+        var levelValues = levelLabels.map(function(l) { return levelCounts[l]; });
+        dmInstDestroyChart('dmGlobalLevelChart');
+        var c1 = document.getElementById('dmGlobalLevelChart');
+        if (c1) {
+            _dmInstCharts['dmGlobalLevelChart'] = new Chart(c1.getContext('2d'), {
+                type: 'doughnut',
+                data: { labels: levelLabels, datasets: [{ data: levelValues, backgroundColor: DM_INST_COLORS, borderWidth: 2, borderColor: '#fff' }] },
+                options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom', labels: { padding: 12, font: { size: 12 } } } } }
+            });
+        }
+
+        // 2. 城市分布（柱状图，取前15）
+        var cityCounts = {};
+        data.forEach(function(d) { var c = (d.city && d.city !== 'None') ? d.city : '未知'; cityCounts[c] = (cityCounts[c] || 0) + 1; });
+        var cityLabels = Object.keys(cityCounts).sort(function(a, b) { return cityCounts[b] - cityCounts[a]; }).slice(0, 15);
+        var cityValues = cityLabels.map(function(c) { return cityCounts[c]; });
+        dmInstDestroyChart('dmGlobalCityChart');
+        var c2 = document.getElementById('dmGlobalCityChart');
+        if (c2) {
+            _dmInstCharts['dmGlobalCityChart'] = new Chart(c2.getContext('2d'), {
+                type: 'bar',
+                data: { labels: cityLabels, datasets: [{ label: '机构数', data: cityValues, backgroundColor: DM_INST_COLORS[0] + 'CC', borderColor: DM_INST_COLORS[0], borderWidth: 1, borderRadius: 4 }] },
+                options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } }, x: { ticks: { maxRotation: 45 } } } }
+            });
+        }
+
+        // 3. 月度趋势（按contract_date月份统计签约量和出产量）
+        var monthMap = {};
+        data.forEach(function(d) {
+            var cd = d.contract_date ? d.contract_date.substring(0, 7) : null;
+            if (!cd) return;
+            if (!monthMap[cd]) monthMap[cd] = { signed: 0, output: 0 };
+            if (d.contract_status === '合作中') monthMap[cd].signed++;
+            if (d.production_status === '已出产') monthMap[cd].output++;
+        });
+        var months = Object.keys(monthMap).sort();
+        var signedTrend = months.map(function(m) { return monthMap[m].signed; });
+        var outputTrend = months.map(function(m) { return monthMap[m].output; });
+        dmInstDestroyChart('dmGlobalTrendChart');
+        var c3 = document.getElementById('dmGlobalTrendChart');
+        if (c3) {
+            _dmInstCharts['dmGlobalTrendChart'] = new Chart(c3.getContext('2d'), {
+                type: 'line',
+                data: { labels: months, datasets: [
+                    { label: '签约量', data: signedTrend, borderColor: DM_INST_COLORS[0], backgroundColor: DM_INST_COLORS[0] + '20', fill: true, tension: 0.3 },
+                    { label: '出产量', data: outputTrend, borderColor: DM_INST_COLORS[3], backgroundColor: DM_INST_COLORS[3] + '20', fill: true, tension: 0.3 }
+                ] },
+                options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true } } }
+            });
+        }
+
+        // 4. 口碑 vs 非口碑对比
+        var refData = data.filter(function(d) { return isReferral(d); });
+        var dirData = data.filter(function(d) { return !isReferral(d); });
+        var refSigned = refData.filter(function(d) { return d.contract_status === '合作中'; }).length;
+        var dirSigned = dirData.filter(function(d) { return d.contract_status === '合作中'; }).length;
+        var refOutput = refData.filter(function(d) { return d.production_status === '已出产'; }).length;
+        var dirOutput = dirData.filter(function(d) { return d.production_status === '已出产'; }).length;
+        dmInstDestroyChart('dmGlobalReferralChart');
+        var c4 = document.getElementById('dmGlobalReferralChart');
+        if (c4) {
+            _dmInstCharts['dmGlobalReferralChart'] = new Chart(c4.getContext('2d'), {
+                type: 'bar',
+                data: { labels: ['机构数', '签约量', '出产量'], datasets: [
+                    { label: '口碑', data: [refData.length, refSigned, refOutput], backgroundColor: DM_INST_COLORS[0] + 'CC', borderColor: DM_INST_COLORS[0], borderWidth: 1, borderRadius: 4 },
+                    { label: '非口碑', data: [dirData.length, dirSigned, dirOutput], backgroundColor: DM_INST_COLORS[3] + 'CC', borderColor: DM_INST_COLORS[3], borderWidth: 1, borderRadius: 4 }
+                ] },
+                options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+            });
+        }
+    }
+
+    // ---- 销售个人图表渲染 ----
+    function renderInstPersonalCharts(salesPerson, data) {
+        if (!data || typeof Chart === 'undefined') return;
+
+        // 1. 级别分布（饼图）
+        var levelCounts = {};
+        ['A+','B','C','D','E','F'].forEach(function(l) { levelCounts[l] = 0; });
+        data.forEach(function(d) {
+            var gl = normalizeGradeLevel(d.grade_level);
+            if (levelCounts.hasOwnProperty(gl)) levelCounts[gl]++;
+            else levelCounts[gl] = (levelCounts[gl] || 0) + 1;
+        });
+        var levelLabels = Object.keys(levelCounts).filter(function(l) { return levelCounts[l] > 0; });
+        var levelValues = levelLabels.map(function(l) { return levelCounts[l]; });
+        dmInstDestroyChart('dmPersonalLevelChart');
+        var c1 = document.getElementById('dmPersonalLevelChart');
+        if (c1) {
+            _dmInstCharts['dmPersonalLevelChart'] = new Chart(c1.getContext('2d'), {
+                type: 'doughnut',
+                data: { labels: levelLabels, datasets: [{ data: levelValues, backgroundColor: DM_INST_COLORS, borderWidth: 2, borderColor: '#fff' }] },
+                options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom', labels: { padding: 12, font: { size: 12 } } } } }
+            });
+        }
+
+        // 2. 城市分布（柱状图）
+        var cityCounts = {};
+        data.forEach(function(d) { var c = (d.city && d.city !== 'None') ? d.city : '未知'; cityCounts[c] = (cityCounts[c] || 0) + 1; });
+        var cityLabels = Object.keys(cityCounts).sort(function(a, b) { return cityCounts[b] - cityCounts[a]; }).slice(0, 10);
+        var cityValues = cityLabels.map(function(c) { return cityCounts[c]; });
+        dmInstDestroyChart('dmPersonalCityChart');
+        var c2 = document.getElementById('dmPersonalCityChart');
+        if (c2) {
+            _dmInstCharts['dmPersonalCityChart'] = new Chart(c2.getContext('2d'), {
+                type: 'bar',
+                data: { labels: cityLabels, datasets: [{ label: '机构数', data: cityValues, backgroundColor: DM_INST_COLORS[1] + 'CC', borderColor: DM_INST_COLORS[1], borderWidth: 1, borderRadius: 4 }] },
+                options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } }, x: { ticks: { maxRotation: 45 } } } }
+            });
+        }
+
+        // 3. 月度趋势
+        var monthMap = {};
+        data.forEach(function(d) {
+            var cd = d.contract_date ? d.contract_date.substring(0, 7) : null;
+            if (!cd) return;
+            if (!monthMap[cd]) monthMap[cd] = { signed: 0, output: 0 };
+            if (d.contract_status === '合作中') monthMap[cd].signed++;
+            if (d.production_status === '已出产') monthMap[cd].output++;
+        });
+        var months = Object.keys(monthMap).sort();
+        var signedTrend = months.map(function(m) { return monthMap[m].signed; });
+        var outputTrend = months.map(function(m) { return monthMap[m].output; });
+        dmInstDestroyChart('dmPersonalTrendChart');
+        var c3 = document.getElementById('dmPersonalTrendChart');
+        if (c3) {
+            _dmInstCharts['dmPersonalTrendChart'] = new Chart(c3.getContext('2d'), {
+                type: 'line',
+                data: { labels: months, datasets: [
+                    { label: '签约量', data: signedTrend, borderColor: DM_INST_COLORS[1], backgroundColor: DM_INST_COLORS[1] + '20', fill: true, tension: 0.3 },
+                    { label: '出产量', data: outputTrend, borderColor: DM_INST_COLORS[3], backgroundColor: DM_INST_COLORS[3] + '20', fill: true, tension: 0.3 }
+                ] },
+                options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true } } }
+            });
+        }
+
+        // 4. 锚点达成率（实际签约/出产 vs 按级别简单目标）
+        var levelCounts = {};
+        ['A+','B','C','D','E','F'].forEach(function(l) { levelCounts[l] = 0; });
+        data.forEach(function(d) {
+            var gl = normalizeGradeLevel(d.grade_level);
+            if (levelCounts.hasOwnProperty(gl)) levelCounts[gl]++;
+        });
+        var actualSigned = data.filter(function(d) { return d.contract_status === '合作中'; }).length;
+        var actualOutput = data.filter(function(d) { return d.production_status === '已出产'; }).length;
+        // 简单目标：签约率50%，出产率60%
+        var targetSigned = data.length;
+        var targetOutput = Math.round(data.length * 0.6);
+        dmInstDestroyChart('dmPersonalAnchorChart');
+        var c4 = document.getElementById('dmPersonalAnchorChart');
+        if (c4) {
+            _dmInstCharts['dmPersonalAnchorChart'] = new Chart(c4.getContext('2d'), {
+                type: 'bar',
+                data: { labels: ['签约量', '出产量'], datasets: [
+                    { label: '实际', data: [actualSigned, actualOutput], backgroundColor: DM_INST_COLORS[0] + 'CC', borderColor: DM_INST_COLORS[0], borderWidth: 1, borderRadius: 4 },
+                    { label: '目标', data: [targetSigned, targetOutput], backgroundColor: DM_INST_COLORS[3] + 'CC', borderColor: DM_INST_COLORS[3], borderWidth: 1, borderRadius: 4 }
+                ] },
+                options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+            });
+        }
+    }
+
     // 筛选并渲染表格
     function filterDataMgmtTable() {
         const search = (document.getElementById('dmSearchInput')?.value || '').toLowerCase();
@@ -3091,5 +3357,100 @@
     </script>
 
     <script src="app.js"></script>
+    <script>
+    // ==================== 覆盖 app.js 中使用旧数据源的函数，改用 dmAllData ====================
+
+    // 覆盖 renderDmGlobal：使用 institution_data 而非 partner_agencies
+    function renderDmGlobal() {
+        if (dmAllData && dmAllData.length > 0) {
+            updateGlobalAndPersonalStats();
+        }
+    }
+
+    // 覆盖 renderDmPersonal：使用 institution_data
+    function renderDmPersonal() {
+        if (dmAllData && dmAllData.length > 0) {
+            updateGlobalAndPersonalStats();
+        }
+    }
+
+    // 覆盖 setDmGlobalFilter：更新filter状态后重新渲染
+    function setDmGlobalFilter(f) {
+        if (typeof _dm !== 'undefined') _dm.globalFilter = f;
+        document.querySelectorAll('#dm-global .dm-filter-btn').forEach(function(b) {
+            b.classList.toggle('active', b.getAttribute('data-dmfilter') === f);
+        });
+        if (dmAllData && dmAllData.length > 0) {
+            var globalData = applyDmFilter(dmAllData, f);
+            renderInstGlobalCharts(globalData);
+        }
+    }
+
+    // 覆盖 setDmPersonalFilter
+    function setDmPersonalFilter(f) {
+        if (typeof _dm !== 'undefined') _dm.personalFilter = f;
+        document.querySelectorAll('#dm-personal .dm-filter-btn').forEach(function(b) {
+            b.classList.toggle('active', b.getAttribute('data-dmfilter') === f);
+        });
+        if (dmAllData && dmAllData.length > 0) {
+            var selectedSales = document.getElementById('dmPersonalSales') ? document.getElementById('dmPersonalSales').value : '';
+            if (selectedSales) {
+                var personalData = dmAllData.filter(function(d) { return d.sales_person === selectedSales; });
+                personalData = applyDmFilter(personalData, f);
+                renderInstPersonalCharts(selectedSales, personalData);
+            }
+        }
+    }
+
+    // 覆盖 onDmPersonalChange：更新个人指标卡和图表
+    function onDmPersonalChange() {
+        if (dmAllData && dmAllData.length > 0) {
+            var salesSelect = document.getElementById('dmPersonalSales');
+            var selectedSales = salesSelect ? salesSelect.value : '';
+            if (selectedSales) {
+                var personalFilter = (typeof _dm !== 'undefined' && _dm.personalFilter) ? _dm.personalFilter : 'all';
+                var pData = dmAllData.filter(function(d) { return d.sales_person === selectedSales; });
+                var pEl = document.getElementById('dmPersonalAgencies');
+                if (pEl) pEl.textContent = pData.length;
+                var pSigned = document.getElementById('dmPersonalSigned');
+                if (pSigned) pSigned.textContent = pData.filter(function(d) { return d.contract_status === '合作中'; }).length;
+                var pOutput = document.getElementById('dmPersonalOutput');
+                if (pOutput) pOutput.textContent = pData.filter(function(d) { return d.production_status === '已出产'; }).length;
+                var pApp = document.getElementById('dmPersonalApp');
+                if (pApp) pApp.textContent = '数据待补充';
+
+                var filteredData = applyDmFilter(pData, personalFilter);
+                renderInstPersonalCharts(selectedSales, filteredData);
+            }
+        }
+    }
+
+    // 覆盖 switchDmTab：确保切换Tab时数据已加载
+    (function() {
+        var _origSwitchDmTab = window.switchDmTab;
+        window.switchDmTab = function(tabId) {
+            // 先执行原逻辑（切换UI）
+            document.querySelectorAll('.dm-subtab-btn').forEach(function(b) { b.classList.remove('active'); });
+            document.querySelectorAll('.dm-tab-content').forEach(function(c) { c.classList.remove('active'); });
+            var btn = document.querySelector('.dm-subtab-btn[data-dmtab="' + tabId + '"]');
+            if (btn) btn.classList.add('active');
+            var content = document.getElementById(tabId);
+            if (content) content.classList.add('active');
+            // 数据驱动
+            if (tabId === 'dm-global' || tabId === 'dm-personal') {
+                if (!dmAllData || dmAllData.length === 0) {
+                    loadInstitutionData();
+                } else {
+                    updateGlobalAndPersonalStats();
+                }
+            }
+            if (tabId === 'dm-anchor') {
+                if (!dmAllData || dmAllData.length === 0) {
+                    loadInstitutionData();
+                }
+            }
+        };
+    })();
+    </script>
 </body>
 </html>
