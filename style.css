@@ -1963,6 +1963,181 @@ body {
     background: rgba(107,141,173,0.1);
 }
 
+/* ===== 阶段文件管理区 ===== */
+.stage-files-section {
+    margin-top: 24px;
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+.stage-files-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    cursor: pointer;
+    user-select: none;
+    background: rgba(107,141,173,0.04);
+    border-bottom: 1px solid var(--border);
+    transition: background 0.2s ease;
+}
+.stage-files-header:hover {
+    background: rgba(107,141,173,0.08);
+}
+.stage-files-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+.stage-files-title i {
+    color: var(--accent);
+}
+.stage-files-count-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.stage-files-toggle {
+    font-size: 0.7rem;
+    color: var(--text-light);
+    transition: transform 0.2s ease;
+}
+.stage-files-toggle.expanded {
+    transform: rotate(180deg);
+}
+.stage-files-panel {
+    display: none;
+    padding: 16px 20px;
+}
+.stage-files-panel.show {
+    display: block;
+}
+.stage-files-upload-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 24px 20px;
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: var(--secondary);
+    transition: all 0.2s ease;
+    background: rgba(107,141,173,0.03);
+    margin-bottom: 16px;
+}
+.stage-files-upload-btn:hover,
+.stage-files-upload-btn.drag-over {
+    border-color: var(--accent);
+    background: rgba(107,141,173,0.08);
+    color: var(--accent);
+}
+.stage-files-upload-btn i {
+    font-size: 1.4rem;
+    margin-bottom: 4px;
+}
+.stage-files-upload-btn .upload-hint {
+    font-size: 0.7rem;
+    color: var(--text-light);
+}
+.stage-files-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.stage-file-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--bg-primary);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    transition: all 0.15s ease;
+}
+.stage-file-item:hover {
+    border-color: var(--accent);
+    background: rgba(107,141,173,0.04);
+}
+.stage-file-icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(107,141,173,0.1);
+    border-radius: 8px;
+    color: var(--secondary);
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+.stage-file-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+.stage-file-name {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.stage-file-size {
+    font-size: 0.7rem;
+    color: var(--text-light);
+}
+.stage-file-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+.stage-file-actions button {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-white);
+    cursor: pointer;
+    font-size: 0.75rem;
+    color: var(--secondary);
+    transition: all 0.15s ease;
+}
+.stage-file-actions button:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(107,141,173,0.06);
+}
+.stage-file-actions button:last-child {
+    padding: 6px 8px;
+    color: var(--text-light);
+}
+.stage-file-actions button:last-child:hover {
+    color: #ef4444;
+    border-color: #fecaca;
+}
+.stage-files-empty {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-light);
+    font-size: 0.8rem;
+}
+.stage-files-empty i {
+    margin-right: 6px;
+    font-size: 0.9rem;
+}
+
 /* 保留旧样式兼容 */
 .tool-icon {
     width: 48px;

@@ -6301,8 +6301,149 @@ function renderStageView() {
         });
     }
 
-    html += `</div></div>`;
+    html += `</div>`;
+
+    // ===== 阶段文件管理区 =====
+    html += `
+    <div class="stage-files-section" id="stageFilesSection_${stage.id}">
+        <div class="stage-files-header" onclick="toggleStageFiles('${stage.id}')">
+            <span class="stage-files-title"><i class="fas fa-folder-open"></i> 阶段文件</span>
+            <span class="stage-files-count-wrap">
+                <span class="file-badge" id="stageFileCount_${stage.id}">-</span>
+                <i class="fas fa-chevron-down stage-files-toggle" id="stageFilesToggle_${stage.id}"></i>
+            </span>
+        </div>
+        <div class="stage-files-panel" id="stageFilesPanel_${stage.id}">
+            <div class="stage-files-upload-btn" onclick="event.stopPropagation();document.getElementById('stageFileInput_${stage.id}').click()">
+                <input type="file" id="stageFileInput_${stage.id}" style="display:none" multiple accept=".jpg,.jpeg,.png,.gif,.bmp,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,.rar" onchange="handleStageFileUpload('${stage.id}', this.files)">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <span>点击或拖拽文件到此处上传</span>
+                <span class="upload-hint">支持 Excel/PDF/图片/文档等，单文件最大10MB</span>
+            </div>
+            <div class="stage-files-list" id="stageFilesList_${stage.id}">
+                <div class="stage-files-empty"><i class="fas fa-inbox"></i> 暂无文件，点击上方上传</div>
+            </div>
+        </div>
+    </div>`;
+
+    html += `</div>`;
     container.innerHTML = html;
+
+    // 初始化阶段拖拽上传
+    initStageDragUpload(stage.id);
+}
+
+// ===== 阶段文件管理 =====
+const STAGE_FILE_PREFIX = 'stage_';
+
+function getStageFileToolId(stageId) {
+    return STAGE_FILE_PREFIX + stageId;
+}
+
+function toggleStageFiles(stageId) {
+    const panel = document.getElementById('stageFilesPanel_' + stageId);
+    const toggle = document.getElementById('stageFilesToggle_' + stageId);
+    if (!panel) return;
+    panel.classList.toggle('show');
+    if (toggle) toggle.classList.toggle('expanded');
+    if (panel.classList.contains('show')) {
+        loadStageFiles(stageId);
+    }
+}
+
+async function loadStageFiles(stageId) {
+    const toolId = getStageFileToolId(stageId);
+    const listEl = document.getElementById('stageFilesList_' + stageId);
+    const countEl = document.getElementById('stageFileCount_' + stageId);
+    if (!listEl || !supabaseClient) return;
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('tool_files')
+            .select('*')
+            .eq('tool_id', toolId)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        const files = data || [];
+        if (countEl) countEl.textContent = files.length;
+
+        if (files.length === 0) {
+            listEl.innerHTML = '<div class="stage-files-empty"><i class="fas fa-inbox"></i> 暂无文件，点击上方上传</div>';
+            return;
+        }
+
+        listEl.innerHTML = files.map(file => {
+            const fileIcon = getFileIcon(file.file_type || file.file_name);
+            const fileSize = formatFileSize(file.file_size);
+            const downloadUrl = SUPABASE_URL + '/storage/v1/object/public/' + TOOL_FILES_BUCKET + '/' + file.file_path;
+            const escName = (file.file_name || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+            const escDownloadUrl = downloadUrl.replace(/'/g, "\\'");
+            const escFilePath = (file.file_path || '').replace(/'/g, "\\'");
+            const isShare = typeof isShareMode !== 'undefined' && isShareMode;
+            return '<div class="stage-file-item">' +
+                '<span class="stage-file-icon"><i class="fas ' + fileIcon + '"></i></span>' +
+                '<div class="stage-file-info">' +
+                    '<span class="stage-file-name" title="' + escName + '">' + escName + '</span>' +
+                    '<span class="stage-file-size">' + fileSize + '</span>' +
+                '</div>' +
+                '<div class="stage-file-actions">' +
+                    '<button onclick="downloadToolFile(\'' + escDownloadUrl + '\',\'' + escName + '\')" title="下载"><i class="fas fa-download"></i> 下载</button>' +
+                    (isShare ? '' : '<button onclick="deleteStageFile(\'' + file.id + '\',\'' + escFilePath + '\',\'' + stageId + '\')" title="删除"><i class="fas fa-trash-alt"></i></button>') +
+                '</div>' +
+            '</div>';
+        }).join('');
+    } catch (err) {
+        console.error('加载阶段文件失败:', err);
+        if (countEl) countEl.textContent = '!';
+    }
+}
+
+async function handleStageFileUpload(stageId, files) {
+    if (!files || files.length === 0) return;
+    const toolId = getStageFileToolId(stageId);
+    await handleToolFileUpload(toolId, files);
+    setTimeout(function() { loadStageFiles(stageId); }, 600);
+}
+
+async function deleteStageFile(fileId, filePath, stageId) {
+    if (!confirm('确定要删除此文件吗？删除后不可恢复。')) return;
+    if (!supabaseClient) return;
+    try {
+        const { error: storageError } = await supabaseClient.storage
+            .from(TOOL_FILES_BUCKET)
+            .remove([filePath]);
+        if (storageError) console.warn('Storage删除失败:', storageError.message);
+        const { error: dbError } = await supabaseClient
+            .from('tool_files')
+            .delete()
+            .eq('id', fileId);
+        if (dbError) throw dbError;
+        await loadStageFiles(stageId);
+    } catch (err) {
+        console.error('删除文件失败:', err);
+        alert('删除失败: ' + (err.message || '未知错误'));
+    }
+}
+
+function initStageDragUpload(stageId) {
+    const uploadArea = document.querySelector('#stageFilesSection_' + stageId + ' .stage-files-upload-btn');
+    if (!uploadArea) return;
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault(); e.stopPropagation();
+        uploadArea.classList.add('drag-over');
+    });
+    uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault(); e.stopPropagation();
+        uploadArea.classList.remove('drag-over');
+    });
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault(); e.stopPropagation();
+        uploadArea.classList.remove('drag-over');
+        if (e.dataTransfer.files.length > 0) {
+            handleStageFileUpload(stageId, e.dataTransfer.files);
+        }
+    });
 }
 
 // ===== 总览视图（平铺所有工具，不重复） =====
