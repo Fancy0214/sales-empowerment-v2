@@ -6251,6 +6251,9 @@ async function loadCardFiles(toolId) {
 async function handleCardFileUpload(toolId, files) {
     if (!files || files.length === 0) return;
     await handleToolFileUpload(toolId, files);
+    // 重置 file input 以便重复选择同一文件
+    const input = document.getElementById('cardFileInput_' + toolId);
+    if (input) input.value = '';
     setTimeout(function() { loadCardFiles(toolId); }, 600);
 }
 
@@ -6403,6 +6406,9 @@ async function handleStageFileUpload(stageId, files) {
     if (!files || files.length === 0) return;
     const toolId = getStageFileToolId(stageId);
     await handleToolFileUpload(toolId, files);
+    // 重置 file input 以便重复选择同一文件
+    const input = document.getElementById('stageFileInput_' + stageId);
+    if (input) input.value = '';
     setTimeout(function() { loadStageFiles(stageId); }, 600);
 }
 
@@ -8606,23 +8612,26 @@ async function handleToolFileUpload(toolId, files) {
             continue;
         }
 
-        // 显示上传中状态
+        // 显示上传中状态（仅在工具详情弹窗中有 stAttachmentList 时显示）
         const listEl = document.getElementById('stAttachmentList');
-        const emptyEl = listEl.querySelector('.st-attachment-empty');
-        if (emptyEl) emptyEl.remove();
+        let uploadingItem = null;
+        if (listEl) {
+            const emptyEl = listEl.querySelector('.st-attachment-empty');
+            if (emptyEl) emptyEl.remove();
 
-        const uploadingItem = document.createElement('div');
-        uploadingItem.className = 'st-attachment-item st-uploading';
-        uploadingItem.innerHTML = `
-            <div class="st-attachment-info">
-                <span class="st-attachment-icon"><i class="fas fa-spinner fa-spin"></i></span>
-                <div class="st-attachment-meta">
-                    <span class="st-attachment-name">${file.name}</span>
-                    <span class="st-attachment-detail">上传中...</span>
+            uploadingItem = document.createElement('div');
+            uploadingItem.className = 'st-attachment-item st-uploading';
+            uploadingItem.innerHTML = `
+                <div class="st-attachment-info">
+                    <span class="st-attachment-icon"><i class="fas fa-spinner fa-spin"></i></span>
+                    <div class="st-attachment-meta">
+                        <span class="st-attachment-name">${file.name}</span>
+                        <span class="st-attachment-detail">上传中...</span>
+                    </div>
                 </div>
-            </div>
-            <div class="st-upload-progress"><div class="st-upload-progress-bar"></div></div>`;
-        listEl.insertBefore(uploadingItem, listEl.firstChild);
+                <div class="st-upload-progress"><div class="st-upload-progress-bar"></div></div>`;
+            listEl.insertBefore(uploadingItem, listEl.firstChild);
+        }
 
         try {
             // 生成文件路径（Storage路径只允许ASCII字符，中文会被编码）
@@ -8658,22 +8667,25 @@ async function handleToolFileUpload(toolId, files) {
             }
 
             // 上传成功，移除上传中项并刷新列表
-            uploadingItem.remove();
-            await loadToolFiles(toolId);
+            if (uploadingItem) uploadingItem.remove();
+            // 仅在工具详情弹窗内刷新附件列表；卡片/阶段级由调用方自行刷新
+            if (listEl) await loadToolFiles(toolId);
         } catch (err) {
             console.error('文件上传失败:', err);
             const errMsg = (err.message && err.message.includes('does not exist')) 
                 ? '附件功能未初始化，请联系管理员' 
                 : (err.message || '未知错误');
-            uploadingItem.innerHTML = `
-                <div class="st-attachment-info">
-                    <span class="st-attachment-icon"><i class="fas fa-exclamation-circle" style="color:#EF4444"></i></span>
-                    <div class="st-attachment-meta">
-                        <span class="st-attachment-name">${file.name}</span>
-                        <span class="st-attachment-detail" style="color:#EF4444">上传失败: ${errMsg}</span>
-                    </div>
-                </div>`;
-            setTimeout(() => uploadingItem.remove(), 4000);
+            if (uploadingItem) {
+                uploadingItem.innerHTML = `
+                    <div class="st-attachment-info">
+                        <span class="st-attachment-icon"><i class="fas fa-exclamation-circle" style="color:#EF4444"></i></span>
+                        <div class="st-attachment-meta">
+                            <span class="st-attachment-name">${file.name}</span>
+                            <span class="st-attachment-detail" style="color:#EF4444">上传失败: ${errMsg}</span>
+                        </div>
+                    </div>`;
+                setTimeout(() => uploadingItem.remove(), 4000);
+            }
         }
     }
 
