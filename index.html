@@ -1658,93 +1658,6 @@
             </div>
         </div>
 
-        
-                    <!-- ====== 月度扎帐 ====== -->
-                    <div class="card" style="margin-top:20px;">
-                        <div class="card-header-with-actions">
-                            <h3><i class="fas fa-calendar-check"></i> 月度扎帐</h3>
-                            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                                <label style="font-size:13px;color:#64748b;">扎帐月份：</label>
-                                <input type="month" id="snapshotMonth" style="padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;">
-                                <button class="btn btn-primary btn-sm" onclick="executeMonthlySnapshot()"><i class="fas fa-check-circle"></i> 执行月度扎帐</button>
-                                <button class="btn btn-outline btn-sm" onclick="loadSnapshots()"><i class="fas fa-sync-alt"></i> 刷新</button>
-                                <button class="btn btn-outline btn-sm" onclick="exportSnapshotCsv()"><i class="fas fa-file-csv"></i> 导出CSV</button>
-                            </div>
-                        </div>
-                        <p style="font-size:12px;color:#94a3b8;margin:8px 0 12px;">
-                            <i class="fas fa-info-circle"></i> 扎帐将根据当前institution_data数据，按截止月份计算各维度快照并存入monthly_snapshots表。已存在的同月同维度数据将被覆盖(UPSERT)。
-                        </p>
-
-                        <!-- 快照筛选 -->
-                        <div style="display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
-                            <div style="min-width:120px;">
-                                <select id="snapshotDimFilter" style="width:100%;padding:8px 12px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;" onchange="renderSnapshotTable()">
-                                    <option value="">全部维度</option>
-                                    <option value="department">部门整体</option>
-                                    <option value="sales">按销售</option>
-                                    <option value="channel">按渠道</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- 快照历史表格 -->
-                        <div style="overflow-x:auto;">
-                            <table class="admin-table" style="width:100%;border-collapse:collapse;" id="snapshotTable">
-                                <thead>
-                                    <tr style="background:#f1f5f9;text-align:left;">
-                                        <th style="padding:8px 10px;font-weight:600;font-size:12px;color:#475569;">月份</th>
-                                        <th style="padding:8px 10px;font-weight:600;font-size:12px;color:#475569;">维度</th>
-                                        <th style="padding:8px 10px;font-weight:600;font-size:12px;color:#475569;">维度值</th>
-                                        <th style="padding:8px 10px;font-weight:600;font-size:12px;color:#475569;">累计数据</th>
-                                        <th style="padding:8px 10px;font-weight:600;font-size:12px;color:#475569;">累计签约</th>
-                                        <th style="padding:8px 10px;font-weight:600;font-size:12px;color:#475569;">签约率</th>
-                                        <th style="padding:8px 10px;font-weight:600;font-size:12px;color:#475569;">出产量</th>
-                                        <th style="padding:8px 10px;font-weight:600;font-size:12px;color:#475569;">出产率</th>
-                                        <th style="padding:8px 10px;font-weight:600;font-size:12px;color:#475569;">当月新增签约</th>
-                                        <th style="padding:8px 10px;font-weight:600;font-size:12px;color:#475569;">当月新增出产</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="snapshotTableBody">
-                                    <tr><td colspan="10" style="text-align:center;padding:30px;color:#94a3b8;">点击刷新加载快照数据</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- ====== 趋势分析图表 ====== -->
-                    <div class="card" style="margin-top:20px;">
-                        <div class="card-header-with-actions">
-                            <h3><i class="fas fa-chart-area"></i> 📈 趋势分析</h3>
-                            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                                <label style="font-size:13px;color:#64748b;">时间范围：</label>
-                                <select id="trendRange" style="padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;" onchange="renderTrendCharts()">
-                                    <option value="6">最近6个月</option>
-                                    <option value="12" selected>最近12个月</option>
-                                    <option value="all">全部</option>
-                                </select>
-                                <label style="font-size:13px;color:#64748b;margin-left:8px;">维度：</label>
-                                <select id="trendDim" style="padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;" onchange="renderTrendCharts()">
-                                    <option value="department">部门整体</option>
-                                    <option value="sales">按销售</option>
-                                    <option value="channel">按渠道</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
-                            <div style="background:#f8fafc;border-radius:8px;padding:12px;">
-                                <div style="font-size:13px;font-weight:600;color:#475569;margin-bottom:8px;">签约率趋势</div>
-                                <canvas id="trendSignRateChart" style="max-height:280px;"></canvas>
-                            </div>
-                            <div style="background:#f8fafc;border-radius:8px;padding:12px;">
-                                <div style="font-size:13px;font-weight:600;color:#475569;margin-bottom:8px;">出产率趋势</div>
-                                <canvas id="trendProdRateChart" style="max-height:280px;"></canvas>
-                            </div>
-                        </div>
-                        <div style="margin-top:16px;background:#f8fafc;border-radius:8px;padding:12px;">
-                            <div style="font-size:13px;font-weight:600;color:#475569;margin-bottom:8px;">月度新增签约 & 出产</div>
-                            <canvas id="trendMonthlyNewChart" style="max-height:250px;"></canvas>
-                        </div>
-                    </div>
 
                 <!-- 管理员编辑弹窗 -->
         <div class="modal" id="adminEditModal">
@@ -1853,6 +1766,9 @@
                 </button>
                 <button class="dm-subtab-btn" data-dmtab="dm-entry" onclick="switchDmTab('dm-entry')">
                     <i class="fas fa-keyboard"></i> 数据录入
+                </button>
+                <button class="dm-subtab-btn" data-dmtab="dm-snapshot" onclick="switchDmTab('dm-snapshot')">
+                    <i class="fas fa-calendar-check"></i> 月度扎帐
                 </button>
             </div>
 
@@ -2070,6 +1986,98 @@
                     </div>
                 </div>
             </div>
+
+            <!-- ====== Tab 5: 月度扎帐与趋势分析 ====== -->
+            <div class="dm-tab-content" id="dm-snapshot">
+        
+                        <!-- ====== 月度扎帐 ====== -->
+                        <div class="card" style="margin-top:20px;">
+                            <div class="card-header-with-actions">
+                                <h3><i class="fas fa-calendar-check"></i> 月度扎帐</h3>
+                                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                                    <label style="font-size:13px;color:#64748b;">扎帐月份：</label>
+                                    <input type="month" id="snapshotMonth" style="padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;">
+                                    <button class="btn btn-primary btn-sm" onclick="executeMonthlySnapshot()"><i class="fas fa-check-circle"></i> 执行月度扎帐</button>
+                                    <button class="btn btn-outline btn-sm" onclick="loadSnapshots()"><i class="fas fa-sync-alt"></i> 刷新</button>
+                                    <button class="btn btn-outline btn-sm" onclick="exportSnapshotCsv()"><i class="fas fa-file-csv"></i> 导出CSV</button>
+                                </div>
+                            </div>
+                            <p style="font-size:12px;color:#94a3b8;margin:8px 0 12px;">
+                                <i class="fas fa-info-circle"></i> 扎帐将根据当前institution_data数据，按截止月份计算各维度快照并存入monthly_snapshots表。已存在的同月同维度数据将被覆盖(UPSERT)。
+                            </p>
+
+                            <!-- 快照筛选 -->
+                            <div style="display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
+                                <div style="min-width:120px;">
+                                    <select id="snapshotDimFilter" style="width:100%;padding:8px 12px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;" onchange="renderSnapshotTable()">
+                                        <option value="">全部维度</option>
+                                        <option value="department">部门整体</option>
+                                        <option value="sales">按销售</option>
+                                        <option value="channel">按渠道</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- 快照历史表格 -->
+                            <div style="overflow-x:auto;">
+                                <table class="admin-table" style="width:100%;border-collapse:collapse;" id="snapshotTable">
+                                    <thead>
+                                        <tr style="background:#f1f5f9;text-align:left;">
+                                            <th style="padding:8px 10px;font-weight:600;font-size:12px;color:#475569;">月份</th>
+                                            <th style="padding:8px 10px;font-weight:600;font-size:12px;color:#475569;">维度</th>
+                                            <th style="padding:8px 10px;font-weight:600;font-size:12px;color:#475569;">维度值</th>
+                                            <th style="padding:8px 10px;font-weight:600;font-size:12px;color:#475569;">累计数据</th>
+                                            <th style="padding:8px 10px;font-weight:600;font-size:12px;color:#475569;">累计签约</th>
+                                            <th style="padding:8px 10px;font-weight:600;font-size:12px;color:#475569;">签约率</th>
+                                            <th style="padding:8px 10px;font-weight:600;font-size:12px;color:#475569;">出产量</th>
+                                            <th style="padding:8px 10px;font-weight:600;font-size:12px;color:#475569;">出产率</th>
+                                            <th style="padding:8px 10px;font-weight:600;font-size:12px;color:#475569;">当月新增签约</th>
+                                            <th style="padding:8px 10px;font-weight:600;font-size:12px;color:#475569;">当月新增出产</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="snapshotTableBody">
+                                        <tr><td colspan="10" style="text-align:center;padding:30px;color:#94a3b8;">点击刷新加载快照数据</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- ====== 趋势分析图表 ====== -->
+                        <div class="card" style="margin-top:20px;">
+                            <div class="card-header-with-actions">
+                                <h3><i class="fas fa-chart-area"></i> 📈 趋势分析</h3>
+                                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                                    <label style="font-size:13px;color:#64748b;">时间范围：</label>
+                                    <select id="trendRange" style="padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;" onchange="renderTrendCharts()">
+                                        <option value="6">最近6个月</option>
+                                        <option value="12" selected>最近12个月</option>
+                                        <option value="all">全部</option>
+                                    </select>
+                                    <label style="font-size:13px;color:#64748b;margin-left:8px;">维度：</label>
+                                    <select id="trendDim" style="padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;" onchange="renderTrendCharts()">
+                                        <option value="department">部门整体</option>
+                                        <option value="sales">按销售</option>
+                                        <option value="channel">按渠道</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+                                <div style="background:#f8fafc;border-radius:8px;padding:12px;">
+                                    <div style="font-size:13px;font-weight:600;color:#475569;margin-bottom:8px;">签约率趋势</div>
+                                    <canvas id="trendSignRateChart" style="max-height:280px;"></canvas>
+                                </div>
+                                <div style="background:#f8fafc;border-radius:8px;padding:12px;">
+                                    <div style="font-size:13px;font-weight:600;color:#475569;margin-bottom:8px;">出产率趋势</div>
+                                    <canvas id="trendProdRateChart" style="max-height:280px;"></canvas>
+                                </div>
+                            </div>
+                            <div style="margin-top:16px;background:#f8fafc;border-radius:8px;padding:12px;">
+                                <div style="font-size:13px;font-weight:600;color:#475569;margin-bottom:8px;">月度新增签约 & 出产</div>
+                                <canvas id="trendMonthlyNewChart" style="max-height:250px;"></canvas>
+                            </div>
+                        </div>
+            </div>
+
         </div>
 
     </main>
