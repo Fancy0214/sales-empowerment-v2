@@ -1834,6 +1834,135 @@ body {
     border: 1px solid rgba(27,43,75,0.12);
 }
 
+/* ===== 工具卡片 inline 文件管理 ===== */
+.tool-card-files {
+    margin-top: 12px;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+}
+.tool-files-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    padding: 4px 0;
+    user-select: none;
+}
+.tool-files-header:hover {
+    opacity: 0.8;
+}
+.tool-files-count {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+.tool-files-count .file-badge {
+    background: var(--primary);
+    color: #fff;
+    border-radius: 8px;
+    padding: 1px 6px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    min-width: 18px;
+    text-align: center;
+}
+.tool-files-toggle {
+    font-size: 0.65rem;
+    color: var(--text-light);
+    transition: transform 0.2s ease;
+}
+.tool-files-toggle.expanded {
+    transform: rotate(180deg);
+}
+.tool-files-panel {
+    display: none;
+    margin-top: 8px;
+}
+.tool-files-panel.show {
+    display: block;
+}
+.tool-files-upload-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    color: var(--secondary);
+    transition: all 0.2s ease;
+    background: rgba(107,141,173,0.04);
+    margin-bottom: 8px;
+}
+.tool-files-upload-btn:hover {
+    border-color: var(--accent);
+    background: rgba(107,141,173,0.08);
+    color: var(--accent);
+}
+.tool-files-upload-btn i {
+    font-size: 0.85rem;
+}
+.tool-files-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+.tool-file-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    background: var(--bg-primary);
+    border-radius: 6px;
+    font-size: 0.72rem;
+}
+.tool-file-item-icon {
+    color: var(--secondary);
+    font-size: 0.85rem;
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+}
+.tool-file-item-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-primary);
+}
+.tool-file-item-size {
+    font-size: 0.65rem;
+    color: var(--text-light);
+    flex-shrink: 0;
+}
+.tool-file-item-actions {
+    display: flex;
+    gap: 2px;
+    flex-shrink: 0;
+}
+.tool-file-item-actions button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-light);
+    font-size: 0.75rem;
+    padding: 2px 5px;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+    line-height: 1;
+}
+.tool-file-item-actions button:hover {
+    color: var(--accent);
+    background: rgba(107,141,173,0.1);
+}
+
 /* 保留旧样式兼容 */
 .tool-icon {
     width: 48px;

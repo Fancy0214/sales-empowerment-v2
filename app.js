@@ -6167,7 +6167,111 @@ function renderToolCard(tool, delayIdx, showStageLabels) {
             ${stageLabelsHtml}
             ${funcTags.map(t => `<span class="tool-tag tag-clickable" onclick="event.stopPropagation();toggleTag('${t}')">${t}</span>`).join('')}
         </div>
+        <div class="tool-card-files" id="cardFiles_${tool.id}">
+            <div class="tool-files-header" onclick="event.stopPropagation();toggleCardFiles('${tool.id}')">
+                <span class="tool-files-count">
+                    <i class="fas fa-paperclip"></i> 附件
+                    <span class="file-badge" id="cardFileCount_${tool.id}">-</span>
+                </span>
+                <i class="fas fa-chevron-down tool-files-toggle" id="cardFilesToggle_${tool.id}"></i>
+            </div>
+            <div class="tool-files-panel" id="cardFilesPanel_${tool.id}">
+                <div class="tool-files-upload-btn" onclick="event.stopPropagation();document.getElementById('cardFileInput_${tool.id}').click()">
+                    <input type="file" id="cardFileInput_${tool.id}" style="display:none" multiple accept=".jpg,.jpeg,.png,.gif,.bmp,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,.rar" onchange="handleCardFileUpload('${tool.id}', this.files)">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <span>点击上传文件</span>
+                </div>
+                <div class="tool-files-list" id="cardFilesList_${tool.id}">
+                    <div style="text-align:center;padding:8px;color:var(--text-light);font-size:0.7rem;">
+                        <i class="fas fa-inbox"></i> 展开后加载附件
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>`;
+}
+
+// ===== 卡片 inline 文件管理 =====
+function toggleCardFiles(toolId) {
+    const panel = document.getElementById('cardFilesPanel_' + toolId);
+    const toggle = document.getElementById('cardFilesToggle_' + toolId);
+    if (!panel) return;
+    panel.classList.toggle('show');
+    if (toggle) toggle.classList.toggle('expanded');
+    if (panel.classList.contains('show')) {
+        loadCardFiles(toolId);
+    }
+}
+
+async function loadCardFiles(toolId) {
+    const listEl = document.getElementById('cardFilesList_' + toolId);
+    const countEl = document.getElementById('cardFileCount_' + toolId);
+    if (!listEl || !supabaseClient) return;
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('tool_files')
+            .select('*')
+            .eq('tool_id', toolId)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        const files = data || [];
+        if (countEl) countEl.textContent = files.length;
+
+        if (files.length === 0) {
+            listEl.innerHTML = '<div style="text-align:center;padding:8px;color:var(--text-light);font-size:0.7rem;"><i class="fas fa-inbox"></i> 暂无附件</div>';
+            return;
+        }
+
+        listEl.innerHTML = files.map(file => {
+            const fileIcon = getFileIcon(file.file_type || file.file_name);
+            const fileSize = formatFileSize(file.file_size);
+            const downloadUrl = SUPABASE_URL + '/storage/v1/object/public/' + TOOL_FILES_BUCKET + '/' + file.file_path;
+            const escName = (file.file_name || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+            const escDownloadUrl = downloadUrl.replace(/'/g, "\\'");
+            const escFilePath = (file.file_path || '').replace(/'/g, "\\'");
+            const isShare = typeof isShareMode !== 'undefined' && isShareMode;
+            return '<div class="tool-file-item">' +
+                '<span class="tool-file-item-icon"><i class="fas ' + fileIcon + '"></i></span>' +
+                '<span class="tool-file-item-name" title="' + escName + '">' + escName + '</span>' +
+                '<span class="tool-file-item-size">' + fileSize + '</span>' +
+                '<div class="tool-file-item-actions">' +
+                    '<button onclick="event.stopPropagation();downloadToolFile(\'' + escDownloadUrl + '\',\'' + escName + '\')" title="下载"><i class="fas fa-download"></i></button>' +
+                    (isShare ? '' : '<button onclick="event.stopPropagation();deleteCardFile(\'' + file.id + '\',\'' + escFilePath + '\',\'' + toolId + '\')" title="删除"><i class="fas fa-trash-alt"></i></button>') +
+                '</div>' +
+            '</div>';
+        }).join('');
+    } catch (err) {
+        console.error('加载卡片附件失败:', err);
+        if (countEl) countEl.textContent = '!';
+    }
+}
+
+async function handleCardFileUpload(toolId, files) {
+    if (!files || files.length === 0) return;
+    await handleToolFileUpload(toolId, files);
+    setTimeout(function() { loadCardFiles(toolId); }, 600);
+}
+
+async function deleteCardFile(fileId, filePath, toolId) {
+    if (!confirm('确定要删除此附件吗？删除后不可恢复。')) return;
+    if (!supabaseClient) return;
+    try {
+        const { error: storageError } = await supabaseClient.storage
+            .from(TOOL_FILES_BUCKET)
+            .remove([filePath]);
+        if (storageError) console.warn('Storage删除失败:', storageError.message);
+        const { error: dbError } = await supabaseClient
+            .from('tool_files')
+            .delete()
+            .eq('id', fileId);
+        if (dbError) throw dbError;
+        await loadCardFiles(toolId);
+    } catch (err) {
+        console.error('删除附件失败:', err);
+        alert('删除失败: ' + (err.message || '未知错误'));
+    }
 }
 
 // ===== 分阶段视图 =====
