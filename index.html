@@ -2616,36 +2616,39 @@
     function renderDmDataTab() {
         if (!dmAllData || dmAllData.length === 0) return;
         const data = dmAllData;
-        const total = data.length;
-        const signed = data.filter(d => d.contract_status === '合作中').length;
-        const output = data.filter(d => d.production_status === '已出产').length;
-        const sRate = dmPctNum(signed, total);
-        const oRate = dmPctNum(output, signed);
 
-        // 当年度数据
+        // 增量数据（当年度）作为主要统计口径
         const curYear = data.filter(d => d.data_year === '当年度');
+        const curYearTotal = curYear.length;
         const curYearSigned = curYear.filter(d => d.contract_status === '合作中').length;
+        const curOutput = curYear.filter(d => d.production_status === '已出产').length;
+
+        // 存量数据（8.31前）作为参考
         const prevData = data.filter(d => d.data_year !== '当年度');
         const prevSigned = prevData.filter(d => d.contract_status === '合作中').length;
         const prevOutput = prevData.filter(d => d.production_status === '已出产').length;
-        const curOutput = curYear.filter(d => d.production_status === '已出产').length;
 
-        // ---- 7张指标卡片 ----
+        // 全量汇总
+        const total = data.length;
+        const signed = curYearSigned + prevSigned;
+        const output = curOutput + prevOutput;
+
+        // ---- 7张指标卡片（以增量为主口径） ----
         document.getElementById('dmDataMetricCards').innerHTML = `
             <div class="m-card" onclick="dmToggleCard(this,'dmDetail-data')">
-                <div class="label">📁 数据量</div><div class="val blue">${total}</div><div class="detail">全量数据</div><div class="arrow-down">▼</div>
+                <div class="label">📁 数据量</div><div class="val blue">${curYearTotal}</div><div class="detail">增量数据（含存量${prevData.length}）</div><div class="arrow-down">▼</div>
             </div>
             <div class="m-card" onclick="dmToggleCard(this,'dmDetail-signed')">
-                <div class="label">🤝 签约量</div><div class="val">${signed}</div><div class="detail">合作中</div><div class="arrow-down">▼</div>
+                <div class="label">🤝 签约量</div><div class="val">${curYearSigned}</div><div class="detail">增量合作中</div><div class="arrow-down">▼</div>
             </div>
             <div class="m-card green" onclick="dmToggleCard(this,'dmDetail-srate')">
-                <div class="label">📈 总签约率</div><div class="val">${dmPct(signed, total)}</div><div class="detail">${signed}/${total}</div><div class="arrow-down">▼</div>
+                <div class="label">📈 总签约率</div><div class="val">${dmPct(curYearSigned, curYearTotal)}</div><div class="detail">${curYearSigned}/${curYearTotal}</div><div class="arrow-down">▼</div>
             </div>
             <div class="m-card" onclick="dmToggleCard(this,'dmDetail-prod')">
-                <div class="label">🏭 出产量</div><div class="val orange">${output}</div><div class="detail">合作中${signed}</div><div class="arrow-down">▼</div>
+                <div class="label">🏭 出产量</div><div class="val orange">${curOutput}</div><div class="detail">增量出产</div><div class="arrow-down">▼</div>
             </div>
             <div class="m-card orange" onclick="dmToggleCard(this,'dmDetail-prate')">
-                <div class="label">⚙️ 出产率</div><div class="val">${dmPct(output, signed)}</div><div class="detail">${output}/${signed}</div><div class="arrow-down">▼</div>
+                <div class="label">⚙️ 出产率</div><div class="val">${dmPct(curOutput, curYearSigned)}</div><div class="detail">${curOutput}/${curYearSigned}</div><div class="arrow-down">▼</div>
             </div>
             <div class="m-card" onclick="dmToggleCard(this,'dmDetail-apply')">
                 <div class="label">📝 申请量</div><div class="val">${712 + (_weeklyEntries || []).reduce((s,e) => s + (e.new_applications || 0), 0)}</div><div class="detail">截止7/31:712 + 周度增量${(_weeklyEntries || []).reduce((s,e) => s + (e.new_applications || 0), 0)}</div><div class="arrow-down">▼</div>
@@ -2685,8 +2688,8 @@
             </div></div>
         `;
 
-        // ---- 销售个人对比卡片 ----
-        renderDmSalesGrid('dmDataSalesGrid', data, '👤 销售个人数据对比');
+        // ---- 销售个人对比卡片（仅增量） ----
+        renderDmSalesGrid('dmDataSalesGrid', curYear, '👤 销售个人数据对比（增量）');
 
         // ---- 机构级别分布表 ----
         renderDmLevelTable('dmDataLevelTable', data.filter(d => d.contract_status === '合作中'), '📊 机构级别分布（合作中）');
