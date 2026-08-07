@@ -2538,19 +2538,27 @@
         if (_dmCharts[id]) { _dmCharts[id].destroy(); delete _dmCharts[id]; }
     }
 
-    // 销售名脱敏映射（全局唯一，按名称排序固定分配，确保各模块一致）
+    // 销售名脱敏映射（固定映射，不按字母排序动态分配）
     const _salesAlias = {};
-    const _aliasLetters = ['D','M','F','G','H','J','K','L','N','P'];
     let _salesAliasBuilt = false;
 
     function _buildSalesAliasOnce() {
         if (_salesAliasBuilt || !dmAllData || dmAllData.length === 0) return;
         Object.keys(_salesAlias).forEach(k => delete _salesAlias[k]);
-        const uniqueNames = [...new Set(dmAllData.map(r => r.负责销售).filter(Boolean))].sort();
-        // 固定按 D/M/F 顺序分配（用户拜访顺序：D→M→F）
-        const fixedLetters = ['D','M','F','G','H','J','K','L','N','P'];
-        uniqueNames.forEach((name, i) => {
-            _salesAlias[name] = '销售' + (fixedLetters[i] || String(i + 1));
+        // 固定映射表（与import_data.py的SALES_MAP一致）
+        _salesAlias['刘济超'] = '销售D';
+        _salesAlias['李心雨'] = '销售M';
+        _salesAlias['彭凡珊'] = '销售F';
+        // 处理未在映射表中的销售（按D→M→F→其他顺序分配剩余字母）
+        const uniqueNames = [...new Set(dmAllData.map(r => r.负责销售).filter(Boolean))];
+        const mappedNames = new Set(Object.keys(_salesAlias));
+        const fixedLetters = ['G','H','J','K','L','N','P'];
+        let li = 0;
+        uniqueNames.forEach(name => {
+            if (!mappedNames.has(name)) {
+                _salesAlias[name] = '销售' + (fixedLetters[li] || String(li + 7));
+                li++;
+            }
         });
         _salesAliasBuilt = true;
     }
