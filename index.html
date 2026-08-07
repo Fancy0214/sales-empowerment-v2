@@ -2487,28 +2487,46 @@
         if (_dmCharts[id]) { _dmCharts[id].destroy(); delete _dmCharts[id]; }
     }
 
-    // 销售名脱敏映射
+    // 销售名脱敏映射（全局唯一，按名称排序固定分配，确保各模块一致）
     const _salesAlias = {};
     const _aliasLetters = ['D','M','F','G','H','J','K','L','N','P'];
-    function getSalesAlias(name) {
-        if (!name) return '未知';
-        if (!_salesAlias[name]) {
-            const idx = Object.keys(_salesAlias).length;
-            _salesAlias[name] = '销售' + (_aliasLetters[idx] || String(idx+1));
-        }
-        return _salesAlias[name];
+    let _salesAliasBuilt = false;
+
+    function _buildSalesAliasOnce() {
+        if (_salesAliasBuilt || !dmAllData || dmAllData.length === 0) return;
+        Object.keys(_salesAlias).forEach(k => delete _salesAlias[k]);
+        const uniqueNames = [...new Set(dmAllData.map(r => r.负责销售).filter(Boolean))].sort();
+        uniqueNames.forEach((name, i) => {
+            _salesAlias[name] = '销售' + (_aliasLetters[i] || String(i + 1));
+        });
+        _salesAliasBuilt = true;
     }
 
-    // 渠道名脱敏映射
+    function getSalesAlias(name) {
+        if (!name) return '未知';
+        _buildSalesAliasOnce();
+        return _salesAlias[name] || name;
+    }
+
+    // 渠道名脱敏映射（同样固定分配）
     const _channelAlias = {};
     const _chLetters = ['A','B','C','D','E','F','G','H','I','J'];
+    let _channelAliasBuilt = false;
+
+    function _buildChannelAliasOnce() {
+        if (_channelAliasBuilt || !dmAllData || dmAllData.length === 0) return;
+        Object.keys(_channelAlias).forEach(k => delete _channelAlias[k]);
+        const uniqueNames = [...new Set(dmAllData.map(r => r.渠道人员).filter(Boolean))].sort();
+        uniqueNames.forEach((name, i) => {
+            _channelAlias[name] = '渠道' + (_chLetters[i] || String(i + 1));
+        });
+        _channelAliasBuilt = true;
+    }
+
     function getChannelAlias(name) {
         if (!name) return '未知';
-        if (!_channelAlias[name]) {
-            const idx = Object.keys(_channelAlias).length;
-            _channelAlias[name] = '渠道' + (_chLetters[idx] || String(idx+1));
-        }
-        return _channelAlias[name];
+        _buildChannelAliasOnce();
+        return _channelAlias[name] || name;
     }
 
     // 百分比工具
@@ -3397,7 +3415,9 @@
     // ==================== 统一入口：更新所有数据面板 ====================
     function updateGlobalAndPersonalStats() {
         if (!dmAllData || dmAllData.length === 0) return;
-        // 清除旧的脱敏映射重新生成
+        // 重置别名映射，数据变化时重新构建
+        _salesAliasBuilt = false;
+        _channelAliasBuilt = false;
         Object.keys(_salesAlias).forEach(k => delete _salesAlias[k]);
         Object.keys(_channelAlias).forEach(k => delete _channelAlias[k]);
 
