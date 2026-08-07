@@ -1795,6 +1795,8 @@
                 <div class="dm-section" id="dmDataInsights"></div>
                 <!-- 交叉分析表 -->
                 <div class="dm-section" id="dmDataCrossTables"></div>
+                <!-- 周度增量累计 -->
+                <div class="dm-section" id="dmDataWeeklyIncrement"></div>
             </div>
 
             <!-- ====== Tab 2: 口碑管理层面 ====== -->
@@ -1932,6 +1934,53 @@
                                 <div class="dm-field"><label>申请量</label><input type="number" id="dmAddPerfApp" class="dm-input" value="0" min="0"></div>
                                 <div class="dm-field dm-field-btn"><button class="btn btn-primary dm-btn-sm" onclick="dmAddPerformance()"><i class="fas fa-plus"></i> 录入</button></div>
                             </div>
+                        </div>
+                    </div>
+                    <!-- 周度业绩录入 -->
+                    <div class="dm-entry-section">
+                        <h3 class="dm-chart-title"><i class="fas fa-calendar-week"></i> 周度业绩录入</h3>
+                        <div class="dm-entry-block">
+                            <h4>录入周度增量数据</h4>
+                            <div class="dm-form-row dm-form-row-wide">
+                                <div class="dm-field"><label>销售人员</label><select id="dmWeekSales" class="dm-input"><option value="">-- 选择 --</option></select></div>
+                                <div class="dm-field"><label>年</label><input type="number" id="dmWeekYear" class="dm-input" value="2026"></div>
+                                <div class="dm-field"><label>月</label>
+                                    <select id="dmWeekMonth" class="dm-input">
+                                        <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option><option value="4">4月</option>
+                                        <option value="5">5月</option><option value="6">6月</option><option value="7">7月</option><option value="8" selected>8月</option>
+                                        <option value="9">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
+                                    </select>
+                                </div>
+                                <div class="dm-field"><label>周次</label>
+                                    <select id="dmWeekNum" class="dm-input">
+                                        <option value="1">第1周</option><option value="2">第2周</option><option value="3">第3周</option><option value="4">第4周</option><option value="5">第5周</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <p style="font-size:12px;color:#94a3b8;margin:4px 0 8px;"><i class="fas fa-info-circle"></i> 以下分项之和应等于总新增，系统不做强制校验</p>
+                            <div class="dm-form-row dm-form-row-wide">
+                                <div class="dm-field"><label>总新增签约</label><input type="number" id="dmWeekTotalSign" class="dm-input" value="0" min="0"></div>
+                                <div class="dm-field"><label>总新增出产</label><input type="number" id="dmWeekTotalOutput" class="dm-input" value="0" min="0"></div>
+                                <div class="dm-field"><label>总新增申请</label><input type="number" id="dmWeekTotalApp" class="dm-input" value="0" min="0"></div>
+                            </div>
+                            <div class="dm-form-row dm-form-row-wide">
+                                <div class="dm-field"><label>口碑新增签约</label><input type="number" id="dmWeekRefSign" class="dm-input" value="0" min="0"></div>
+                                <div class="dm-field"><label>口碑新增出产</label><input type="number" id="dmWeekRefOutput" class="dm-input" value="0" min="0"></div>
+                                <div class="dm-field"><label>口碑新增申请</label><input type="number" id="dmWeekRefApp" class="dm-input" value="0" min="0"></div>
+                            </div>
+                            <div class="dm-form-row dm-form-row-wide">
+                                <div class="dm-field"><label>非口碑新增签约</label><input type="number" id="dmWeekNonRefSign" class="dm-input" value="0" min="0"></div>
+                                <div class="dm-field"><label>非口碑新增出产</label><input type="number" id="dmWeekNonRefOutput" class="dm-input" value="0" min="0"></div>
+                                <div class="dm-field"><label>非口碑新增申请</label><input type="number" id="dmWeekNonRefApp" class="dm-input" value="0" min="0"></div>
+                            </div>
+                            <div class="dm-form-row" style="justify-content:flex-end;">
+                                <div class="dm-field dm-field-btn"><button class="btn btn-primary dm-btn-sm" onclick="submitWeeklyEntry()"><i class="fas fa-plus"></i> 录入</button></div>
+                            </div>
+                        </div>
+                        <!-- 最近录入记录 -->
+                        <div class="dm-entry-block">
+                            <h4>最近周度录入 <button class="btn btn-outline dm-btn-sm" onclick="loadWeeklyEntries()" style="margin-left:8px;"><i class="fas fa-sync-alt"></i> 刷新</button></h4>
+                            <div id="dmWeeklyEntriesTable"><p class="hint">加载中...</p></div>
                         </div>
                     </div>
                     <!-- Excel导入区 -->
@@ -2417,6 +2466,8 @@
             updateDataMgmtStats();
             updateGlobalAndPersonalStats();
             filterDataMgmtTable();
+            populateWeeklySalesDropdown();
+            loadWeeklyEntries();
             showDmToast('数据加载成功（' + dmAllData.length + ' 条）', 'success');
             // 确保当前可见的子Tab也用最新数据刷新（修复首次进入时旧数据源覆盖的问题）
             setTimeout(function() {
@@ -2589,7 +2640,7 @@
                 <div class="label">⚙️ 出产率</div><div class="val">${dmPct(output, signed)}</div><div class="detail">${output}/${signed}</div><div class="arrow-down">▼</div>
             </div>
             <div class="m-card" onclick="dmToggleCard(this,'dmDetail-apply')">
-                <div class="label">📝 申请量</div><div class="val" style="color:#a0aec0">—</div><div class="detail">待补充</div><div class="arrow-down">▼</div>
+                <div class="label">📝 申请量</div><div class="val">${712 + (_weeklyEntries || []).reduce((s,e) => s + (e.new_applications || 0), 0)}</div><div class="detail">截止7/31:712 + 周度增量${(_weeklyEntries || []).reduce((s,e) => s + (e.new_applications || 0), 0)}</div><div class="arrow-down">▼</div>
             </div>
             <div class="m-card" onclick="dmToggleCard(this,'dmDetail-enroll')">
                 <div class="label">🎓 入学量</div><div class="val" style="color:#a0aec0">—</div><div class="detail">待补充</div><div class="arrow-down">▼</div>
@@ -3436,10 +3487,190 @@
         renderDmDataTab();
         renderDmReferralTab();
         renderDmChannelTab();
+        renderWeeklyIncrement();
     }
 
+    // ==================== 周度业绩录入 ====================
+    let _weeklyEntries = [];
+    const WEEKLY_TABLE = 'weekly_sales_entries';
 
+    // 填充周度录入的销售下拉
+    function populateWeeklySalesDropdown() {
+        const sel = document.getElementById('dmWeekSales');
+        if (!sel || !dmAllData || dmAllData.length === 0) return;
+        const cur = sel.value;
+        const uniqueSales = sortSalesByAlias([...new Set(dmAllData.map(d => d.负责销售).filter(Boolean))]);
+        sel.innerHTML = '<option value="">-- 选择 --</option>';
+        uniqueSales.forEach(sp => {
+            sel.innerHTML += `<option value="${sp}">${getSalesAlias(sp)}</option>`;
+        });
+        if (cur) sel.value = cur;
+    }
 
+    // 加载周度录入记录
+    async function loadWeeklyEntries() {
+        const client = getDmClient();
+        if (!client) return;
+        try {
+            const { data, error } = await client.from(WEEKLY_TABLE).select('*').order('year', { ascending: false }).order('month', { ascending: false }).order('week', { ascending: false });
+            if (error) throw error;
+            _weeklyEntries = data || [];
+            renderWeeklyEntries();
+            renderWeeklyIncrement();
+        } catch(e) {
+            console.error('[Weekly] load error:', e);
+            document.getElementById('dmWeeklyEntriesTable').innerHTML = `<p class="hint" style="color:#e53e3e;">加载失败: ${e.message}</p>`;
+        }
+    }
+
+    // 渲染周度录入记录表格
+    function renderWeeklyEntries() {
+        const container = document.getElementById('dmWeeklyEntriesTable');
+        if (!_weeklyEntries || _weeklyEntries.length === 0) {
+            container.innerHTML = '<p class="hint">暂无周度录入记录</p>';
+            return;
+        }
+        let html = '<table style="width:100%;font-size:12px;"><thead><tr>';
+        html += '<th>销售</th><th>时间</th><th>总签约</th><th>总出产</th><th>总申请</th><th>口碑签约</th><th>口碑出产</th><th>口碑申请</th><th>非口碑签约</th><th>非口碑出产</th><th>非口碑申请</th><th>操作</th>';
+        html += '</tr></thead><tbody>';
+        _weeklyEntries.forEach(e => {
+            const alias = getSalesAlias(e.sales_person);
+            html += `<tr>
+                <td>${alias}</td>
+                <td>${e.year}年${e.month}月第${e.week}周</td>
+                <td>${e.new_signings || 0}</td><td>${e.new_output || 0}</td><td>${e.new_applications || 0}</td>
+                <td>${e.referral_new_signings || 0}</td><td>${e.referral_new_output || 0}</td><td>${e.referral_new_applications || 0}</td>
+                <td>${e.non_referral_new_signings || 0}</td><td>${e.non_referral_new_output || 0}</td><td>${e.non_referral_new_applications || 0}</td>
+                <td><button class="dm-action-btn delete" onclick="deleteWeeklyEntry('${e.id}')"><i class="fas fa-trash"></i></button></td>
+            </tr>`;
+        });
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    // 提交周度录入
+    async function submitWeeklyEntry() {
+        const client = getDmClient();
+        if (!client) { showDmToast('Supabase客户端未就绪', 'error'); return; }
+        const salesPerson = document.getElementById('dmWeekSales').value;
+        if (!salesPerson) { showDmToast('请选择销售人员', 'error'); return; }
+        const year = parseInt(document.getElementById('dmWeekYear').value);
+        const month = parseInt(document.getElementById('dmWeekMonth').value);
+        const week = parseInt(document.getElementById('dmWeekNum').value);
+        const payload = {
+            sales_person: salesPerson,
+            year: year,
+            month: month,
+            week: week,
+            new_signings: parseInt(document.getElementById('dmWeekTotalSign').value) || 0,
+            new_output: parseInt(document.getElementById('dmWeekTotalOutput').value) || 0,
+            new_applications: parseInt(document.getElementById('dmWeekTotalApp').value) || 0,
+            referral_new_signings: parseInt(document.getElementById('dmWeekRefSign').value) || 0,
+            referral_new_output: parseInt(document.getElementById('dmWeekRefOutput').value) || 0,
+            referral_new_applications: parseInt(document.getElementById('dmWeekRefApp').value) || 0,
+            non_referral_new_signings: parseInt(document.getElementById('dmWeekNonRefSign').value) || 0,
+            non_referral_new_output: parseInt(document.getElementById('dmWeekNonRefOutput').value) || 0,
+            non_referral_new_applications: parseInt(document.getElementById('dmWeekNonRefApp').value) || 0
+        };
+        try {
+            showDmToast('正在提交...', 'info');
+            const { data, error } = await client.from(WEEKLY_TABLE).insert(payload).select();
+            if (error) throw error;
+            showDmToast('周度业绩已录入', 'success');
+            // 重置表单
+            ['dmWeekTotalSign','dmWeekTotalOutput','dmWeekTotalApp','dmWeekRefSign','dmWeekRefOutput','dmWeekRefApp','dmWeekNonRefSign','dmWeekNonRefOutput','dmWeekNonRefApp'].forEach(id => {
+                document.getElementById(id).value = '0';
+            });
+            await loadWeeklyEntries();
+        } catch(e) {
+            showDmToast('录入失败: ' + e.message, 'error');
+        }
+    }
+
+    // 删除周度录入
+    async function deleteWeeklyEntry(id) {
+        if (!confirm('确定要删除这条周度录入记录吗？')) return;
+        const client = getDmClient();
+        if (!client) return;
+        try {
+            const { error } = await client.from(WEEKLY_TABLE).delete().eq('id', id);
+            if (error) throw error;
+            showDmToast('已删除', 'success');
+            await loadWeeklyEntries();
+        } catch(e) {
+            showDmToast('删除失败: ' + e.message, 'error');
+        }
+    }
+
+    // 在数据概览中展示周度增量
+    function renderWeeklyIncrement() {
+        if (!_weeklyEntries || _weeklyEntries.length === 0) return;
+        if (!dmAllData || dmAllData.length === 0) return;
+
+        // 按销售汇总所有周度增量
+        const salesPersons = sortSalesByAlias([...new Set(dmAllData.map(d => d.负责销售).filter(Boolean))]);
+        const weeklyBySales = {};
+        salesPersons.forEach(sp => {
+            const entries = _weeklyEntries.filter(e => e.sales_person === sp);
+            weeklyBySales[sp] = {
+                totalSign: entries.reduce((s, e) => s + (e.new_signings || 0), 0),
+                totalOutput: entries.reduce((s, e) => s + (e.new_output || 0), 0),
+                totalApp: entries.reduce((s, e) => s + (e.new_applications || 0), 0),
+                refSign: entries.reduce((s, e) => s + (e.referral_new_signings || 0), 0),
+                refOutput: entries.reduce((s, e) => s + (e.referral_new_output || 0), 0),
+                refApp: entries.reduce((s, e) => s + (e.referral_new_applications || 0), 0),
+                nonRefSign: entries.reduce((s, e) => s + (e.non_referral_new_signings || 0), 0),
+                nonRefOutput: entries.reduce((s, e) => s + (e.non_referral_new_output || 0), 0),
+                nonRefApp: entries.reduce((s, e) => s + (e.non_referral_new_applications || 0), 0)
+            };
+        });
+
+        // 团队总计
+        const teamTotal = {
+            sign: Object.values(weeklyBySales).reduce((s, v) => s + v.totalSign, 0),
+            output: Object.values(weeklyBySales).reduce((s, v) => s + v.totalOutput, 0),
+            app: Object.values(weeklyBySales).reduce((s, v) => s + v.totalApp, 0),
+            refSign: Object.values(weeklyBySales).reduce((s, v) => s + v.refSign, 0),
+            refOutput: Object.values(weeklyBySales).reduce((s, v) => s + v.refOutput, 0),
+            refApp: Object.values(weeklyBySales).reduce((s, v) => s + v.refApp, 0)
+        };
+
+        // 在数据管理层面Tab追加周度增量板块
+        let html = `<div class="dm-section-title">📅 周度增量累计（含口碑/非口碑分项）</div>`;
+        html += `<div class="sales-grid" style="grid-template-columns:repeat(${Math.min(salesPersons.length, 4)},1fr)">`;
+        const colors = ['blue', 'orange', 'green'];
+        const badgeColors = ['d', 'm', 'f'];
+        salesPersons.forEach((sp, idx) => {
+            const w = weeklyBySales[sp];
+            const ci = idx % 3;
+            const barColor = colors[ci];
+            const badge = badgeColors[ci];
+            html += `
+                <div class="sales-card">
+                    <div class="sc-header">
+                        <span class="sc-name">${getSalesAlias(sp)}</span>
+                        <span class="sc-badge ${badge}">${getSalesAlias(sp).replace('销售','')}</span>
+                        <span class="sc-count">累计增量</span>
+                    </div>
+                    <div class="sc-row">
+                        <div class="sc-row-label">总新增</div>
+                        <div class="sc-bar-track"><div class="sc-bar-fill ${barColor}" style="width:100%">${w.totalSign}签 / ${w.totalOutput}产 / ${w.totalApp}申</div></div>
+                        <div class="sc-bar-stats">口碑${w.refSign}签${w.refOutput}产${w.refApp}申 | 非口碑${w.nonRefSign}签${w.nonRefOutput}产${w.nonRefApp}申</div>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+
+        // 团队汇总
+        html += `<div style="margin-top:12px;padding:10px 16px;background:rgba(99,179,237,0.08);border-radius:8px;font-size:13px;">
+            <strong>团队周度增量合计：</strong>签约 ${teamTotal.sign} | 出产 ${teamTotal.output} | 申请 ${teamTotal.app}
+            <span style="margin-left:12px;color:#718096;">（口碑：${teamTotal.refSign}签${teamTotal.refOutput}产${teamTotal.refApp}申）</span>
+        </div>`;
+
+        const weeklySection = document.getElementById('dmDataWeeklyIncrement');
+        if (weeklySection) weeklySection.innerHTML = html;
+    }
 
     // ==================== 月度扎帐 & 趋势分析（恢复） ====================
     const SNAPSHOT_TABLE = 'monthly_snapshots';
@@ -3809,6 +4040,10 @@
                     loadInstitutionData();
                 }
                 if (typeof dmPopulateSalesDropdowns === 'function') dmPopulateSalesDropdowns();
+            }
+            if (tabId === 'dm-entry') {
+                populateWeeklySalesDropdown();
+                loadWeeklyEntries();
             }
         };
     })();
