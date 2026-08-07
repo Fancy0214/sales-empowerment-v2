@@ -2643,7 +2643,7 @@
                 <div class="label">📝 申请量</div><div class="val">${712 + (_weeklyEntries || []).reduce((s,e) => s + (e.new_applications || 0), 0)}</div><div class="detail">截止7/31:712 + 周度增量${(_weeklyEntries || []).reduce((s,e) => s + (e.new_applications || 0), 0)}</div><div class="arrow-down">▼</div>
             </div>
             <div class="m-card" onclick="dmToggleCard(this,'dmDetail-enroll')">
-                <div class="label">🎓 入学量</div><div class="val" style="color:#a0aec0">—</div><div class="detail">待补充</div><div class="arrow-down">▼</div>
+                <div class="label">🎓 入学量</div><div class="val">${186 + (_weeklyEntries || []).reduce((s,e) => s + (e.new_output || 0), 0)}</div><div class="detail">截止8/7:186 + 周度增量${(_weeklyEntries || []).reduce((s,e) => s + (e.new_output || 0), 0)}</div><div class="arrow-down">▼</div>
             </div>
         `;
 
@@ -3497,12 +3497,13 @@
     // 填充周度录入的销售下拉
     function populateWeeklySalesDropdown() {
         const sel = document.getElementById('dmWeekSales');
-        if (!sel || !dmAllData || dmAllData.length === 0) return;
+        if (!sel) return;
         const cur = sel.value;
-        const uniqueSales = sortSalesByAlias([...new Set(dmAllData.map(d => d.负责销售).filter(Boolean))]);
+        // 固定销售选项，不依赖dmAllData
+        const fixedOptions = ['销售D', '销售M', '销售F', '销售其他'];
         sel.innerHTML = '<option value="">-- 选择 --</option>';
-        uniqueSales.forEach(sp => {
-            sel.innerHTML += `<option value="${sp}">${getSalesAlias(sp)}</option>`;
+        fixedOptions.forEach(sp => {
+            sel.innerHTML += `<option value="${sp}">${sp}</option>`;
         });
         if (cur) sel.value = cur;
     }
