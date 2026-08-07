@@ -2496,10 +2496,22 @@
         if (_salesAliasBuilt || !dmAllData || dmAllData.length === 0) return;
         Object.keys(_salesAlias).forEach(k => delete _salesAlias[k]);
         const uniqueNames = [...new Set(dmAllData.map(r => r.负责销售).filter(Boolean))].sort();
+        // 固定按 D/M/F 顺序分配（用户拜访顺序：D→M→F）
+        const fixedLetters = ['D','M','F','G','H','J','K','L','N','P'];
         uniqueNames.forEach((name, i) => {
-            _salesAlias[name] = '销售' + (_aliasLetters[i] || String(i + 1));
+            _salesAlias[name] = '销售' + (fixedLetters[i] || String(i + 1));
         });
         _salesAliasBuilt = true;
+    }
+
+    // 按别名字母顺序排序销售（D→M→F），所有模块统一使用
+    function sortSalesByAlias(arr) {
+        const letterOrder = { D:0, M:1, F:2, G:3, H:4, J:5, K:6, L:7, N:8, P:9 };
+        return arr.slice().sort((a, b) => {
+            const la = getSalesAlias(a).replace('销售','');
+            const lb = getSalesAlias(b).replace('销售','');
+            return (letterOrder[la] ?? 99) - (letterOrder[lb] ?? 99);
+        });
     }
 
     function getSalesAlias(name) {
@@ -2700,7 +2712,7 @@
 
         // 口碑 x 销售个人
         const signedData = data.filter(d => d.contract_status === '合作中');
-        const salesPersons = [...new Set(data.map(d => d.sales_person).filter(Boolean))].sort();
+        const salesPersons = sortSalesByAlias([...new Set(data.map(d => d.sales_person).filter(Boolean))]);
         let salesHtml = '<div class="dm-section-title">⭐ 口碑 × 销售个人</div>';
         salesHtml += `<div class="sales-grid" style="grid-template-columns:repeat(${Math.min(salesPersons.length, 4)},1fr)">`;
         salesPersons.forEach(sp => {
@@ -2806,7 +2818,7 @@
 
         // 渠道 x 销售
         const chSigned = channelData.filter(d => d.contract_status === '合作中');
-        const salesPersons = [...new Set(channelData.map(d => d.sales_person).filter(Boolean))].sort();
+        const salesPersons = sortSalesByAlias([...new Set(channelData.map(d => d.sales_person).filter(Boolean))]);
         let salesHtml = '<div class="dm-section-title">🔗 渠道 × 销售个人（合作中）</div><div class="sales-grid">';
         salesPersons.forEach(sp => {
             const spCoop = chSigned.filter(d => d.sales_person === sp);
@@ -2872,7 +2884,7 @@
     // 销售个人对比卡片
     function renderDmSalesGrid(containerId, data, title) {
         const signedData = data.filter(d => d.contract_status === '合作中');
-        const salesPersons = [...new Set(data.map(d => d.sales_person).filter(Boolean))].sort();
+        const salesPersons = sortSalesByAlias([...new Set(data.map(d => d.sales_person).filter(Boolean))]);
         if (salesPersons.length === 0) return;
 
         let html = `<div class="dm-section-title">${title}</div><div class="sales-grid">`;
@@ -3076,7 +3088,7 @@
     function renderDmDeepAnalysis(containerId, data) {
         const signedData = data.filter(d => d.contract_status === '合作中');
         const outputData = data.filter(d => d.production_status === '已出产');
-        const salesPersons = [...new Set(data.map(d => d.sales_person).filter(Boolean))].sort();
+        const salesPersons = sortSalesByAlias([...new Set(data.map(d => d.sales_person).filter(Boolean))]);
 
         let html = `
             <div class="dm-section-title">📊 深度分析</div>
@@ -3170,7 +3182,7 @@
 
     // 口碑 vs 非口碑对比图
     function renderDmReferralChart(containerId, data) {
-        const salesPersons = [...new Set(data.map(d => d.sales_person).filter(Boolean))].sort();
+        const salesPersons = sortSalesByAlias([...new Set(data.map(d => d.sales_person).filter(Boolean))]);
         let html = `
             <div class="dm-section-title">📊 口碑签约率 vs 非口碑签约率（当年度）</div>
             <div style="max-width:500px;margin:0 auto"><canvas id="dmRefVsNonRefChart"></canvas></div>
@@ -3213,7 +3225,7 @@
     function renderDmInsights(containerId, data) {
         const signedData = data.filter(d => d.contract_status === '合作中');
         const outputData = data.filter(d => d.production_status === '已出产');
-        const salesPersons = [...new Set(data.map(d => d.sales_person).filter(Boolean))].sort();
+        const salesPersons = sortSalesByAlias([...new Set(data.map(d => d.sales_person).filter(Boolean))]);
 
         const insights = [];
         // 找最强销售
@@ -3261,7 +3273,7 @@
 
     // 交叉分析表
     function renderDmCrossTables(containerId, data) {
-        const salesPersons = [...new Set(data.map(d => d.sales_person).filter(Boolean))].sort();
+        const salesPersons = sortSalesByAlias([...new Set(data.map(d => d.sales_person).filter(Boolean))]);
         const levels = ['A+','B','C','D','E','F'];
         const signedData = data.filter(d => d.contract_status === '合作中');
 
