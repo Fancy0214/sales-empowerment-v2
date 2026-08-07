@@ -6696,3 +6696,121 @@ html.share-loading .share-loading-mask {
         align-items: stretch;
     }
 }
+
+
+/* ==================== 数据管理专区 - Demo 风格组件 ==================== */
+
+/* 指标卡片区域 */
+.metric-cards{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:6px}
+@media(max-width:1200px){.metric-cards{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:768px){.metric-cards{grid-template-columns:repeat(2,1fr)}}
+
+.m-card{background:var(--bg-card,#fff);border-radius:12px;padding:16px 10px;box-shadow:0 1px 3px rgba(0,0,0,.08);cursor:pointer;transition:box-shadow .2s,border-color .2s,transform .15s;border:2px solid transparent;user-select:none;text-align:center}
+.m-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.12);border-color:color-mix(in srgb, var(--primary) 30%, transparent);transform:translateY(-2px)}
+.m-card.expanded{border-color:var(--primary);box-shadow:0 4px 14px color-mix(in srgb, var(--primary) 18%, transparent);transform:translateY(-2px)}
+.m-card .label{font-size:11px;color:var(--text-secondary,#718096);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m-card .val{font-size:24px;font-weight:700;color:var(--primary,#1a365d)}
+.m-card .detail{font-size:10px;color:var(--text-muted,#a0aec0);margin-top:3px}
+.m-card .arrow-down{font-size:10px;color:var(--text-muted,#a0aec0);margin-top:4px;transition:transform .25s}
+.m-card.expanded .arrow-down{transform:rotate(180deg)}
+.m-card.green .val{color:#38a169}
+.m-card.orange .val{color:#dd6b20}
+.m-card.blue .val{color:var(--primary,#3182ce)}
+
+/* 卡片展开详情面板 */
+.card-detail{display:none;background:var(--bg-secondary,#f7fafc);border:1px solid var(--border,#e2e8f0);border-top:none;border-radius:0 0 10px 10px;padding:14px 16px;margin-top:-6px;margin-bottom:16px;box-shadow:0 2px 6px rgba(0,0,0,.04)}
+.card-detail.open{display:block}
+.detail-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.detail-item{background:var(--bg-card,#fff);border-radius:8px;padding:10px 14px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.detail-item .dl{font-size:11px;color:var(--text-secondary,#718096)}
+.detail-item .dv{font-size:18px;font-weight:600;color:var(--text-primary,#2d3748);margin-top:2px}
+.detail-item .dd{font-size:10px;color:var(--text-muted,#a0aec0);margin-top:2px}
+.detail-item.missing{background:#fffbeb}
+.detail-item.missing .dv{color:var(--text-muted,#a0aec0);font-size:13px;font-weight:500}
+
+/* 销售个人三列卡片 */
+.sales-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px}
+@media(max-width:900px){.sales-grid{grid-template-columns:1fr}}
+.sales-card{background:var(--bg-card,#fff);border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.sales-card .sc-header{display:flex;align-items:center;gap:8px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border,#e2e8f0)}
+.sales-card .sc-name{font-size:15px;font-weight:700;color:var(--primary,#1a365d)}
+.sales-card .sc-badge{font-size:11px;padding:2px 10px;border-radius:10px;color:#fff;font-weight:600}
+.sales-card .sc-badge.d{background:#3182ce}
+.sales-card .sc-badge.m{background:#dd6b20}
+.sales-card .sc-badge.f{background:#38a169}
+.sales-card .sc-count{font-size:11px;color:var(--text-secondary,#718096);margin-left:auto}
+
+.sc-row{margin-bottom:14px}
+.sc-row:last-child{margin-bottom:0}
+.sc-row-label{font-size:12px;color:var(--text-secondary,#718096);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.sc-bar-track{height:22px;background:#edf2f7;border-radius:11px;position:relative;overflow:hidden}
+.sc-bar-fill{height:100%;border-radius:11px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;font-size:11px;font-weight:600;color:#fff;transition:width .6s ease}
+.sc-bar-fill.blue{background:linear-gradient(90deg,#3182ce,#63b3ed)}
+.sc-bar-fill.green{background:linear-gradient(90deg,#38a169,#68d391)}
+.sc-bar-fill.orange{background:linear-gradient(90deg,#dd6b20,#f6ad55)}
+.sc-bar-stats{font-size:11px;color:var(--text-muted,#a0aec0);margin-top:3px;text-align:right}
+
+/* Section 容器 */
+.dm-section{background:var(--bg-card,#fff);border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.dm-section-title{font-size:15px;font-weight:600;color:var(--primary,#1a365d);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border,#e2e8f0);display:flex;align-items:center;gap:8px}
+
+/* 数据表格 */
+.dm-data-table{width:100%;border-collapse:collapse;font-size:13px}
+.dm-data-table th{background:var(--primary,#1a365d);color:#fff;padding:10px 12px;text-align:center;font-weight:500}
+.dm-data-table td{padding:9px 12px;text-align:center;border-bottom:1px solid var(--border,#e2e8f0)}
+.dm-data-table tr:nth-child(even){background:var(--bg-secondary,#f7fafc)}
+.dm-data-table tr:hover{background:#edf2f7}
+.dm-data-table tr.total-row{background:color-mix(in srgb, var(--primary) 10%, transparent)!important;font-weight:600}
+.dm-data-table .grade-cell,.dm-data-table .city-cell{text-align:left;font-weight:600}
+
+/* 图表容器 */
+.dm-chart-box{background:var(--bg-card,#fff);border-radius:12px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.dm-chart-box .chart-label{font-size:13px;font-weight:600;color:var(--primary,#1a365d);margin-bottom:12px;text-align:center}
+.dm-chart-box canvas{max-height:320px}
+.triple-chart{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px}
+@media(max-width:900px){.triple-chart{grid-template-columns:1fr}}
+.deep-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px}
+@media(max-width:900px){.deep-grid{grid-template-columns:1fr}}
+
+/* 交叉分析表 */
+.cross-table{width:100%;border-collapse:collapse;font-size:13px}
+.cross-table th,.cross-table td{padding:8px 10px;text-align:center;border:1px solid var(--border,#e2e8f0)}
+.cross-table th{background:var(--bg-secondary,#f7fafc);color:var(--text-primary,#2d3748);font-weight:600;font-size:12px}
+.cross-table .row-header{text-align:left;font-weight:600;color:var(--primary,#1a365d);background:var(--bg-secondary,#f7fafc);min-width:70px}
+.cross-table .total-row{background:color-mix(in srgb, var(--primary) 10%, transparent);font-weight:700}
+.cross-table .total-row .row-header{background:color-mix(in srgb, var(--primary) 15%, transparent)}
+.ct-green{color:#22543d;background:#c6f6d5;font-weight:600}
+.ct-yellow{color:#744210;background:#fefcbf}
+.ct-red{color:#742a2a;background:#fed7d7}
+.ct-na{color:var(--text-muted,#a0aec0);background:var(--bg-secondary,#f7fafc)}
+.cross-table .sub-header{background:#edf2f7;font-size:11px;color:var(--text-secondary,#4a5568);font-weight:600}
+
+/* 洞察面板 */
+.insight-panel{background:linear-gradient(135deg,#f0fff4,#ebf8ff);border:1px solid #9ae6b4;border-radius:10px;padding:16px;margin-top:16px}
+.insight-panel .it{font-size:13px;font-weight:600;color:#276749;margin-bottom:10px}
+.insight-panel ul{list-style:none;padding:0}
+.insight-panel li{font-size:12px;color:var(--text-primary,#4a5568);padding:3px 0 3px 16px;position:relative}
+.insight-panel li::before{content:"•";position:absolute;left:0;color:#38a169;font-weight:bold}
+
+.insight-list{list-style:none;padding:0;margin:0}
+.insight-list li{padding:10px 14px;border-radius:8px;margin-bottom:8px;font-size:13px;line-height:1.6;display:flex;align-items:flex-start;gap:8px}
+.insight-list li.pro{background:#f0fff4;border-left:3px solid #38a169}
+.insight-list li.con{background:#fff5f5;border-left:3px solid #e53e3e}
+.insight-tag{font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;white-space:nowrap;flex-shrink:0}
+.insight-tag.pro{background:#38a169;color:#fff}
+.insight-tag.con{background:#e53e3e;color:#fff}
+
+/* 脱敏提示框 */
+.anon-box{background:color-mix(in srgb, var(--primary) 8%, transparent);border:1px solid color-mix(in srgb, var(--primary) 30%, transparent);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--primary,#2b6cb0)}
+.anon-box .desc{font-size:11px;color:var(--text-secondary,#4a5568);margin-top:4px}
+
+/* 省份进度条 */
+.mini-progress{display:flex;align-items:center;gap:6px;justify-content:center}
+.mini-progress .bar-bg{width:80px;height:10px;background:#edf2f7;border-radius:5px;overflow:hidden}
+.mini-progress .bar-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--primary,#3182ce),#63b3ed)}
+.mini-progress .bar-label{font-size:11px;color:var(--text-secondary,#718096)}
+
+/* 环形图图例 */
+.donut-legend{display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:center;margin-top:8px;font-size:12px;color:var(--text-primary,#4a5568)}
+.donut-legend span{display:flex;align-items:center;gap:4px}
+.donut-legend i{display:inline-block;width:10px;height:10px;border-radius:2px}
