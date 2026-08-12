@@ -2545,26 +2545,31 @@
     function _buildSalesAliasOnce() {
         if (_salesAliasBuilt || !dmAllData || dmAllData.length === 0) return;
         Object.keys(_salesAlias).forEach(k => delete _salesAlias[k]);
-        // 固定映射表：D/M/F精确映射，其余所有人统一归入"销售其他"
+        // 固定映射表（与import_data.py的SALES_MAP一致）
         _salesAlias['刘济超'] = '销售D';
         _salesAlias['李心雨'] = '销售M';
         _salesAlias['彭凡珊'] = '销售F';
+        // 处理未在映射表中的销售（按D→M→F→其他顺序分配剩余字母）
         const uniqueNames = [...new Set(dmAllData.map(r => r.负责销售).filter(Boolean))];
+        const mappedNames = new Set(Object.keys(_salesAlias));
+        const fixedLetters = ['G','H','J','K','L','N','P'];
+        let li = 0;
         uniqueNames.forEach(name => {
-            if (!_salesAlias[name]) _salesAlias[name] = '销售其他';
+            if (!mappedNames.has(name)) {
+                _salesAlias[name] = '销售' + (fixedLetters[li] || String(li + 7));
+                li++;
+            }
         });
         _salesAliasBuilt = true;
     }
 
     // 按别名字母顺序排序销售（D→M→F），所有模块统一使用
     function sortSalesByAlias(arr) {
-        const letterOrder = { D:0, M:1, F:2 };
+        const letterOrder = { D:0, M:1, F:2, G:3, H:4, J:5, K:6, L:7, N:8, P:9 };
         return arr.slice().sort((a, b) => {
             const la = getSalesAlias(a).replace('销售','');
             const lb = getSalesAlias(b).replace('销售','');
-            const oa = la === '其他' ? 99 : (letterOrder[la] ?? 50);
-            const ob = lb === '其他' ? 99 : (letterOrder[lb] ?? 50);
-            return oa - ob;
+            return (letterOrder[la] ?? 99) - (letterOrder[lb] ?? 99);
         });
     }
 
