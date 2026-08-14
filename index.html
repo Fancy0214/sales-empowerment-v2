@@ -1575,7 +1575,7 @@
                         </div>
                         <div class="stat-card" style="border-left:4px solid #10b981;">
                             <div class="stat-num" id="dmStatCurrentYear">0</div>
-                            <div class="stat-label">当年度新增</div>
+                            <div class="stat-label">签约量</div>
                         </div>
                     </div>
 
@@ -2489,17 +2489,22 @@
     // 更新统计
     function updateDataMgmtStats() {
         const total = dmAllData.length;
-        const contracted = dmAllData.filter(d => d.contract_status === '合作中').length;
         const produced = dmAllData.filter(d => d.production_status === '已出产').length;
         const currentYear = dmAllData.filter(d => d.data_year === '当年度').length;
         
-        // 用户确认的正确数字（2026-08-14）：存量360 + 新增492 = 合作中852
-        const contractedOverride = 852;
+        // 用户确认的正确数字 + 周度录入增量，动态更新
+        const weeklySignings = (_weeklyEntries || []).reduce((s, e) => s + (e.new_signings || 0), 0);
+        const contractedOverride = 852 + weeklySignings;  // 合作中总量基线852 + 周度签约增量
+        const contractOverride = 558 + weeklySignings;     // 签约量基线558 + 周度签约增量
         
         document.getElementById('dmStatTotal').textContent = total;
         document.getElementById('dmStatContracted').textContent = contractedOverride;
         document.getElementById('dmStatProduced').textContent = produced;
-        document.getElementById('dmStatCurrentYear').textContent = currentYear;
+        document.getElementById('dmStatCurrentYear').textContent = contractOverride;
+        // 更新标签为签约量
+        const labels = document.querySelectorAll('#dataMgmtStats .stat-label');
+        if (labels[1]) labels[1].textContent = '合作中';
+        if (labels[3]) labels[3].textContent = '签约量';
     }
 
     // ==================== 团队全局 & 销售个人 数据更新（基于 institution_data） ====================
