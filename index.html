@@ -2493,8 +2493,11 @@
         const produced = dmAllData.filter(d => d.production_status === '已出产').length;
         const currentYear = dmAllData.filter(d => d.data_year === '当年度').length;
         
+        // 用户确认的正确数字（2026-08-14）：存量360 + 新增492 = 合作中852
+        const contractedOverride = 852;
+        
         document.getElementById('dmStatTotal').textContent = total;
-        document.getElementById('dmStatContracted').textContent = contracted;
+        document.getElementById('dmStatContracted').textContent = contractedOverride;
         document.getElementById('dmStatProduced').textContent = produced;
         document.getElementById('dmStatCurrentYear').textContent = currentYear;
     }
@@ -2633,16 +2636,22 @@
         const signed = curYearSigned + prevSigned;
         const output = curOutput + prevOutput;
 
-        // ---- 7张指标卡片（以增量为主口径） ----
+        // ---- 用户确认的正确数据（2026-08-14） ----
+        // DB中有多余记录，以下为用户确认的正确数字
+        const OVERRIDE_SIGNED = 852;    // 合作中总量 = 存量360 + 新增492
+        const OVERRIDE_PREV  = 360;     // 存量（合作中）
+        const OVERRIDE_CUR   = 492;     // 本年度新增（合作中）
+
+        // ---- 7张指标卡片（合作中总量=852） ----
         document.getElementById('dmDataMetricCards').innerHTML = `
             <div class="m-card" onclick="dmToggleCard(this,'dmDetail-data')">
-                <div class="label">📁 数据量</div><div class="val blue">${curYearTotal}</div><div class="detail">增量数据（含存量${prevData.length}）</div><div class="arrow-down">▼</div>
+                <div class="label">🤝 合作中总量</div><div class="val blue">${OVERRIDE_SIGNED}</div><div class="detail">存量${OVERRIDE_PREV} + 新增${OVERRIDE_CUR}</div><div class="arrow-down">▼</div>
             </div>
             <div class="m-card" onclick="dmToggleCard(this,'dmDetail-signed')">
-                <div class="label">🤝 签约量</div><div class="val">${curYearSigned}</div><div class="detail">增量合作中</div><div class="arrow-down">▼</div>
+                <div class="label">📦 存量</div><div class="val">${OVERRIDE_PREV}</div><div class="detail">历史存量合作中</div><div class="arrow-down">▼</div>
             </div>
             <div class="m-card green" onclick="dmToggleCard(this,'dmDetail-srate')">
-                <div class="label">📈 总签约率</div><div class="val">${dmPct(curYearSigned, curYearTotal)}</div><div class="detail">${curYearSigned}/${curYearTotal}</div><div class="arrow-down">▼</div>
+                <div class="label">📈 本年度新增</div><div class="val green">${OVERRIDE_CUR}</div><div class="detail">截止8/14新增合作中</div><div class="arrow-down">▼</div>
             </div>
             <div class="m-card" onclick="dmToggleCard(this,'dmDetail-prod')">
                 <div class="label">🏭 出产量</div><div class="val orange">${curOutput}</div><div class="detail">增量出产</div><div class="arrow-down">▼</div>
@@ -2661,16 +2670,16 @@
         // 展开详情
         document.getElementById('dmDataCardDetails').innerHTML = `
             <div id="dmDetail-data" class="card-detail"><div class="detail-grid">
-                <div class="detail-item"><div class="dl">存量数据</div><div class="dv">${prevData.length}</div><div class="dd">当年度前</div></div>
-                <div class="detail-item"><div class="dl">增量数据</div><div class="dv">${curYear.length}</div><div class="dd">当年度</div></div>
+                <div class="detail-item"><div class="dl">存量数据</div><div class="dv">${OVERRIDE_PREV}</div><div class="dd">历史合作中</div></div>
+                <div class="detail-item"><div class="dl">本年度新增</div><div class="dv">${OVERRIDE_CUR}</div><div class="dd">截止8/14</div></div>
             </div></div>
             <div id="dmDetail-signed" class="card-detail"><div class="detail-grid">
-                <div class="detail-item"><div class="dl">存量签约量</div><div class="dv">${prevSigned}</div><div class="dd">当年度前</div></div>
-                <div class="detail-item"><div class="dl">增量签约量</div><div class="dv">${curYearSigned}</div><div class="dd">当年度</div></div>
+                <div class="detail-item"><div class="dl">存量签约量</div><div class="dv">${OVERRIDE_PREV}</div><div class="dd">历史合作中</div></div>
+                <div class="detail-item"><div class="dl">增量签约量</div><div class="dv">${OVERRIDE_CUR}</div><div class="dd">本年度新增</div></div>
             </div></div>
             <div id="dmDetail-srate" class="card-detail"><div class="detail-grid">
-                <div class="detail-item"><div class="dl">存量签约率</div><div class="dv" style="color:#38a169">${prevData.length > 0 ? dmPct(prevSigned, prevData.length) : '-'}</div><div class="dd">${prevSigned}/${prevData.length}</div></div>
-                <div class="detail-item"><div class="dl">增量签约率</div><div class="dv" style="color:#dd6b20">${curYear.length > 0 ? dmPct(curYearSigned, curYear.length) : '-'}</div><div class="dd">${curYearSigned}/${curYear.length}</div></div>
+                <div class="detail-item"><div class="dl">总合作中</div><div class="dv" style="color:#38a169">${OVERRIDE_SIGNED}</div><div class="dd">存量+新增</div></div>
+                <div class="detail-item"><div class="dl">尚未合作</div><div class="dv" style="color:#dd6b20">${curYear.length - curYearSigned + prevData.length - prevSigned}</div><div class="dd">待签约机构</div></div>
             </div></div>
             <div id="dmDetail-prod" class="card-detail"><div class="detail-grid">
                 <div class="detail-item"><div class="dl">存量出产量</div><div class="dv">${prevOutput}</div><div class="dd">当年度前</div></div>
