@@ -2636,64 +2636,80 @@
         const signed = curYearSigned + prevSigned;
         const output = curOutput + prevOutput;
 
-        // ---- 用户确认的正确数据（2026-08-14） ----
-        // DB中有多余记录，以下为用户确认的正确数字
-        const OVERRIDE_SIGNED = 852;    // 合作中总量 = 存量360 + 新增492
-        const OVERRIDE_PREV  = 360;     // 存量（合作中）
-        const OVERRIDE_CUR   = 492;     // 本年度新增（合作中）
+        // ---- 基线值（2026-08-14确认）+ 周度录入增量，动态更新 ----
+        const weeklySignings = (_weeklyEntries || []).reduce((s, e) => s + (e.new_signings || 0), 0);
+        const weeklyOutput   = (_weeklyEntries || []).reduce((s, e) => s + (e.new_output || 0), 0);
+        const weeklyApps     = (_weeklyEntries || []).reduce((s, e) => s + (e.new_applications || 0), 0);
 
-        // ---- 7张指标卡片（合作中总量=852） ----
+        const BASE_SIGNED   = 852;       // 合作中总量基线（存量360+新增492，截止8/14）
+        const BASE_CONTRACT = 558;       // 签约量基线（存量246+新增312，截止8/14）
+        const BASE_OUTPUT   = curOutput; // 出产量基线 = DB增量出产
+        const BASE_APPLY    = 712;       // 申请量基线（截止7/31）
+        const BASE_ENROLL   = 186;       // 入学量基线（截止8/7）
+
+        // 动态值 = 基线 + 周度录入增量
+        const dynSigned   = BASE_SIGNED   + weeklySignings;
+        const dynContract = BASE_CONTRACT + weeklySignings;
+        const dynOutput   = BASE_OUTPUT   + weeklyOutput;
+        const dynApply    = BASE_APPLY    + weeklyApps;
+        const dynEnroll   = BASE_ENROLL   + weeklyOutput;
+
+        // ---- 7张指标卡片（动态更新） ----
         document.getElementById('dmDataMetricCards').innerHTML = `
             <div class="m-card" onclick="dmToggleCard(this,'dmDetail-data')">
-                <div class="label">🤝 合作中总量</div><div class="val blue">${OVERRIDE_SIGNED}</div><div class="detail">存量${OVERRIDE_PREV} + 新增${OVERRIDE_CUR}</div><div class="arrow-down">▼</div>
+                <div class="label"> 合作中总量</div><div class="val blue">${dynSigned}</div><div class="detail">基线852 + 周度签约+${weeklySignings}</div><div class="arrow-down">▼</div>
             </div>
             <div class="m-card" onclick="dmToggleCard(this,'dmDetail-signed')">
-                <div class="label">📦 存量</div><div class="val">${OVERRIDE_PREV}</div><div class="detail">历史存量合作中</div><div class="arrow-down">▼</div>
+                <div class="label">📝 签约量</div><div class="val">${dynContract}</div><div class="detail">基线558 + 周度签约+${weeklySignings}</div><div class="arrow-down">▼</div>
             </div>
             <div class="m-card green" onclick="dmToggleCard(this,'dmDetail-srate')">
-                <div class="label">📈 本年度新增</div><div class="val green">${OVERRIDE_CUR}</div><div class="detail">截止8/14新增合作中</div><div class="arrow-down">▼</div>
+                <div class="label">📊 总签约率</div><div class="val">${dmPct(dynContract, dynSigned)}</div><div class="detail">${dynContract}/${dynSigned}</div><div class="arrow-down">▼</div>
             </div>
             <div class="m-card" onclick="dmToggleCard(this,'dmDetail-prod')">
-                <div class="label">🏭 出产量</div><div class="val orange">${curOutput}</div><div class="detail">增量出产</div><div class="arrow-down">▼</div>
+                <div class="label">🏭 出产量</div><div class="val orange">${dynOutput}</div><div class="detail">DB出产${curOutput} + 周度出产+${weeklyOutput}</div><div class="arrow-down">▼</div>
             </div>
             <div class="m-card orange" onclick="dmToggleCard(this,'dmDetail-prate')">
-                <div class="label">⚙️ 出产率</div><div class="val">${dmPct(curOutput, curYearSigned)}</div><div class="detail">${curOutput}/${curYearSigned}</div><div class="arrow-down">▼</div>
+                <div class="label">⚙️ 出产率</div><div class="val">${dmPct(dynOutput, dynSigned)}</div><div class="detail">${dynOutput}/${dynSigned}</div><div class="arrow-down">▼</div>
             </div>
             <div class="m-card" onclick="dmToggleCard(this,'dmDetail-apply')">
-                <div class="label">📝 申请量</div><div class="val">${712 + (_weeklyEntries || []).reduce((s,e) => s + (e.new_applications || 0), 0)}</div><div class="detail">截止7/31:712 + 周度增量${(_weeklyEntries || []).reduce((s,e) => s + (e.new_applications || 0), 0)}</div><div class="arrow-down">▼</div>
+                <div class="label">📝 申请量</div><div class="val">${dynApply}</div><div class="detail">截止7/31:712 + 周度增量+${weeklyApps}</div><div class="arrow-down">▼</div>
             </div>
             <div class="m-card" onclick="dmToggleCard(this,'dmDetail-enroll')">
-                <div class="label">🎓 入学量</div><div class="val">${186 + (_weeklyEntries || []).reduce((s,e) => s + (e.new_output || 0), 0)}</div><div class="detail">截止8/7:186 + 周度增量${(_weeklyEntries || []).reduce((s,e) => s + (e.new_output || 0), 0)}</div><div class="arrow-down">▼</div>
+                <div class="label">🎓 入学量</div><div class="val">${dynEnroll}</div><div class="detail">截止8/7:186 + 周度增量+${weeklyOutput}</div><div class="arrow-down">▼</div>
             </div>
         `;
 
         // 展开详情
         document.getElementById('dmDataCardDetails').innerHTML = `
             <div id="dmDetail-data" class="card-detail"><div class="detail-grid">
-                <div class="detail-item"><div class="dl">存量数据</div><div class="dv">${OVERRIDE_PREV}</div><div class="dd">历史合作中</div></div>
-                <div class="detail-item"><div class="dl">本年度新增</div><div class="dv">${OVERRIDE_CUR}</div><div class="dd">截止8/14</div></div>
+                <div class="detail-item"><div class="dl">存量合作中</div><div class="dv">360</div><div class="dd">历史存量</div></div>
+                <div class="detail-item"><div class="dl">本年度新增合作中</div><div class="dv">492</div><div class="dd">截止8/14</div></div>
+                <div class="detail-item"><div class="dl">周度签约增量</div><div class="dv" style="color:#6366f1">+${weeklySignings}</div><div class="dd">录入叠加</div></div>
             </div></div>
             <div id="dmDetail-signed" class="card-detail"><div class="detail-grid">
-                <div class="detail-item"><div class="dl">存量签约量</div><div class="dv">${OVERRIDE_PREV}</div><div class="dd">历史合作中</div></div>
-                <div class="detail-item"><div class="dl">增量签约量</div><div class="dv">${OVERRIDE_CUR}</div><div class="dd">本年度新增</div></div>
+                <div class="detail-item"><div class="dl">以往年度签约量</div><div class="dv">246</div><div class="dd">历史签约</div></div>
+                <div class="detail-item"><div class="dl">本年度新增签约</div><div class="dv">312</div><div class="dd">截止8/14</div></div>
+                <div class="detail-item"><div class="dl">周度签约增量</div><div class="dv" style="color:#6366f1">+${weeklySignings}</div><div class="dd">录入叠加</div></div>
             </div></div>
             <div id="dmDetail-srate" class="card-detail"><div class="detail-grid">
-                <div class="detail-item"><div class="dl">总合作中</div><div class="dv" style="color:#38a169">${OVERRIDE_SIGNED}</div><div class="dd">存量+新增</div></div>
-                <div class="detail-item"><div class="dl">尚未合作</div><div class="dv" style="color:#dd6b20">${curYear.length - curYearSigned + prevData.length - prevSigned}</div><div class="dd">待签约机构</div></div>
+                <div class="detail-item"><div class="dl">总签约率</div><div class="dv" style="color:#38a169">${dmPct(dynContract, dynSigned)}</div><div class="dd">签约/合作中</div></div>
+                <div class="detail-item"><div class="dl">合作中/签约比</div><div class="dv" style="color:#dd6b20">${dmPct(dynSigned, dynContract > 0 ? dynContract : 1)}</div><div class="dd">${dynSigned}/${dynContract}</div></div>
             </div></div>
             <div id="dmDetail-prod" class="card-detail"><div class="detail-grid">
-                <div class="detail-item"><div class="dl">存量出产量</div><div class="dv">${prevOutput}</div><div class="dd">当年度前</div></div>
-                <div class="detail-item"><div class="dl">增量出产量</div><div class="dv">${curOutput}</div><div class="dd">当年度</div></div>
+                <div class="detail-item"><div class="dl">DB增量出产量</div><div class="dv">${curOutput}</div><div class="dd">当年度</div></div>
+                <div class="detail-item"><div class="dl">周度出产增量</div><div class="dv" style="color:#6366f1">+${weeklyOutput}</div><div class="dd">录入叠加</div></div>
             </div></div>
             <div id="dmDetail-prate" class="card-detail"><div class="detail-grid">
-                <div class="detail-item"><div class="dl">总出产量</div><div class="dv">${output}</div><div class="dd">合作中${signed}家</div></div>
-                <div class="detail-item"><div class="dl">出产率</div><div class="dv" style="color:#38a169">${dmPct(output, signed)}</div></div>
+                <div class="detail-item"><div class="dl">总出产量</div><div class="dv">${dynOutput}</div><div class="dd">DB+周度</div></div>
+                <div class="detail-item"><div class="dl">出产率</div><div class="dv" style="color:#38a169">${dmPct(dynOutput, dynSigned)}</div><div class="dd">出产/合作中</div></div>
             </div></div>
             <div id="dmDetail-apply" class="card-detail"><div class="detail-grid">
-                <div class="detail-item missing"><div class="dl">申请量</div><div class="dv">暂无数据</div></div>
+                <div class="detail-item"><div class="dl">基线申请量</div><div class="dv">712</div><div class="dd">截止7/31</div></div>
+                <div class="detail-item"><div class="dl">周度申请增量</div><div class="dv" style="color:#6366f1">+${weeklyApps}</div><div class="dd">录入叠加</div></div>
             </div></div>
             <div id="dmDetail-enroll" class="card-detail"><div class="detail-grid">
-                <div class="detail-item missing"><div class="dl">入学量</div><div class="dv">暂无数据</div></div>
+                <div class="detail-item"><div class="dl">基线入学量</div><div class="dv">186</div><div class="dd">截止8/7</div></div>
+                <div class="detail-item"><div class="dl">周度入学增量</div><div class="dv" style="color:#6366f1">+${weeklyOutput}</div><div class="dd">录入叠加</div></div>
             </div></div>
         `;
 
