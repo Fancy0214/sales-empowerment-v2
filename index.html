@@ -2674,7 +2674,7 @@
                 <div class="label">🏭 出产量</div><div class="val orange">${dynOutput}</div><div class="detail">DB出产${curOutput} + 周度出产+${weeklyOutput}</div><div class="arrow-down">▼</div>
             </div>
             <div class="m-card orange" onclick="dmToggleCard(this,'dmDetail-prate')">
-                <div class="label">⚙️ 出产率</div><div class="val">${dmPct(dynOutput, dynSigned)}</div><div class="detail">${dynOutput}/${dynSigned}</div><div class="arrow-down">▼</div>
+                <div class="label">⚙️ 出产率</div><div class="val">${dmPct(dynOutput, dynContract)}</div><div class="detail">${dynOutput}/${dynContract}</div><div class="arrow-down">▼</div>
             </div>
             <div class="m-card" onclick="dmToggleCard(this,'dmDetail-apply')">
                 <div class="label">📝 申请量</div><div class="val">${dynApply}</div><div class="detail">截止7/31:712 + 周度增量+${weeklyApps}</div><div class="arrow-down">▼</div>
@@ -2706,7 +2706,7 @@
             </div></div>
             <div id="dmDetail-prate" class="card-detail"><div class="detail-grid">
                 <div class="detail-item"><div class="dl">总出产量</div><div class="dv">${dynOutput}</div><div class="dd">DB+周度</div></div>
-                <div class="detail-item"><div class="dl">出产率</div><div class="dv" style="color:#38a169">${dmPct(dynOutput, dynSigned)}</div><div class="dd">出产/合作中</div></div>
+                <div class="detail-item"><div class="dl">出产率</div><div class="dv" style="color:#38a169">${dmPct(dynOutput, dynContract)}</div><div class="dd">出产/签约</div></div>
             </div></div>
             <div id="dmDetail-apply" class="card-detail"><div class="detail-grid">
                 <div class="detail-item"><div class="dl">基线申请量</div><div class="dv">712</div><div class="dd">截止7/31</div></div>
