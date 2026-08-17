@@ -2494,7 +2494,7 @@
         
         // 用户确认的正确数字 + 周度录入增量，动态更新
         const weeklySignings = (_weeklyEntries || []).reduce((s, e) => s + (e.new_signings || 0), 0);
-        const contractedOverride = 852 + weeklySignings;  // 合作中总量基线852 + 周度签约增量
+        const contractedOverride = 852 + weeklySignings;  // 总数据量基线852 + 周度签约增量
         const contractOverride = 558 + weeklySignings;     // 签约量基线558 + 周度签约增量
         
         document.getElementById('dmStatTotal').textContent = total;
@@ -2646,7 +2646,7 @@
         const weeklyOutput   = (_weeklyEntries || []).reduce((s, e) => s + (e.new_output || 0), 0);
         const weeklyApps     = (_weeklyEntries || []).reduce((s, e) => s + (e.new_applications || 0), 0);
 
-        const BASE_SIGNED   = 852;       // 合作中总量基线（存量360+新增492，截止8/14）
+        const BASE_SIGNED   = 852;       // 总数据量基线（存量360+新增492，截止8/14）
         const BASE_CONTRACT = 558;       // 签约量基线（存量246+新增312，截止8/14）
         const BASE_OUTPUT   = curOutput; // 出产量基线 = DB增量出产
         const BASE_APPLY    = 712;       // 申请量基线（截止7/31）
@@ -2662,7 +2662,7 @@
         // ---- 7张指标卡片（动态更新） ----
         document.getElementById('dmDataMetricCards').innerHTML = `
             <div class="m-card" onclick="dmToggleCard(this,'dmDetail-data')">
-                <div class="label"> 合作中总量</div><div class="val blue">${dynSigned}</div><div class="detail">基线852 + 周度签约+${weeklySignings}</div><div class="arrow-down">▼</div>
+                <div class="label"> 总数据量</div><div class="val blue">${dynSigned}</div><div class="detail">基线852 + 周度签约+${weeklySignings}</div><div class="arrow-down">▼</div>
             </div>
             <div class="m-card" onclick="dmToggleCard(this,'dmDetail-signed')">
                 <div class="label">📝 签约量</div><div class="val">${dynContract}</div><div class="detail">基线558 + 周度签约+${weeklySignings}</div><div class="arrow-down">▼</div>
@@ -2687,9 +2687,9 @@
         // 展开详情
         document.getElementById('dmDataCardDetails').innerHTML = `
             <div id="dmDetail-data" class="card-detail"><div class="detail-grid">
-                <div class="detail-item"><div class="dl">存量合作中</div><div class="dv">360</div><div class="dd">历史存量</div></div>
-                <div class="detail-item"><div class="dl">本年度新增合作中</div><div class="dv">492</div><div class="dd">截止8/14</div></div>
-                <div class="detail-item"><div class="dl">周度签约增量</div><div class="dv" style="color:#6366f1">+${weeklySignings}</div><div class="dd">录入叠加</div></div>
+                <div class="detail-item"><div class="dl">存量数据量</div><div class="dv">360</div><div class="dd">历史存量</div></div>
+                <div class="detail-item"><div class="dl">当年度新增数据量</div><div class="dv">492</div><div class="dd">截止8/14</div></div>
+                <div class="detail-item"><div class="dl">周度新增数据量</div><div class="dv" style="color:#6366f1">+${weeklySignings}</div><div class="dd">录入叠加</div></div>
             </div></div>
             <div id="dmDetail-signed" class="card-detail"><div class="detail-grid">
                 <div class="detail-item"><div class="dl">以往年度签约量</div><div class="dv">246</div><div class="dd">历史签约</div></div>
